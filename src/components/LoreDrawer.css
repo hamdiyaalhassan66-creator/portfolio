@@ -1,0 +1,253 @@
+.drawer-overlay {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  background: rgba(46, 29, 17, 0.2);
+  backdrop-filter: blur(14.85px);
+}
+
+.drawer {
+  position: fixed;
+  z-index: 21;
+  top: 2px;
+  right: 2px;
+  bottom: 2px;
+  display: flex;
+  flex-direction: column;
+  width: min(570px, calc(100% - 4px));
+  background: var(--bg);
+}
+
+/* top bar */
+.drawer__bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  height: 40px;
+}
+
+.drawer__bar-title {
+  flex: 1;
+  height: 100%;
+  padding: 10px;
+  background: #E3E6F7;
+  text-transform: uppercase;
+  font: 500 12px/14px var(--font-mono);
+  letter-spacing: -0.01em;
+  color: var(--blue);
+}
+
+.drawer__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: rgba(46, 29, 17, 0.08);
+  border: 0;
+  cursor: pointer;
+  color: #000;
+}
+
+.drawer__close:focus-visible,
+.drawer__row:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: -2px;
+}
+
+/* scrolling content */
+.drawer__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px 24px 72px;
+}
+
+.drawer__hero {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+/* 250px canvas with -10px margins keeps the 230px layout slot and leaves room for the tilt */
+.drawer__model {
+  flex: none;
+  width: 250px;
+  height: 250px;
+  margin: -10px;
+}
+
+.drawer__head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.drawer__title {
+  font: 600 16px/19px var(--font-sans);
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+
+.drawer__details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.drawer__creator {
+  font: 550 14px/17px var(--font-sans);
+  letter-spacing: -0.01em;
+  color: var(--fg-60);
+}
+
+.drawer__creator.is-link {
+  color: var(--blue);
+  text-decoration: underline;
+}
+
+.drawer__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: 550 12px/15px var(--font-sans);
+  letter-spacing: -0.01em;
+  color: var(--fg-60);
+}
+
+.drawer__meta span + span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.drawer__meta span + span::before {
+  content: "";
+  width: 2px;
+  height: 2px;
+  background: var(--fg-30);
+}
+
+/* tracklist */
+.drawer__label {
+  margin: 40px 0 16px;
+  text-transform: uppercase;
+  font: 500 12px/14px var(--font-mono);
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+
+.drawer__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer__row {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  width: 100%;
+  height: 40px;
+  padding: 4px 0 4px 36px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  font: 550 14px/17px var(--font-sans);
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+
+.drawer__row--head {
+  height: 26px;
+  cursor: default;
+  border-bottom: 1px solid rgba(46, 29, 17, 0.1);
+  color: rgba(46, 29, 17, 0.4);
+}
+
+.drawer__num {
+  width: 20px;
+  flex: none;
+  color: rgba(46, 29, 17, 0.6);
+}
+
+.drawer__row--head .drawer__num {
+  color: inherit;
+}
+
+.drawer__name {
+  flex: 1;
+}
+
+.drawer__time {
+  margin-left: auto;
+  text-align: right;
+  color: rgba(46, 29, 17, 0.6);
+}
+
+.drawer__row--head .drawer__time {
+  display: flex;
+  padding-right: 8px;
+  color: inherit;
+}
+
+.drawer__row.is-playing,
+.drawer__row.is-playing .drawer__num,
+.drawer__row.is-playing .drawer__time {
+  color: var(--blue);
+}
+
+/* bottom player */
+.drawer__player {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 48px;
+  padding-right: 22px;
+  background: #E3E6F7;
+}
+
+.drawer__pause {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  background: var(--blue);
+  color: var(--bg);
+}
+
+.drawer__now {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  height: 48px;
+}
+
+.drawer__now-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  font: 550 14px/17px var(--font-sans);
+  letter-spacing: -0.01em;
+  color: var(--blue);
+}
+
+.drawer__now-time {
+  font-weight: 650;
+  opacity: 0.6;
+}
+
+.drawer__progress {
+  height: 4px;
+  background: rgba(46, 29, 17, 0.15);
+}

@@ -1,10 +1,17 @@
 :root {
-  --bg: #0b0b0c;
-  --fg: #f4f4f2;
-  --muted: #8a8a8a;
-  --accent: #c8ff3d;
+  --bg: #f9f7f6;
+  --fg: #2e1d11;
+  --fg-60: rgba(46, 29, 17, 0.6);
+  --fg-30: rgba(46, 29, 17, 0.3);
+  --blue: #1046f9;
+  --blue-10: rgba(16, 70, 249, 0.1);
+  --surface: #efe9e7;
 
-  --font-sans: "Inter", system-ui, sans-serif;
+  --font-sans: "Inter Variable", "Inter", system-ui, sans-serif;
+  --font-mono: "Azeret Mono", ui-monospace, monospace;
+
+  /* 1u = 1px at your 1728px Figma frame; scales with viewport width */
+  --u: clamp(0.4px, min(calc(100vw / 1728), calc(100dvh / 1117)), 1.25px);
 
   --space-1: 4px;
   --space-2: 8px;
@@ -26,4 +33,11 @@ body {
   color: var(--fg);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
 }
