@@ -25,7 +25,7 @@
 }
 
 .lore__text {
-  font: 550 14px/17px var(--font-sans);
+  font: 500 13px/16px var(--font-sans);
   letter-spacing: -0.01em;
   color: var(--fg);
 }
@@ -254,4 +254,10 @@ a.lore__creator {
   white-space: nowrap;
   font: 500 13px/15px var(--font-mono);
   letter-spacing: -0.01em;
+}
+
+html:has(.lore),
+html:has(.lore) body {
+  height: 100%;
+  overflow: hidden;
 }

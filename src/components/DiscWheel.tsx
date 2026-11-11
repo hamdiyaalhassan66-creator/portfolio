@@ -9,13 +9,434 @@ import { backTexture, dominantColor, flattenBackUv } from "./sleeveBack";
 import "./DiscWheel.css";
 
 const MODEL = "/models/sleeve.glb";
+const CD_MODEL = "/models/cd.glb";
+const VINYL_MODEL = "/models/vinyl.glb";
+const CD_FACE = -Math.PI / 2; // turns the disc from facing sideways to facing the camera
+useGLTF.preload(MODEL, false);
+useGLTF.preload(CD_MODEL, false);
+useGLTF.preload(VINYL_MODEL, false);
+
+// the model's UVs drift from a straight map of position, which stair-steps the circular edge of the art.
+// rebuilding them from vertex positions makes the circle exact
+const CD_UV = 0.5275; // texture units per model unit (0.4826 / the disc's 0.9148 radius)
+function planarUv(geo: THREE.BufferGeometry) {
+  const p = geo.attributes.position;
+  const uv = new Float32Array(p.count * 2);
+  for (let i = 0; i < p.count; i++) {
+    uv[2 * i] = 0.5 + p.getZ(i) * CD_UV;
+    uv[2 * i + 1] = 0.5 + p.getX(i) * CD_UV;
+  }
+  geo.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
+}
+
+export function CdDisc({ item }: { item: LoreItem }) {
+  const { scene } = useGLTF(CD_MODEL, false);
+  const cover = useTexture(item.image);
+
+  const obj = useMemo(() => {
+    const root = scene.clone(true);
+    const front = cdFaceTexture(cover.image as HTMLImageElement);
+
+    const discs: THREE.Mesh[] = [];
+    const drop: THREE.Object3D[] = [];
+    root.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.raycast = () => {};
+      // only the disc is kept; the jewel case and the hub ring go
+      if ((mesh.material as THREE.Material).name === "Material.001") discs.push(mesh);
+      else drop.push(mesh);
+    });
+    drop.forEach((m) => m.removeFromParent());
+
+    // split the top face into its own mesh so the cover prints on it and the underside stays silver
+    for (const mesh of discs) {
+      const original = mesh.material as THREE.MeshStandardMaterial;
+      const ids = mesh.geometry.index!.array;
+      const ny = mesh.geometry.attributes.normal;
+      const pos = mesh.geometry.attributes.position;
+      const top: number[] = [];
+      const under: number[] = [];
+      const wall: number[] = [];
+      for (let t = 0; t < ids.length; t += 3) {
+        const a = ids[t];
+        const b = ids[t + 1];
+        const c = ids[t + 2];
+        const ySum = ny.getY(a) + ny.getY(b) + ny.getY(c);
+        const cx = (pos.getX(a) + pos.getX(b) + pos.getX(c)) / 3;
+        const cz = (pos.getZ(a) + pos.getZ(b) + pos.getZ(c)) / 3;
+        if (Math.hypot(cx, cz) < CD_R * 0.9) continue; // only the outer rim is kept, the faces are rebuilt below
+        (ySum > 2.7 ? top : ySum < -2.7 ? under : wall).push(a, b, c);
+      }
+      // clean ring faces instead of the model's fanned triangles
+      const yTop = pos.getY(top[0]);
+      const yBot = pos.getY(under[0]);
+      const makeFace = (up: boolean) => {
+        const g = new THREE.RingGeometry(CD_CLEAR, CD_R, 180, 1);
+        g.rotateX(up ? -Math.PI / 2 : Math.PI / 2);
+        g.translate(0, up ? yTop : yBot, 0);
+        planarUv(g);
+        return g;
+      };
+      const topGeo = makeFace(true);
+      const underGeo = makeFace(false);
+      const wallGeo = mesh.geometry.clone();
+      wallGeo.setIndex(wall);
+
+      const silver = original.clone();
+      silver.userData.fade = true; // the scene fades sleeves in and out at the ends of the row
+      mesh.geometry = underGeo;
+      mesh.material = silver;
+
+      // plain metallic edge, so the rim doesn't pick up the texture's outline
+      const edgeMat = new THREE.MeshPhysicalMaterial({
+        color: CD_EDGE,
+        metalness: 1,
+        roughness: 0.15,
+        envMapIntensity: 1,
+      });
+      edgeMat.userData.fade = true;
+      const rim = new THREE.Mesh(wallGeo, edgeMat);
+      rim.raycast = () => {};
+      mesh.add(rim);
+
+      const printedMat = new THREE.MeshPhysicalMaterial({
+        map: front,
+        color: "#ffffff",
+        roughness: 0.4,
+        metalness: 0,
+        clearcoat: 1, // same glossy lacquer layer as the sleeves
+        clearcoatRoughness: 0.04,
+        envMapIntensity: 1,
+      });
+      printedMat.userData.fade = true;
+      const printed = new THREE.Mesh(topGeo, printedMat);
+      printed.raycast = () => {};
+      mesh.add(printed);
+
+      // clear plastic ring around the hole, the page shows through it
+      const clearMat = new THREE.MeshPhysicalMaterial({
+        color: "#dfe8ee",
+        transparent: true,
+        opacity: CD_CLEAR_OPACITY,
+        roughness: 0.04,
+        metalness: 0,
+        clearcoat: 1,
+        clearcoatRoughness: 0.02,
+        envMapIntensity: 3,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+      });
+      clearMat.userData.fade = true;
+      clearMat.userData.baseOpacity = CD_CLEAR_OPACITY;
+      const clearGeo = new THREE.RingGeometry(CD_HOLE, CD_CLEAR, 128);
+      clearGeo.rotateX(-Math.PI / 2);
+      clearGeo.translate(0, (yTop + yBot) / 2, 0);
+      const clear = new THREE.Mesh(clearGeo, clearMat);
+      clear.raycast = () => {};
+      mesh.add(clear);
+    }
+
+    // centre it, turn it to face the camera, and scale to span 2 world units like the sleeve
+    const box = new THREE.Box3().setFromObject(root);
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    root.position.sub(center);
+
+    const face = new THREE.Group();
+    face.add(root);
+    face.rotation.y = CD_FACE;
+
+    const wrapper = new THREE.Group();
+    wrapper.add(face);
+    wrapper.scale.setScalar(2 / Math.max(size.x, size.y, size.z));
+    return wrapper;
+  }, [scene, cover]);
+
+  return <primitive object={obj} />;
+}
+
+const VINYL_R = 0.15; // the record's outer radius in model units
+const HOLE_R = 0.125 * VINYL_R; // centre hole, same proportions as the CD
+const CLEAR_R = 0.2 * VINYL_R; // hole to here is clear plastic
+const HUB_R = 0.27 * VINYL_R; // CLEAR_R to here is the silver hub band
+const COVER_INNER = CLEAR_R; // the record and cover are cut away inside this radius
+const COVER_OUTER = 0.147; // leaves a thin black rim at the edge (the record is 0.15)
+
+// how the vinyl model's own textures sit on each face, measured from the file,
+// so the cover ring can reuse the record's original shine
+const FRONT_UV = (x: number, y: number): [number, number] => [
+  0.4703 * x + 1.8775 * y + 0.2907,
+  -1.8775 * x + 0.4703 * y + 0.2906,
+];
+const BACK_UV = (x: number, y: number): [number, number] => [
+  1.7497 * x + 0.8276 * y + 0.7092,
+  0.8276 * x - 1.7497 * y + 0.7088,
+];
+const FACE_Z = 0.00105; // height of the record's front face
+
+// square-crops the cover from the centre so it fills the circular label
+// flat colour fill, used for the back face so only the record's own surface texture shows
+function solidTexture([r, g, b]: [number, number, number]) {
+  const c = document.createElement("canvas");
+  c.width = c.height = 16;
+  const ctx = c.getContext("2d")!;
+  ctx.fillStyle = `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+  ctx.fillRect(0, 0, 16, 16);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+function labelTexture(src: HTMLImageElement, item?: LoreItem) {
+  const S = 1024;
+  const c = document.createElement("canvas");
+  c.width = c.height = S;
+  const g = c.getContext("2d")!;
+  const side = Math.min(src.width, src.height);
+  g.drawImage(src, (src.width - side) / 2, (src.height - side) / 2, side, side, 0, 0, S, S);
+
+  if (item) {
+    const mid = S / 2;
+    const FONT = "system-ui, Helvetica, Arial, sans-serif";
+
+    // even tint over the whole cover, clipped to the disc
+    g.save();
+    g.beginPath();
+    g.arc(mid, mid, mid, 0, TAU);
+    g.clip();
+    g.fillStyle = "rgba(10, 12, 18, 0.25)"; // raise the last number for a darker disc
+    g.fillRect(0, 0, S, S);
+    g.restore();
+
+    g.fillStyle = "#ffffff";
+    g.textBaseline = "alphabetic";
+
+    // thin printed ring just inside the border
+    g.strokeStyle = "rgba(255,255,255,0.25)";
+    g.lineWidth = 2;
+    g.beginPath();
+    g.arc(mid, mid, mid * 0.9, 0, TAU);
+    g.stroke();
+
+    // text that follows the disc's curve, shrinks until it fits maxDeg
+    const arcText = (text: string, r: number, bottom: boolean, px: number, weight: number, track: number, maxDeg: number) => {
+      const chars = [...text.toUpperCase()];
+      const measure = () => {
+        g.font = `${weight} ${px}px ${FONT}`;
+        const ws = chars.map((ch) => g.measureText(ch).width);
+        return { ws, total: ws.reduce((a, b) => a + b + track, 0) - track };
+      };
+      let m = measure();
+      while ((m.total / r) * (180 / Math.PI) > maxDeg && px > 12) {
+        px -= 2;
+        m = measure();
+      }
+      g.textAlign = "center";
+      const centre = bottom ? Math.PI / 2 : -Math.PI / 2;
+      let cum = 0;
+      chars.forEach((ch, i) => {
+        const w = m.ws[i];
+        const off = cum + w / 2 - m.total / 2;
+        cum += w + track;
+        const a = bottom ? centre - off / r : centre + off / r;
+        const x = mid + r * Math.cos(a);
+        const y = mid + r * Math.sin(a);
+        const rot = bottom ? a - Math.PI / 2 : a + Math.PI / 2;
+        // engraved: light catches the lower edge, shadow sits in the upper edge
+        const pass = (dx: number, dy: number, color: string) => {
+          g.save();
+          g.translate(x + dx, y + dy);
+          g.rotate(rot);
+          g.fillStyle = color;
+          g.fillText(ch, 0, 0);
+          g.restore();
+        };
+        pass(1.5, 1.5, "rgba(255,255,255,0.45)"); // highlight
+        pass(-1, -1, "rgba(0,0,0,0.55)"); // inner shadow
+        pass(0, 0, "rgba(0,0,0,0.28)"); // recessed fill
+      });
+    };
+
+    const ringR = mid * 0.8; // one shared radius, so the top and bottom text mirror each other
+    arcText(item.title, ringR, false, 30, 700, 5, 150); // top: title
+    arcText([item.creator, item.year].filter(Boolean).join("  ·  "), ringR, true, 28, 500, 5, 150); // bottom: artist · year
+  }
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  return tex;
+}
+
+function VinylRecord({ item }: { item: LoreItem }) {
+  const { scene } = useGLTF(VINYL_MODEL, false);
+  const cover = useTexture(item.image);
+
+  const obj = useMemo(() => {
+    const root = scene.clone(true);
+
+    // the file is exported tilted by Information 47°, so clear that and the record faces the camera
+    const tilted = root.children[0];
+    if (tilted) {
+      tilted.position.set(0, 0, 0);
+      tilted.quaternion.identity();
+      tilted.scale.set(1, 1, 1);
+    }
+
+    const originals: THREE.MeshStandardMaterial[] = [];
+    root.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.raycast = () => {};
+      const base = mesh.material as THREE.MeshStandardMaterial;
+      originals.push(base);
+      const mat = base.clone();
+      mat.userData.fade = true; // the scene fades sleeves in and out at the ends of the row
+      // discard everything inside CLEAR_R so the original label and surface disappear from the centre
+      mat.onBeforeCompile = (s) => {
+        s.uniforms.uCut = { value: CLEAR_R };
+        s.vertexShader = s.vertexShader
+          .replace("#include <common>", "#include <common>\nvarying vec3 vLocal;")
+          .replace("#include <begin_vertex>", "#include <begin_vertex>\nvLocal = position;");
+        s.fragmentShader = s.fragmentShader
+          .replace("#include <common>", "#include <common>\nvarying vec3 vLocal;\nuniform float uCut;")
+          .replace("#include <clipping_planes_fragment>", "#include <clipping_planes_fragment>\nif (length(vLocal.xy) < uCut) discard;");
+      };
+      mat.customProgramCacheKey = () => "vinyl-hole";
+      mesh.material = mat;
+    });
+
+    // the cover goes over the black surface on both faces, reusing the record's own shine
+    const texFront = labelTexture(cover.image as HTMLImageElement, item); // front carries the text
+    const texBack = solidTexture(dominantColor(cover.image as HTMLImageElement)); // back is the cover's dominant colour
+    texFront.channel = 1; // the cover uses its own UV set, the record's textures keep theirs
+    texBack.channel = 1;
+    const addLabel = (front: boolean) => {
+      const geo = new THREE.RingGeometry(COVER_INNER, COVER_OUTER, 180);
+      geo.setAttribute("uv1", geo.attributes.uv.clone()); // the cover's own mapping
+      if (!front) geo.rotateY(Math.PI); // faces the other way, still reads the right way round
+
+      // swap the main UVs for the record's own, so its original roughness carries over
+      const p = geo.attributes.position;
+      const uv = geo.attributes.uv;
+      for (let i = 0; i < p.count; i++) {
+        const [u, v] = (front ? FRONT_UV : BACK_UV)(p.getX(i), p.getY(i));
+        uv.setXY(i, u, v);
+      }
+
+      const mat = originals[0].clone();
+      mat.map = front ? texFront : texBack;
+      mat.aoMap = null;
+      mat.polygonOffset = true;
+      mat.polygonOffsetFactor = -2;
+      mat.polygonOffsetUnits = -2;
+      mat.userData.fade = true;
+      const label = new THREE.Mesh(geo, mat);
+      label.raycast = () => {};
+      label.position.z = front ? FACE_Z + 0.0004 : -0.0004;
+      root.add(label);
+    };
+    addLabel(true);
+    addLabel(false);
+
+    // silver hub band on both faces, same look as the CD's
+    const addHub = (front: boolean) => {
+      const geo = new THREE.RingGeometry(CLEAR_R, HUB_R, 96);
+      if (!front) geo.rotateY(Math.PI);
+      const mat = new THREE.MeshPhysicalMaterial({
+        color: "#c4c4c8",
+        metalness: 1,
+        roughness: 0.25,
+        envMapIntensity: 1,
+        polygonOffset: true,
+        polygonOffsetFactor: -4,
+        polygonOffsetUnits: -4,
+      });
+      mat.userData.fade = true;
+      const hub = new THREE.Mesh(geo, mat);
+      hub.raycast = () => {};
+      hub.position.z = front ? FACE_Z + 0.0008 : -0.0008;
+      root.add(hub);
+    };
+    addHub(true);
+    addHub(false);
+
+    // silver outer border, same material as the hub band
+    const silverMat = () => {
+      const m = new THREE.MeshPhysicalMaterial({
+        color: "#c4c4c8",
+        metalness: 1,
+        roughness: 0.25,
+        envMapIntensity: 1,
+        side: THREE.DoubleSide,
+        polygonOffset: true,
+        polygonOffsetFactor: -4,
+        polygonOffsetUnits: -4,
+      });
+      m.userData.fade = true;
+      return m;
+    };
+    const addRim = (front: boolean) => {
+      const geo = new THREE.RingGeometry(COVER_OUTER - 0.0005, VINYL_R, 180);
+      if (!front) geo.rotateY(Math.PI);
+      const rim = new THREE.Mesh(geo, silverMat());
+      rim.raycast = () => {};
+      rim.position.z = front ? FACE_Z + 0.0008 : -0.0008;
+      root.add(rim);
+    };
+    addRim(true);
+    addRim(false);
+
+    // silver side wall
+    const wallGeo = new THREE.CylinderGeometry(VINYL_R, VINYL_R, FACE_Z + 0.0016, 180, 1, true);
+    wallGeo.rotateX(Math.PI / 2);
+    const wall = new THREE.Mesh(wallGeo, silverMat());
+    wall.raycast = () => {};
+    wall.position.z = FACE_Z / 2;
+    root.add(wall);
+
+    // clear plastic ring around the hole, the page shows through it
+    const clearMat = new THREE.MeshPhysicalMaterial({
+      color: "#dfe8ee",
+      transparent: true,
+      opacity: 0.3,
+      roughness: 0.04,
+      metalness: 0,
+      clearcoat: 1,
+      clearcoatRoughness: 0.02,
+      envMapIntensity: 3,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+    clearMat.userData.fade = true;
+    clearMat.userData.baseOpacity = 0.3;
+    const clear = new THREE.Mesh(new THREE.RingGeometry(HOLE_R, CLEAR_R, 96), clearMat);
+    clear.raycast = () => {};
+    clear.position.z = FACE_Z / 2;
+    root.add(clear);
+
+    // centre it and scale to span 2 world units like the sleeve
+    const box = new THREE.Box3().setFromObject(root);
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    root.position.sub(center);
+
+    const wrapper = new THREE.Group();
+    wrapper.add(root);
+    wrapper.scale.setScalar(2 / Math.max(size.x, size.y));
+    return wrapper;
+  }, [scene, cover]);
+
+  return <primitive object={obj} />;
+}
 
 // ---- tune the feel here ----
-const BASE = 0.3; // centre sleeve width, as a fraction of the stage width
+const BASE = 0.5; // centre sleeve width, as a fraction of the stage width
 const GROW = 0.25; // each step to the right is this much bigger
 const GROW_L = 0.22; // each step to the left is this much smaller
 const XA_L = 0.8; // now only sets how fast the left side drops (y), not the spacing
-const GAP_L = 0.02; // gap between neighbouring sleeves on the left (fraction of stage width)
+const GAP_L = 0.004; // gap between neighbouring sleeves on the left (fraction of stage width)
 const XA = 0.285; // horizontal travel per step (fraction of stage width)
 const KAPPA = 0.35; // how much the spacing widens toward the right
 const Y0 = 0.51; // centre sleeve height (fraction of stage height from the top)
@@ -27,6 +448,7 @@ const ROLL = 0.2; // rest in-plane roll
 const Z_STEP = 400; // depth gap between neighbouring sleeves, so tilted ones can't intersect
 const Z_LIFT = 500; // extra pull toward the camera while a sleeve is grabbed or flipping
 const STEP_YAW = -0.1; // extra yaw per step away from the centre
+const STEP_PITCH = -0.1; // extra pitch per step to the right (negative tips the face up, left sleeves tip down more)
 const HOVER = 0.22; // how far the sleeve under the cursor leans toward it, radians
 const ROT_SENS = 0.012; // radians turned per dragged px when you grab a sleeve
 const STEP_PX = 300; // dragging empty space: design px per sleeve
@@ -94,7 +516,66 @@ function coverTexture(src: HTMLImageElement) {
   return tex;
 }
 
+// ---- CD border ----
+const CD_RIM = 0.03; // outer border width, as a fraction of the disc radius
+const CD_EDGE = "#7a7a80"; // colour of the disc's thin side wall
+const CD_SILVER = ["#8e8e94", "#5c5c62", "#7e7e84", "#4a4a50", "#92929a", "#606066", "#76767c", "#52525a"]; // sheen stops around the rim
+const CD_R = 0.9148; // the disc's outer radius in model units
+const CD_HOLE = 0.125 * CD_R; // centre hole
+const CD_CLEAR = 0.2 * CD_R; // hole to here is clear plastic
+const CD_HUB = 0.27 * CD_R; // CD_CLEAR to here is the silver hub band
+const CD_CLEAR_OPACITY = 0.3; // lower = more see-through
+
+// prints the cover inside a silver border
+function cdFaceTexture(src: HTMLImageElement) {
+  const S = 2048;
+  const c = document.createElement("canvas");
+  c.width = c.height = S;
+  const g = c.getContext("2d")!;
+  g.imageSmoothingEnabled = true;
+  g.imageSmoothingQuality = "high";
+  const mid = S / 2;
+  const R = 0.4826 * S; // disc radius in texture px (the model's UVs span 0.0174 to 0.9826)
+
+  // the art across the whole disc area
+  const side = Math.min(src.width, src.height);
+  g.drawImage(src, (src.width - side) / 2, (src.height - side) / 2, side, side, mid - R, mid - R, R * 2, R * 2);
+
+  // silver border: everything outside the inner circle, with a metallic sheen going around it
+  let paint: string | CanvasGradient = "#c4c4c8";
+  if (g.createConicGradient) {
+    const grad = g.createConicGradient(0, mid, mid);
+    CD_SILVER.forEach((col, i) => grad.addColorStop(i / CD_SILVER.length, col));
+    grad.addColorStop(1, CD_SILVER[0]);
+    paint = grad;
+  }
+  const inner = R * (1 - CD_RIM);
+  g.fillStyle = paint;
+  g.beginPath();
+  g.rect(0, 0, S, S);
+  g.moveTo(mid + inner, mid);
+  g.arc(mid, mid, inner, 0, TAU);
+  g.fill("evenodd");
+
+  // silver band around the hub, same sheen as the outer border
+  g.fillStyle = paint;
+  g.beginPath();
+  g.arc(mid, mid, R * (CD_HUB / CD_R), 0, TAU);
+  g.moveTo(mid + R * (CD_CLEAR / CD_R), mid);
+  g.arc(mid, mid, R * (CD_CLEAR / CD_R), 0, TAU, true);
+  g.fill("evenodd");
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 16;
+  return tex; // flipY stays at its default (true), which is what this model's UVs need
+}
+
 export function VinylDisc({ item }: { item: LoreItem }) {
+  return item.kind === "Single" ? <VinylRecord item={item} /> : <SleeveDisc item={item} />;
+}
+
+function SleeveDisc({ item }: { item: LoreItem }) {
   const { scene } = useGLTF(MODEL, false);
   const cover = useTexture(item.image);
 
@@ -110,7 +591,6 @@ export function VinylDisc({ item }: { item: LoreItem }) {
       mesh.raycast = () => {};
 
       const original = mesh.material as THREE.MeshStandardMaterial;
-      console.log("sleeve part:", mesh.name, "| material:", original.name);
 
       // drop the shrink-wrap overlay entirely
       if (original.name === "ShrinkWrap") {
@@ -222,7 +702,7 @@ function Scene({ items, pos, invalidateRef, flip, turn, hover, pickRef, intro, o
     const n = items.length;
     const m = motionOn() ? 1 : 0;
     const ease = 1 - Math.exp(-Math.min(dt, 0.05) * 10);
-    const side0 = Math.min(BASE * W, 0.62 * H);
+    const side0 = Math.min(BASE * W, 0.66 * H);
     let busy = false;
 
     for (let i = 0; i < n; i++) {
@@ -239,8 +719,9 @@ function Scene({ items, pos, invalidateRef, flip, turn, hover, pickRef, intro, o
       g.traverse((obj) => {
         const mat = (obj as THREE.Mesh).material as THREE.Material | undefined;
         if (mat?.userData?.fade) {
-          mat.opacity = a;
-          mat.transparent = a < 0.999;
+          const base = mat.userData.baseOpacity ?? 1;
+          mat.opacity = a * base;
+          mat.transparent = a * base < 0.999;
         }
       });
 
@@ -267,7 +748,7 @@ function Scene({ items, pos, invalidateRef, flip, turn, hover, pickRef, intro, o
 
       // resting pose, plus the hover lean
       _qBase.setFromEuler(
-        _e.set(TILT_X * m + l.y * HOVER * m, (TILT_Y + o * STEP_YAW) * m + l.x * HOVER * m, ROLL * m, "YXZ")
+        _e.set((TILT_X + Math.max(o, 0) * STEP_PITCH) * m + l.y * HOVER * m, (TILT_Y + o * STEP_YAW) * m + l.x * HOVER * m, ROLL * m, "YXZ")
       );
 
       // your own turning (grab) and the click-flip, applied in screen space on top
@@ -481,7 +962,7 @@ export default function DiscWheel({ items, activeIndex, onChange }: DiscWheelPro
 
     const onMove = (e: PointerEvent) => {
       if (!dragging) {
-        if (!document.querySelector(".drawer")) updateHover(e);
+        if (!document.querySelector(".drawer.is-open")) updateHover(e);
         return;
       }
       const dx = e.clientX - startX;
@@ -561,7 +1042,7 @@ export default function DiscWheel({ items, activeIndex, onChange }: DiscWheelPro
 
     const onKey = (e: KeyboardEvent) => {
       const n = countRef.current;
-      if (!n || document.querySelector(".drawer")) return;
+      if (!n || document.querySelector(".drawer.is-open")) return;
       if (e.key === "ArrowRight") goTo(mod(activeRef.current + 1, n));
       if (e.key === "ArrowLeft") goTo(mod(activeRef.current - 1, n));
     };

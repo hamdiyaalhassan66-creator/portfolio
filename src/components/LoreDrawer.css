@@ -148,15 +148,15 @@
 .drawer__row {
   display: flex;
   align-items: center;
-  gap: 40px;
+  gap: 0;
   width: 100%;
   height: 40px;
-  padding: 4px 0 4px 36px;
+  padding: 4px 0;
   background: none;
   border: 0;
   cursor: pointer;
   text-align: left;
-  font: 550 14px/17px var(--font-sans);
+  font: 550 13px/17px var(--font-sans);
   letter-spacing: -0.01em;
   color: var(--fg);
 }
@@ -168,9 +168,25 @@
   color: rgba(46, 29, 17, 0.4);
 }
 
+.drawer__lead {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  color: rgba(46, 29, 17, 0.15);
+}
+
+.drawer__row.is-playing .drawer__lead {
+  color: var(--blue);
+}
+
 .drawer__num {
   width: 20px;
   flex: none;
+  margin-right: 40px;
+  font-size: 12px;
   color: rgba(46, 29, 17, 0.6);
 }
 
@@ -185,6 +201,7 @@
 .drawer__time {
   margin-left: auto;
   text-align: right;
+  font-size: 12px;
   color: rgba(46, 29, 17, 0.6);
 }
 
@@ -221,6 +238,9 @@
   flex: none;
   width: 48px;
   height: 48px;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
   background: var(--blue);
   color: var(--bg);
 }
@@ -248,6 +268,67 @@
 }
 
 .drawer__progress {
+  position: relative;
   height: 4px;
   background: rgba(46, 29, 17, 0.15);
+  cursor: pointer;
+  touch-action: none;
+}
+
+/* taller invisible hit area so the 4px bar is easy to grab */
+.drawer__progress::before {
+  content: "";
+  position: absolute;
+  inset: -10px 0;
+}
+
+.drawer__progress-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: calc((100% - 4px) * var(--p));
+  background: var(--blue);
+}
+
+.drawer__progress-thumb {
+  position: absolute;
+  top: -2px;
+  left: calc((100% - 4px) * var(--p));
+  width: 4px;
+  height: 8px;
+  background: #2e1d11;
+}
+
+.drawer__progress:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 6px;
+}
+
+/* equalizer icon */
+.wave__bar {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scaleY(var(--s));
+}
+
+.wave.is-active .wave__bar {
+  animation: wave 0.9s ease-in-out infinite;
+  animation-delay: var(--d);
+}
+
+@keyframes wave {
+  0%,
+  100% {
+    transform: scaleY(var(--s));
+  }
+  50% {
+    transform: scaleY(var(--p));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wave.is-active .wave__bar {
+    animation: none;
+  }
 }

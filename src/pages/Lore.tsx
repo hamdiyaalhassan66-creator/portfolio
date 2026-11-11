@@ -1,5 +1,5 @@
-import { useState, type CSSProperties } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useState, type CSSProperties } from "react";
+import { Link, useLocation } from "react-router-dom";
 import DiscWheel from "../components/DiscWheel";
 import LoreDrawer from "../components/LoreDrawer";
 import { getLoreItems, type LoreCategory } from "../data/lore";
@@ -9,6 +9,7 @@ const tabs: { id: LoreCategory; label: string }[] = [
   { id: "music", label: "Music" },
   { id: "films", label: "Films" },
   { id: "books", label: "Illustrated Books" },
+  { id: "photos", label: "Photographs" },
 ];
 
 const middle = (count: number) => Math.max(0, Math.floor((count - 1) / 2));
@@ -17,9 +18,16 @@ const middle = (count: number) => Math.max(0, Math.floor((count - 1) / 2));
 const d = (i: number) => ({ "--i": i }) as CSSProperties;
 
 export default function Lore() {
-  const [category, setCategory] = useState<LoreCategory>("music");
-  const [activeIndex, setActiveIndex] = useState(() => middle(getLoreItems("music").length));
+  const location = useLocation();
+  const start = (location.state as { category?: LoreCategory } | null)?.category ?? "music";
+  const [category, setCategory] = useState<LoreCategory>(start);
+  const [activeIndex, setActiveIndex] = useState(() => middle(getLoreItems(start).length));
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [warmId, setWarmId] = useState<string | null>(null); // item whose drawer is pre-mounted hidden
+  const closeDrawer = useCallback(() => {
+    setDrawerOpen(false);
+    setWarmId(null);
+  }, []);
 
   const items = getLoreItems(category);
   const active = items[activeIndex];
@@ -34,6 +42,38 @@ export default function Lore() {
   return (
     <main className="lore">
       <h1 className="sr-only">The Lore</h1>
+
+      <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
+        <filter
+          id="lore-glass"
+          x="0"
+          y="0"
+          width="100%"
+          height="100%"
+          colorInterpolationFilters="sRGB"
+        >
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.003 0.008"
+            numOctaves="1"
+            seed="3"
+            result="map"
+          />
+          <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="frost" />
+
+          <feDisplacementMap in="frost" in2="map" scale="9" xChannelSelector="R" yChannelSelector="G" result="dR" />
+          <feColorMatrix in="dR" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="r" />
+
+          <feDisplacementMap in="frost" in2="map" scale="11" xChannelSelector="R" yChannelSelector="G" result="dG" />
+          <feColorMatrix in="dG" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="g" />
+
+          <feDisplacementMap in="frost" in2="map" scale="13" xChannelSelector="R" yChannelSelector="G" result="dB" />
+          <feColorMatrix in="dB" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="b" />
+
+          <feBlend in="r" in2="g" mode="screen" result="rg" />
+          <feBlend in="rg" in2="b" mode="screen" />
+        </filter>
+      </svg>
 
       <section className="lore__intro">
         <p className="lore__text">
@@ -108,6 +148,8 @@ export default function Lore() {
                 className="lore__info rise"
                 style={d(3)}
                 aria-expanded={drawerOpen}
+                onPointerEnter={() => setWarmId(active.id)}
+                onFocus={() => setWarmId(active.id)}
                 onClick={() => setDrawerOpen(true)}
               >
                 Info
@@ -144,7 +186,9 @@ export default function Lore() {
         Leave me your recommendations
       </Link>
 
-      {drawerOpen && active && <LoreDrawer item={active} onClose={() => setDrawerOpen(false)} />}
+      {active && (drawerOpen || warmId === active.id) && (
+        <LoreDrawer key={active.id} item={active} open={drawerOpen} onClose={closeDrawer} />
+      )}
     </main>
   );
 }

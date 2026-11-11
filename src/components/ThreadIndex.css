@@ -1,0 +1,47 @@
+.threads {
+  position: relative;
+  height: 880px;
+}
+
+.threads__title {
+  position: absolute;
+  left: 24px;
+  top: 45px;
+  width: 431px;
+  margin: 0;
+  font: 550 32px/39px "Inter", sans-serif;
+  letter-spacing: -0.02em;
+  color: var(--blue);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.thread-item {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+  display: block;
+  transform: scale(var(--grow, 1));
+  box-shadow: 0 6px 18px rgba(46, 29, 17, 0.18);
+  scale: 1;
+  transition: scale 0.25s ease;
+  cursor: pointer;
+}
+.thread-item:hover { scale: 1.07; }
+
+.thread-item { box-shadow: none; }
+.thread-item__model {
+  position: absolute !important;
+  left: -30%;
+  top: -30%;
+  width: 160% !important;
+  height: 160% !important;
+  pointer-events: none;
+}
+.thread-item__ph {
+  width: 100%;
+  height: 100%;
+  border: 1px dashed rgba(46, 29, 17, 0.4);
+  background: rgba(46, 29, 17, 0.04);
+}

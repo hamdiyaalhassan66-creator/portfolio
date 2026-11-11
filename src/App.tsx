@@ -3,7 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import Home from "./pages/Home";
 import Work from "./pages/Work";
-import About from "./pages/About";
+import Information from "./pages/Information";
 import Contact from "./pages/Contact";
 
 const Lab = lazy(() => import("./pages/Lab"));
@@ -19,7 +19,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/work" element={<Work />} />
           <Route path="/lab" element={<Lab />} />
-          <Route path="/information" element={<About />} />
+          <Route path="/information" element={<Information />} />
           <Route path="/lore" element={<Lore />} />
           <Route path="/contact" element={<Contact />} />
         </Routes>

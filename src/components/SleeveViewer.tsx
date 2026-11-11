@@ -4,9 +4,10 @@ import { Environment, Lightformer } from "@react-three/drei";
 import type { LoreItem } from "../data/lore";
 import { VinylDisc } from "./DiscWheel";
 
-export default function SleeveViewer({ item }: { item: LoreItem }) {
+export default function SleeveViewer({ item, ready }: { item: LoreItem; ready: boolean }) {
   return (
     <div className="drawer__model">
+      {ready && (
       <Canvas
         frameloop="demand"
         flat
@@ -28,6 +29,7 @@ export default function SleeveViewer({ item }: { item: LoreItem }) {
           </group>
         </Suspense>
       </Canvas>
+      )}
     </div>
   );
 }
