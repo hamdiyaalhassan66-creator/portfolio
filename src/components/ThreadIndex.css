@@ -1,19 +1,59 @@
 .threads {
   position: relative;
-  height: 880px;
+  height: 100vh;
+  overflow: clip; /* nothing inside the section can widen the page */
 }
 
 .threads__title {
   position: absolute;
   left: 24px;
-  top: 45px;
-  width: 431px;
+  top: 24px;
   margin: 0;
-  font: 550 32px/39px "Inter", sans-serif;
+  font: 600 20px/23px var(--font-sans);
   letter-spacing: -0.02em;
   color: var(--blue);
   z-index: 3;
   pointer-events: none;
+}
+
+/* label for the hovered model, top right, level with the title */
+.threads__tag {
+  position: absolute;
+  right: 24px;
+  top: 24px;
+  height: 23px; /* same line box as the title so they sit level */
+  margin: 0;
+  display: flex;
+  align-items: center;
+  font: 500 13px/1 var(--font-mono, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
+  letter-spacing: 0.02em;
+  color: var(--blue);
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.threads__tag.is-on {
+  opacity: 1;
+}
+
+/* the big cut-off wordmark */
+.threads__brand {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -8vw; /* cut off at the bottom of the page */
+  margin: 0;
+  font: 550 18.15vw/1.21 var(--font-sans);
+  font-variation-settings: "slnt" 0;
+  letter-spacing: -0.09em;
+  text-align: center;
+  white-space: nowrap;
+  color: #f8f7f5; /* page background */
+  filter: blur(8px);
+  z-index: 0; /* behind the models, above the glows */
+  pointer-events: none;
+  user-select: none;
 }
 
 .thread-item {
@@ -33,15 +73,207 @@
 .thread-item { box-shadow: none; }
 .thread-item__model {
   position: absolute !important;
-  left: -30%;
-  top: -30%;
-  width: 160% !important;
-  height: 160% !important;
-  pointer-events: none;
+  left: -50%;
+  top: -50%;
+  width: 200% !important;
+  height: 200% !important;
+  pointer-events: none !important;
 }
 .thread-item__ph {
   width: 100%;
   height: 100%;
   border: 1px dashed rgba(46, 29, 17, 0.4);
   background: rgba(46, 29, 17, 0.04);
+}
+
+/* background decorations: not clickable, no grow, but they can show a label on hover */
+.thread-item--decor {
+  cursor: default;
+}
+.thread-item--decor:hover {
+  scale: 1;
+}
+
+/* smaller click/hover area for items that sit in front of the head */
+.thread-item__hit {
+  position: absolute;
+  left: 30%;
+  top: 50%;
+  width: 40%;
+  height: 28%;
+  pointer-events: var(--hit, none);
+}
+
+/* gradient that rises from the bottom once you reach the end of the page */
+.threads__aurora {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask: linear-gradient(to bottom, transparent 0%, #000 24%);
+  mask: linear-gradient(to bottom, transparent 0%, #000 24%);
+}
+.au {
+  position: absolute;
+  display: block;
+}
+
+.aurora__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0.5;
+}
+
+.threads__body {
+  position: absolute;
+  left: 24px; /* match .threads__title's left */
+  top: 54px; /* just under the title; nudge to taste */
+  width: calc(100% - 48px); /* 24px of space on each side, so it never overflows on small screens */
+  max-width: 691px; /* same as the top intro paragraph */
+  margin: 0;
+  z-index: 1;
+  font: 400 13px/1.35 var(--font-mono);
+  letter-spacing: -0.01em;
+}
+
+.threads__title {
+  position: absolute;
+  left: 24px;
+  top: 24px;
+  margin: 0;
+  font: 600 20px/23px var(--font-sans);
+  letter-spacing: -0.02em;
+  color: var(--blue);
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* label for the hovered model, top right, level with the title */
+.threads__tag {
+  position: absolute;
+  right: 24px;
+  top: 24px;
+  height: 23px; /* same line box as the title so they sit level */
+  margin: 0;
+  display: flex;
+  align-items: center;
+  font: 500 13px/1 var(--font-mono, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
+  letter-spacing: 0.02em;
+  color: var(--blue);
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.threads__tag.is-on {
+  opacity: 1;
+}
+
+/* the big cut-off wordmark */
+.threads__brand {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -8vw; /* cut off at the bottom of the page */
+  margin: 0;
+  font: 550 18.15vw/1.21 var(--font-sans);
+  font-variation-settings: "slnt" 0;
+  letter-spacing: -0.09em;
+  text-align: center;
+  white-space: nowrap;
+  color: #f8f7f5; /* page background */
+  filter: blur(8px);
+  z-index: 0; /* behind the models, above the glows */
+  pointer-events: none;
+  user-select: none;
+}
+
+.thread-item {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+  display: block;
+  transform: scale(var(--grow, 1));
+  box-shadow: 0 6px 18px rgba(46, 29, 17, 0.18);
+  scale: 1;
+  transition: scale 0.25s ease;
+  cursor: pointer;
+}
+.thread-item:hover { scale: 1.07; }
+
+.thread-item { box-shadow: none; }
+.thread-item__model {
+  position: absolute !important;
+  left: -50%;
+  top: -50%;
+  width: 200% !important;
+  height: 200% !important;
+  pointer-events: none !important;
+}
+.thread-item__ph {
+  width: 100%;
+  height: 100%;
+  border: 1px dashed rgba(46, 29, 17, 0.4);
+  background: rgba(46, 29, 17, 0.04);
+}
+
+/* background decorations: not clickable, no grow, but they can show a label on hover */
+.thread-item--decor {
+  cursor: default;
+}
+.thread-item--decor:hover {
+  scale: 1;
+}
+
+/* smaller click/hover area for items that sit in front of the head */
+.thread-item__hit {
+  position: absolute;
+  left: 30%;
+  top: 50%;
+  width: 40%;
+  height: 28%;
+  pointer-events: var(--hit, none);
+}
+
+/* gradient that rises from the bottom once you reach the end of the page */
+.threads__aurora {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask: linear-gradient(to bottom, transparent 0%, #000 24%);
+  mask: linear-gradient(to bottom, transparent 0%, #000 24%);
+}
+.au {
+  position: absolute;
+  display: block;
+}
+
+.aurora__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0.5;
+}
+
+.threads__body {
+  position: absolute;
+  left: 24px; /* match .threads__title's left */
+  top: 54px; /* just under the title; nudge to taste */
+  width: calc(100% - 48px); /* 24px of space on each side, so it never overflows on small screens */
+  max-width: 691px; /* same as the top intro paragraph */
+  margin: 0;
+  z-index: 1;
+  font: 400 13px/1.35 var(--font-mono);
+  letter-spacing: -0.01em;
 }

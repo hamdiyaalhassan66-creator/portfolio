@@ -47,8 +47,8 @@
   gap: 8px;
   flex: 1;
   padding: 10px;
-  background: #E3E6F7;
-  color: var(--blue);
+  background: #EFE9E7;
+  color: var(--fg);
   text-decoration: none;
   text-transform: uppercase;
   font: 500 13px/15px var(--font-mono);
@@ -70,4 +70,128 @@
   width: 14px;
   height: 14px;
   flex: none;
+}
+
+/* the mobile menu is hidden on desktop */
+.header__menu,
+.menu {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .header__logo {
+    width: auto;
+    padding: 10px 12px;
+  }
+  .header__nav {
+    display: none; /* the tabs live in the menu on small screens */
+  }
+
+  .header__menu {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 48px;
+    margin-left: auto;
+    padding: 0;
+    border: 0;
+    background: var(--blue);
+    color: var(--bg);
+    cursor: pointer;
+  }
+  .header__menu:focus-visible {
+    outline: 2px solid var(--fg);
+    outline-offset: -4px;
+  }
+
+  /* bottom sheet */
+  .menu {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    visibility: hidden;
+    transition: visibility 0s 0.35s; /* stays visible while it slides away */
+  }
+  .menu.is-open {
+    visibility: visible;
+    transition-delay: 0s;
+  }
+  .menu__backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: rgba(46, 29, 17, 0.45);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .menu.is-open .menu__backdrop {
+    opacity: 1;
+  }
+  /* drawer that drops down from the top, styled like the header and the lore drawer */
+  .menu__panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #EFE9E7; /* fills the 2px gaps between the links */
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    transform: translateY(-100%);
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .menu.is-open .menu__panel {
+    transform: none;
+  }
+  .menu__bar {
+    display: flex;
+    gap: 2px;
+    height: 48px;
+  }
+  .menu__title {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    background: #E3E6F7;
+    color: var(--blue);
+    font: 600 14px/1 var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+  }
+  .menu__close {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    padding: 0;
+    border: 0;
+    background: #E8E4E1;
+    color: var(--fg);
+    cursor: pointer;
+  }
+  .menu__link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 12px;
+    background: #EFE9E7;
+    color: var(--fg);
+    text-decoration: none;
+    text-transform: uppercase;
+    font: 500 18px/1 var(--font-mono);
+    letter-spacing: -0.01em;
+  }
+  .menu__link .header__icon {
+    width: 18px;
+    height: 18px;
+  }
+  .menu__link.is-active {
+    background: var(--blue);
+    color: var(--bg);
+  }
 }

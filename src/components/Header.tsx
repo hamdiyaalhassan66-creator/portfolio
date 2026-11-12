@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import "./Header.css";
 
@@ -27,7 +28,26 @@ const links = [
 ];
 
 export default function Header() {
+  const [open, setOpen] = useState(false);
+
+  // while the menu is open: lock page scroll, close on Escape, and close if the screen grows to desktop size
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const key = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    const size = () => window.innerWidth > 900 && setOpen(false);
+    window.addEventListener("keydown", key);
+    window.addEventListener("resize", size);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", key);
+      window.removeEventListener("resize", size);
+    };
+  }, [open]);
+
   return (
+    <>
     <header className="header">
       <Link to="/" className="header__logo" aria-label="Dee-Space home">
         <span className="header__logo-mark">D-S</span>
@@ -40,6 +60,8 @@ export default function Header() {
             key={to}
             to={to}
             end={to === "/"}
+            aria-label={label}
+            title={label}
             className={({ isActive }) => "header__link" + (isActive ? " is-active" : "")}
           >
             <svg className="header__icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -49,6 +71,49 @@ export default function Header() {
           </NavLink>
         ))}
       </nav>
+
+      <button
+        type="button"
+        className="header__menu"
+        aria-label="Open menu"
+        aria-expanded={open}
+        aria-controls="menu-sheet"
+        onClick={() => setOpen(true)}
+      >
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+          <path d="M2 5h14M2 9h14M2 13h14" />
+        </svg>
+      </button>
     </header>
+
+    <div className={"menu" + (open ? " is-open" : "")} id="menu-sheet" aria-hidden={!open}>
+      <button type="button" className="menu__backdrop" aria-label="Close menu" tabIndex={open ? 0 : -1} onClick={() => setOpen(false)} />
+      <nav className="menu__panel" aria-label="Main">
+        <div className="menu__bar">
+          <span className="menu__title">Menu</span>
+          <button type="button" className="menu__close" aria-label="Close menu" tabIndex={open ? 0 : -1} onClick={() => setOpen(false)}>
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M3 8h10" stroke="currentColor" strokeWidth="2" />
+            </svg>
+          </button>
+        </div>
+        {links.map(({ to, label, icon }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={to === "/"}
+            tabIndex={open ? 0 : -1}
+            className={({ isActive }) => "menu__link" + (isActive ? " is-active" : "")}
+            onClick={() => setOpen(false)}
+          >
+            <svg className="header__icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+              {icons[icon]}
+            </svg>
+            {label}
+          </NavLink>
+        ))}
+      </nav>
+    </div>
+    </>
   );
 }

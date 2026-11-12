@@ -1,22 +1,63 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import ThreadIndex from "../components/ThreadIndex";
+import Bobblehead from "../components/Bobblehead";
+import Lanyard from "../components/Lanyard";
 import "./Information.css";
 
-const PORTRAIT = "/information/portrait.png"; // the cut-out head shot, used for both portraits
+// the cut-out head shots; hovering the head steps to the next one
+const PORTRAITS = [
+  "/information/portrait.png",
+  "/information/portrait-2.png",
+  "/information/portrait-3.png",
+  "/information/portrait-4.png",
+];
 
 const WORK = [
-  { place: "Refine Studio", role: "Product Designer", years: "2024 - 2025" },
-  { place: "Refine Studio", role: "Product Designer", years: "2024 - 2025" },
-  { place: "Refine Studio", role: "Product Designer", years: "2024 - 2025" },
-]; // placeholder rows, swap in the real ones
+  { role: "Product Designer", place: "Refine Studio", years: "2024 - 2025" },
+  { role: "Web Designer & Framer Developer", place: "Oxegene", years: "2023 - Present" },
+  { role: "UI/UX Designer", place: "Freelance", years: "2022 - Present" },
+];
 
 export default function Information() {
   const headRef = useRef<HTMLDivElement>(null);
+  const [face, setFace] = useState(0);
+  const timer = useRef<number | undefined>(undefined);
+
+  const stop = () => {
+    window.clearInterval(timer.current);
+    timer.current = undefined;
+  };
+
+  const handleEnter = () => {
+    if (timer.current !== undefined) return;
+    setFace((f) => (f + 1) % PORTRAITS.length); // step right away
+    timer.current = window.setInterval(() => {
+      setFace((f) => (f + 1) % PORTRAITS.length);
+    }, 150); // change 150 to speed up or slow down
+  };
+
+  useEffect(() => stop, []); // clear on unmount
+  useEffect(() => {
+    PORTRAITS.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    }); // preload so the swap never flashes
+  }, []);
   return (
     <main className="information">
-      <div className="information__head" ref={headRef}>
-        <img src={PORTRAIT} alt="Portrait of Dee" draggable={false} />
+      <div
+        className="information__head"
+        ref={headRef}
+        onPointerEnter={handleEnter}
+        onPointerLeave={stop}
+      >
+        <img
+          src={PORTRAITS[face]}
+          alt="Portrait of Dee"
+          draggable={false}
+        />
       </div>
+      <Bobblehead />
       <div className="information__top">
         <div className="information__intro">
           <p>
@@ -41,7 +82,7 @@ export default function Information() {
             intentional and relevant. I refine each project according to how I think and see things
           </p>
           <p>
-            Currently, I work remotely as a freelancer, but I’m also opened to any <em>full-time opportunities</em>.
+            I’m opened to any<em> freelance projects, collaborations, or full-time opportunities</em>.
           </p>
         </div>
 
@@ -51,8 +92,8 @@ export default function Information() {
             {WORK.map((w, i) => (
               <div className="information__job" key={i}>
                 <div>
+                  <div className="information__role">{w.role}</div>
                   <div>{w.place}</div>
-                  <div>{w.role}</div>
                 </div>
                 <span className="information__dash" />
                 <span className="information__years">{w.years}</span>
@@ -61,6 +102,7 @@ export default function Information() {
           </div>
         </div>
 
+        <Lanyard />
       </div>
 
       <ThreadIndex headRef={headRef} />

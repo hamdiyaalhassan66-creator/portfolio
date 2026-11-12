@@ -1,14 +1,14 @@
-import { Suspense, useEffect, useMemo, useRef } from "react";
+import { Fragment, Suspense, useEffect, useMemo, useRef } from "react";
 import type { ReactNode, RefObject } from "react";
 import { Link } from "react-router-dom";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Box3, SRGBColorSpace, TextureLoader, Vector3 } from "three";
+import { Canvas, createPortal, useFrame } from "@react-three/fiber";
+import { Environment, Lightformer, Text, useGLTF } from "@react-three/drei";
+import { Box3, Raycaster, SRGBColorSpace, TextureLoader, Vector3 } from "three";
 import type { Mesh, MeshStandardMaterial } from "three";
 import { useNowPlaying } from "../hooks/useNowPlaying";
 import type { NowPlaying } from "../hooks/useNowPlaying";
 import type { Group } from "three";
-import { Environment, Lightformer, useGLTF } from "@react-three/drei";
-import type { LoreCategory, LoreItem } from "../data/lore";
+import type { LoreItem } from "../data/lore";
 import { VinylDisc } from "./DiscWheel";
 import "./ThreadIndex.css";
 
@@ -17,14 +17,17 @@ type Props = {
 };
 
 // what hangs on each thread; `item` is the lore item whose 3D model is shown (none yet = placeholder)
-type Entry = { id: LoreCategory; label: string; item?: LoreItem; model?: string; front?: number; swing?: number; pitch?: number };
+type Entry = { id: string; label: string; item?: LoreItem; model?: string; front?: number; swing?: number; pitch?: number; roll?: number; decor?: boolean; over?: boolean; tag?: string };
 
 // each item: offset from the head's centre (fraction of width, fraction of height), size in px, depth (bigger = closer, leans more)
 const SLOTS: [number, number, number, number][] = [
-  [-0.3, 0.05, 340, 1.5],
-  [-0.14, -0.28, 260, 0.45],
-  [0.3, -0.08, 340, 1.2],
-  [0.15, 0.27, 340, 1.2],
+  [-0.28, 0.24, 320, 1.5], // turntable, front (a bit smaller)
+  [-0.12, -0.31, 230, 0.7], // vhs, back
+  [0.364, 0.253, 350, 1.4], // books, front (bottom-right)
+  [0.06, 0.37, 420, 1.5], // camera, front (moved down)
+  [0.1, -0.278, 195, 0.6], // headphones, furthest back (top box)
+  [0.31, -0.16, 300, 0.95], // dumbbell, middle
+  [-0.36, -0.12, 270, 1.0], // game, middle (a bit bigger)
 ];
 const ITEM_K = 0.025; // how hard a shoved item drifts back to its spot (higher = stiffer)
 const ITEM_DAMP = 0.93; // shove decay (closer to 1 = floats longer)
@@ -41,17 +44,21 @@ const REST_DAMP = 0.9; // how fast that return settles (lower = snappier, higher
 const DRIFT = 14; // px, how far an item bobs around its spot
 const DRIFT_SPEED = 0.0007; // bob speed
 const PARALLAX = 200; // px the field leans with the cursor (near items move most)
-const LAND = 0.85; // fraction of the page scroll by which the head has landed in the middle
-const REVEAL_AT = 0.6; // how far into the head's trip the first item starts popping out
-const REVEAL_SPAN = 0.2; // how much of the trip each item takes to fully appear
-const STAGGER = 0.05; // extra trip before each following item starts
+const REVEAL_AT = 0.7; // how far into the head's trip the first model starts coming out
+const STAGGER = 0.04; // six models now, so each waits a little less // each following model waits a bit longer
+const REVEAL_SPEED = 0.07; // how fast each one comes out (higher = faster)
+const HEAD_AT = 0.6; // how far into the scroll the head starts to pop in (the models start at 0.7)
+const HEAD_SPAN = 0.12; // how much scroll it takes to finish popping in
 // ----------------------------
 
 const clamp = (v: number, a: number, b: number) => Math.min(Math.max(v, a), b);
+
 const DEMO = false; // true = fake play/idle cycle with no Spotify
+// where the song is engraved, in the body's own space. x/y are fractions of the body's size from its centre
+const ENGRAVE = { x: 0.33, y: -0.34, rot: 0, size: 0.031 }; // size = text height as a fraction of body width
 
 // turns its children around their own centre (yaw = spin, pitch = tip), driven from the animation loop below
-function Spinner({ rotRef, index, front = 0, swing, pitch = 0, children }: { rotRef: RefObject<number[]>; index: number; front?: number; swing?: number; pitch?: number; children: ReactNode }) {
+function Spinner({ rotRef, index, front = 0, swing, pitch = 0, roll = 0, children }: { rotRef: RefObject<number[]>; index: number; front?: number; swing?: number; pitch?: number; roll?: number; children: ReactNode }) {
   const g = useRef<Group>(null);
 useFrame((state) => {
     if (!g.current) return;
@@ -60,7 +67,67 @@ useFrame((state) => {
       swing === undefined ? yaw : front + yaw + Math.sin(state.clock.elapsedTime * 0.8) * swing;
     g.current.rotation.x = (rotRef.current[index * 2 + 1] ?? 0) + pitch;
   });
-  return <group ref={g}>{children}</group>;
+  return (
+    <group rotation={[0, 0, roll]}>
+      <group ref={g}>{children}</group>
+    </group>
+  );
+}
+
+// song details engraved into the turntable body; fades in with the record
+function Engraving({ box, body, now, st }: { box: Box3; body: Mesh; now?: NowPlaying; st: RefObject<{ disc: number; arm: number }> }) {
+  const a = useRef<any>(null);
+  const b = useRef<any>(null);
+  const c2 = useRef<any>(null);
+  const size = box.getSize(new Vector3());
+  const c = box.getCenter(new Vector3());
+  const fs = size.x * ENGRAVE.size;
+  // shoot a ray down at the text's spot to find where the body's surface really is
+  const surfaceZ = useMemo(() => {
+    body.updateWorldMatrix(true, false);
+    const x = c.x + ENGRAVE.x * size.x;
+    const y = c.y + ENGRAVE.y * size.y;
+    const from = new Vector3(x, y, box.max.z + size.z).applyMatrix4(body.matrixWorld);
+    const dir = new Vector3(0, 0, -1).transformDirection(body.matrixWorld);
+    const hit = new Raycaster(from, dir).intersectObject(body, false)[0];
+    return hit ? body.worldToLocal(hit.point.clone()).z : box.max.z;
+  }, [body, box]); // eslint-disable-line react-hooks/exhaustive-deps
+  const cut = (s = "", n = 17) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
+  useFrame(() => {
+    const o = st.current.disc;
+    for (const r of [a, b, c2]) {
+      if (!r.current) continue;
+      r.current.fillOpacity = o;
+      r.current.strokeOpacity = o;
+      r.current.outlineOpacity = o * 0.6;
+      r.current.sync();
+    }
+  });
+  const shared = {
+    anchorX: "center" as const,
+    anchorY: "middle" as const,
+    color: "#26292e",
+    strokeColor: "#26292e",
+    depthOffset: -1,
+    strokeWidth: fs * 0.035,
+    letterSpacing: 0,
+    outlineColor: "#ffffff",
+    outlineWidth: fs * 0.02,
+    outlineOffsetY: -fs * 0.07,
+  };
+  return (
+    <group position={[c.x + ENGRAVE.x * size.x, c.y + ENGRAVE.y * size.y, surfaceZ + size.x * 0.0004]} rotation={[0, 0, ENGRAVE.rot]}>
+      <Text ref={c2} fontSize={fs * 0.6} position={[0, fs * 1.9, 0]} {...shared} letterSpacing={0.04}>
+        Now playing
+      </Text>
+      <Text ref={a} fontSize={fs * 0.75} position={[0, fs * 0.5, 0]} {...shared}>
+        {cut(now?.title)}
+      </Text>
+      <Text ref={b} fontSize={fs * 0.6} position={[0, -fs * 0.4, 0]} {...shared}>
+        {cut(now?.artist)}
+      </Text>
+    </group>
+  );
 }
 
 // loads any .glb, centres it and scales it to fit the same space as the discs
@@ -70,9 +137,32 @@ const rig = useMemo(() => {
   const arm = scene.getObjectByName("tonearm");
   const vinyl = scene.getObjectByName("vinyl");
   if (!arm || !vinyl) return null;
-  vinyl.visible = false;
+  scene.getObjectByName("cover")?.removeFromParent(); // leftover from my last edit
   const label = scene.getObjectByName("label") as Mesh | undefined;
-  return { arm, vinyl, label, ex: arm.userData as { outerAngle: number; innerAngle: number; playLift: number; travelLift: number } };
+  if (label) {
+    // grow the label until it is as wide as the whole record
+    scene.updateMatrixWorld(true);
+    const lw = new Box3().setFromObject(label).getSize(new Vector3());
+    const vw = new Box3().setFromObject(vinyl).getSize(new Vector3());
+    const ratio = Math.max(vw.x, vw.y, vw.z) / Math.max(lw.x, lw.y, lw.z);
+    const g = label.geometry.clone();
+    g.computeBoundingBox();
+    const sz = g.boundingBox!.getSize(new Vector3());
+    const c = g.boundingBox!.getCenter(new Vector3());
+    const thin = sz.x <= sz.y && sz.x <= sz.z ? "x" : sz.y <= sz.z ? "y" : "z"; // keep the flat axis flat
+    g.translate(-c.x, -c.y, -c.z);
+    g.scale(thin === "x" ? 1 : ratio, thin === "y" ? 1 : ratio, thin === "z" ? 1 : ratio);
+    g.translate(c.x, c.y, c.z);
+    label.geometry = g;
+  }
+  vinyl.visible = false;
+  const body = scene.getObjectByName("body") as Mesh | undefined;
+  let box: Box3 | null = null;
+  if (body?.geometry) {
+    body.geometry.computeBoundingBox();
+    box = body.geometry.boundingBox;
+  }
+  return { arm, vinyl, label, body, box, ex: arm.userData as { outerAngle: number; innerAngle: number; playLift: number; travelLift: number } };
 }, [scene]);
 useEffect(() => {
   if (!rig?.label || !now?.cover) return;
@@ -103,8 +193,8 @@ useFrame(({ clock }, dt) => {
       ? clamp(((now.progress ?? 0) + (now.playing ? Date.now() - now.at : 0)) / now.duration, 0, 1)
       : 0;
   // the record appears and spins first, then the arm lands; on stop, the arm lifts first
-  s.disc += ((on || s.arm > 0.02 ? 1 : 0) - s.disc) * Math.min(k * 3, 1);
-  s.arm += ((on && s.disc > 0.9 ? 1 : 0) - s.arm) * Math.min(k * 1.6, 1);
+  s.disc += ((on || s.arm > 0.02 ? 1 : 0) - s.disc) * Math.min(k * 7, 1);
+  s.arm += ((on && s.disc > 0.6 ? 1 : 0) - s.arm) * Math.min(k * 3.5, 1);
   if (s.disc < 0.002) s.disc = 0;
   if (s.arm < 0.002) s.arm = 0;
   const e = s.arm * s.arm * (3 - 2 * s.arm);
@@ -125,6 +215,7 @@ useFrame(({ clock }, dt) => {
   return (
     <group scale={fit.k} position={fit.pos}>
       <primitive object={scene} />
+      {rig?.body && rig.box && createPortal(<Engraving box={rig.box} body={rig.body} now={now} st={st} />, rig.body)}
     </group>
   );
 }
@@ -133,15 +224,20 @@ export default function ThreadIndex({ headRef }: Props) {
   const rootRef = useRef<HTMLElement>(null);
 const now = useNowPlaying();
   const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+  const auroraRef = useRef<HTMLDivElement>(null);
+  const tagRef = useRef<HTMLParagraphElement>(null);
   const rotRef = useRef<number[]>([]); // per item: yaw, pitch
 
   // spread the picks evenly through the list so sleeves and discs are mixed
   const picked = useMemo<Entry[]>(
     () => [
-      { id: "music", label: "Music", model: "/models/cd_player_split.glb", front: 0.3, swing: 0.08, pitch: (70 * Math.PI) / 180 },
-      { id: "films", label: "Films" },
-      { id: "books", label: "Illustrated Books" },
-      { id: "photos", label: "Photographs", model: "/models/camera.glb" },
+      { id: "music", label: "Music", model: "/models/cd_player_split.glb", front: 0.55, swing: 0.08, pitch: (70 * Math.PI) / 180, roll: (-14 * Math.PI) / 180 },
+      { id: "films", label: "Films", model: "/models/vhs-player.glb", front: -0.6, swing: 0.1, pitch: (30 * Math.PI) / 180, roll: (9 * Math.PI) / 180 },
+      { id: "books", label: "Illustrated Books", model: "/models/coffee_table_books.glb", front: -0.3, swing: 0.1, pitch: (38 * Math.PI) / 180, roll: (-11 * Math.PI) / 180 },
+      { id: "photos", label: "Photographs", model: "/models/camera.glb", over: true, pitch: (14 * Math.PI) / 180, roll: (8 * Math.PI) / 180 },
+      { id: "headphones", label: "Headphones", tag: "[I LOVE MY HEADPHONES]", decor: true, model: "/models/headphones.glb", front: 0.5, swing: 0.1, pitch: (8 * Math.PI) / 180, roll: (-10 * Math.PI) / 180 },
+      { id: "dumbbell", label: "Dumbbell", tag: "[I LOVE WORKING OUT]", decor: true, model: "/models/dumbbell.glb", front: -0.4, swing: 0.1, pitch: (28 * Math.PI) / 180, roll: (-22 * Math.PI) / 180 },
+      { id: "game", label: "Game", tag: "[MY ALL-TIME FAVOURITE GAME]", decor: true, model: "/models/game.glb", front: 0.4, swing: 0.1, pitch: (20 * Math.PI) / 180, roll: (-8 * Math.PI) / 180 },
     ],
     []
   );
@@ -156,6 +252,7 @@ useEffect(() => {
   const count = picked.length;
   // per item: shove x, y, vx, vy, yaw, yaw speed, pitch, pitch speed
   const itm = picked.map(() => new Float32Array(8));
+  const rvs = picked.map(() => 0); // how far out each model is (0 = hidden behind the head, 1 = in place)
 
   let W = root.clientWidth;
   let H = root.clientHeight;
@@ -170,6 +267,7 @@ useEffect(() => {
   let pvx = 0;
   let pvy = 0;
   let inside = false;
+  let overHead = false; // cursor is inside the head's area
 
   const onMove = (e: PointerEvent) => {
     if (e.pointerType === "touch") return;
@@ -180,18 +278,23 @@ useEffect(() => {
     cX = e.clientX;
     cY = e.clientY;
     inside = true;
+    const r = head.getBoundingClientRect();
+    overHead = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
   };
   const onLeave = () => {
     inside = false;
+    overHead = false;
   };
   window.addEventListener("pointermove", onMove);
   document.documentElement.addEventListener("mouseleave", onLeave);
 
   let hx = 0;
   let hy = 0;
+  let arrive = 0; // smoothed 0..1 progress of the head's trip, drives the head and the models
   let parx = 0;
   let pary = 0;
   let started = false;
+  let shown = false; // true while the section is mostly on screen; flips the whole animation on and off
   let last = performance.now();
   let raf = 0;
 
@@ -204,14 +307,24 @@ useEffect(() => {
     // the head glides down the page and lands in the middle of this section
     const hh = head.offsetHeight;
     const hw = head.offsetWidth;
-    const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-    const arrive = clamp(window.scrollY / maxScroll / LAND, 0, 1);
-    const tx = arrive * (root.offsetLeft + W / 2 - hw / 2 - head.offsetLeft);
-    const ty = arrive * (root.offsetTop + H / 2 - hh / 2 - head.offsetTop);
-    const ease = started && !reduce ? Math.min(0.12 * s, 1) : 1;
-    hx += (tx - hx) * ease;
-    hy += (ty - hy) * ease;
-    head.style.transform = `translate(${hx}px, ${hy}px)`;
+    const view = root.getBoundingClientRect();
+    const vis = clamp(
+      (Math.min(view.bottom, window.innerHeight) - Math.max(view.top, 0)) / Math.min(view.height, window.innerHeight),
+      0,
+      1
+    ); // fraction of the screen this section fills
+    if (!shown && (vis > 0.6 || window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 40)) shown = true; // plays once, never resets
+    const target = shown ? 1 : 0;
+    const ease = started && !reduce ? Math.min(0.04 * s, 1) : 1;
+    arrive += (target - arrive) * ease; // one smoothed value drives the head AND the models
+    // the head no longer travels: it waits in the middle of this section and pops in as you reach the bottom
+    hx = root.offsetLeft + W / 2 - hw / 2 - head.offsetLeft;
+    hy = root.offsetTop + H / 2 - hh / 2 - head.offsetTop;
+    const pop = reduce ? (arrive > HEAD_AT ? 1 : 0) : clamp((arrive - HEAD_AT) / HEAD_SPAN, 0, 1);
+    const popE = pop * pop * (3 - 2 * pop);
+    head.style.transform = `translate(${hx}px, ${hy}px) scale(${0.6 + 0.4 * popE})`;
+    head.style.opacity = String(popE);
+    head.style.visibility = pop > 0 ? "visible" : "hidden"; // hidden means it can't be hovered either
     started = true;
 
     // cursor position inside this section, and how far the whole field leans because of it
@@ -224,19 +337,27 @@ useEffect(() => {
     pvy *= 0.85;
     const speed = Math.hypot(pvx, pvy);
 
+    // where the head's centre is right now, in this section's space (items start here)
+    const ox = head.offsetLeft - root.offsetLeft + hx + hw / 2;
+    const oy = head.offsetTop - root.offsetTop + hy + hh / 2;
+
+    if (auroraRef.current) auroraRef.current.style.opacity = String(clamp((arrive - 0.6) / 0.4, 0, 1));
+
     for (let t = 0; t < count; t++) {
       const [fx, fy, sz, depth] = SLOTS[t];
       const m = itm[t];
 
       // each item pops out from behind the head as it lands
-      const rt = clamp((arrive - REVEAL_AT - t * STAGGER) / REVEAL_SPAN, 0, 1);
-      const rv = rt * rt * (3 - 2 * rt);
+      const goal = arrive > REVEAL_AT + t * STAGGER ? 1 : 0;
+      rvs[t] += (goal - rvs[t]) * Math.min(REVEAL_SPEED * s, 1);
+      if (Math.abs(goal - rvs[t]) < 0.001) rvs[t] = goal;
+      const rv = rvs[t];
 
       // resting spot around the head, with a slow idle drift and the cursor lean
       const rx = W / 2 + fx * W + Math.sin(now * DRIFT_SPEED + t * 2.1) * DRIFT * live;
       const ry = H / 2 + fy * H + Math.cos(now * DRIFT_SPEED * 0.8 + t * 1.7) * DRIFT * live;
-      const bx = W / 2 + (rx - W / 2) * rv - parx * PARALLAX * depth * live;
-      const by = H / 2 + (ry - H / 2) * rv - pary * PARALLAX * depth * live;
+      const bx = ox + (rx - ox) * rv - parx * PARALLAX * depth * live * rv;
+      const by = oy + (ry - oy) * rv - pary * PARALLAX * depth * live * rv;
 
       // a moving cursor shoves the item away and sets it spinning
       if (inside && live && rv > 0.9) {
@@ -279,11 +400,12 @@ useEffect(() => {
         el.style.left = `${bx + m[0] - sz / 2}px`;
         el.style.top = `${by + m[1] - sz / 2}px`;
         const far = clamp(1 - depth / 1.2, 0, 1); // 0 = closest, 1 = furthest
-        el.style.opacity = String(rv * (1 - far * 0.45));
-        el.style.filter = far > 0.01 ? `blur(${far * 3}px)` : "";
-        el.style.zIndex = String(clamp(Math.round(depth * 2), 1, 3));
-        el.style.setProperty("--grow", String((0.4 + 0.6 * rv) * (0.85 + 0.15 * (1 - far))));
-        el.style.pointerEvents = rv > 0.9 ? "auto" : "none";
+        el.style.opacity = String(Math.min(rv * 2, 1));
+        el.style.filter = far > 0.01 && !picked[t].model ? `blur(${far * 3}px)` : "";
+        el.style.zIndex = rv < 0.95 || picked[t].decor ? "0" : picked[t].over ? "6" : String(clamp(Math.round(depth * 2), 1, 3)); // decor stays at the back, `over` items sit in front of the head (head is 5)
+        el.style.setProperty("--grow", String((0.45 + 0.55 * rv) * (0.85 + 0.15 * (1 - far))));
+        el.style.pointerEvents = picked[t].over ? "none" : rv > 0.9 ? "auto" : "none";
+        el.style.setProperty("--hit", rv > 0.9 && !overHead ? "auto" : "none");
       }
     }
   };
@@ -299,29 +421,71 @@ useEffect(() => {
 
   return (
     <section className="threads" ref={rootRef} aria-label="An index of Dee's mind">
-      <h2 className="threads__title">An Index Of Dee’s Mind Outside Of Design</h2>
+      <div className="threads__aurora" ref={auroraRef} aria-hidden="true">
+        <svg className="aurora__svg" viewBox="0 0 1600 900" preserveAspectRatio="none">
+          <defs>
+            <path id="au-curve" fill="none" strokeLinecap="round" d="M -120 640 C 200 660, 380 200, 800 210 C 1180 220, 1260 720, 1720 650" />
+            <filter id="au-b1" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="75" /></filter>
+            <filter id="au-b2" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="42" /></filter>
+            <filter id="au-b3" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="26" /></filter>
+            <filter id="au-b4" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="14" /></filter>
+            <filter id="au-b5" x="-50%" y="-80%" width="200%" height="260%"><feGaussianBlur stdDeviation="70" /></filter>
+          </defs>
+          {/* wide soft blue body, lowest */}
+          <use href="#au-curve" stroke="#1046F9" strokeWidth="430" opacity="0.55" transform="translate(0 190)" filter="url(#au-b1)" />
+          {/* magenta band under the rim */}
+          <use href="#au-curve" stroke="#F910BA" strokeWidth="190" opacity="0.8" transform="translate(0 55)" filter="url(#au-b2)" />
+          {/* yellow rim on the top edge, then a pale hot line on top of it */}
+          <use href="#au-curve" stroke="#F9C310" strokeWidth="80" transform="translate(0 -30)" filter="url(#au-b3)" />
+          <use href="#au-curve" stroke="#fff3c4" strokeWidth="26" transform="translate(0 -50)" filter="url(#au-b4)" />
+          {/* green glow, lower left */}
+          <ellipse cx="170" cy="780" rx="260" ry="150" fill="#10F94F" opacity="0.5" filter="url(#au-b5)" />
+          {/* warm glow, lower right */}
+          <ellipse cx="1330" cy="800" rx="260" ry="150" fill="#F9C310" opacity="0.7" filter="url(#au-b5)" />
+        </svg>
+      </div>
+      <h2 className="threads__title">Dee Outside Of Design</h2>
+      <p className="threads__body">
+        Outside of design, I spend my free time listening to and finding new music, watching shows (animations and shows
+        especially), reading webtoons or playing tetris. I love working out at home too (not everyday though).
+      </p>
+      <p className="threads__tag" ref={tagRef} aria-hidden="true" />
+      <p className="threads__brand" aria-hidden="true">dee-space07</p>
 
       {picked.map((entry, i) => {
         const size = SLOTS[i][2];
+        const Item: any = entry.decor ? "div" : Link; // decorations are plain, not links
         return (
-          <Link
-            key={entry.id}
-            ref={(el) => {
+          <Fragment key={entry.id}>
+          <Item
+            ref={(el: HTMLAnchorElement | null) => {
               itemRefs.current[i] = el;
             }}
-            className="thread-item"
-            to="/lore"
-            state={{ category: entry.id }}
-            draggable={false}
-            aria-label={`Open ${entry.label}`}
+            className={entry.decor ? "thread-item thread-item--decor" : "thread-item"}
+            onClick={(e: React.MouseEvent) => {
+              if (!entry.over) return;
+              const r = headRef.current?.getBoundingClientRect();
+              if (r && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) e.preventDefault();
+            }}
+            {...(entry.decor
+              ? { "aria-hidden": true }
+              : { to: "/lore", state: { category: entry.id }, draggable: false, "aria-label": `Open ${entry.label}` })}
+            onPointerEnter={() => {
+              if (!tagRef.current) return;
+              tagRef.current.textContent = entry.tag ?? `[${entry.label.toUpperCase()}]`;
+              tagRef.current.classList.add("is-on");
+            }}
+            onPointerLeave={() => tagRef.current?.classList.remove("is-on")}
             style={{ width: size, height: size }}
           >
             {entry.item || entry.model ? (
               <Canvas
                 className="thread-item__model"
-                dpr={[1, 2]}
+                resize={{ offsetSize: true, scroll: false }}
+                dpr={[1, 1.5]}
+                flat
                 gl={{ alpha: true, antialias: true }}
-                camera={{ fov: 14, position: [0, 0, 21] }}
+                camera={{ fov: 36, position: [0, 0, 9.9] }}
               >
                 <ambientLight intensity={0.55} />
                 <directionalLight position={[3, 4, 10]} intensity={0.35} />
@@ -331,7 +495,7 @@ useEffect(() => {
                   <Lightformer form="rect" intensity={4} position={[6, -3, 6]} rotation-y={-Math.PI / 4} scale={[3, 9, 1]} />
                 </Environment>
                 <Suspense fallback={null}>
-                <Spinner rotRef={rotRef} index={i} front={entry.front} swing={entry.swing} pitch={entry.pitch}>
+                <Spinner rotRef={rotRef} index={i} front={entry.front} swing={entry.swing} pitch={entry.pitch} roll={entry.roll}>
                 {entry.item ? <VinylDisc item={entry.item} /> : <GlbModel url={entry.model!} now={now} demo={DEMO} />}
                 </Spinner>
                 </Suspense>
@@ -339,7 +503,9 @@ useEffect(() => {
             ) : (
               <div className="thread-item__ph" />
             )}
-          </Link>
+            {entry.over && <div className="thread-item__hit" />}
+          </Item>
+          </Fragment>
         );
       })}
     </section>
