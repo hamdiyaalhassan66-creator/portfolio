@@ -1,0 +1,172 @@
+.detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-height: calc(100vh - 48px); /* the page minus the nav */
+  background: #F9F7F6;
+}
+
+.detail__main {
+  position: sticky; /* stays in view while the images scroll */
+  top: 48px; /* under the sticky nav */
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 715px;
+  min-width: 0;
+  padding-top: 35px; /* Figma: the back button sits 35px under the nav */
+}
+
+.detail__back {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  padding: 8px 12px 8px 24px;
+  background: #2E1D11;
+  color: #F9F7F6;
+  text-decoration: none;
+  font: 500 14px/16px "Azeret Mono", var(--font-mono, ui-monospace, monospace);
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+.detail__back:focus-visible {
+  outline: 2px solid #1046F9;
+  outline-offset: 2px;
+}
+
+/* collapsible section */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.section__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  height: 40px;
+  padding: 0 0 0 24px;
+  border: 0;
+  background: #EFE9E7;
+  text-align: left;
+  cursor: pointer;
+}
+.section__title {
+  font: 500 13px/15px "Azeret Mono", var(--font-mono, ui-monospace, monospace);
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: #1046F9;
+}
+.section__toggle {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  background: #E5DEDC;
+  color: #1046F9;
+  transition: background 0.2s ease;
+}
+.section__bar:hover .section__toggle {
+  background: #DDD4D1;
+}
+.section__bar:focus-visible {
+  outline: 2px solid #1046F9;
+  outline-offset: -2px;
+}
+.section__body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  background: #E5DEDC;
+  color: #2E1D11;
+}
+.section__body[hidden] {
+  display: none;
+}
+
+/* project brief */
+.brief__title {
+  margin: 0;
+  font: 600 16px/19px var(--font-sans, "Inter", sans-serif);
+  letter-spacing: -0.01em;
+}
+.brief__text {
+  margin: -10px 0 0; /* pulls the text up: 16px section gap - 10px = 6px between title and text */
+  font: 500 13px/16px var(--font-sans, "Inter", sans-serif);
+  letter-spacing: -0.01em;
+}
+
+/* details: label ---- value */
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font: 500 13px/15px var(--font-sans, "Inter", sans-serif);
+  letter-spacing: -0.01em;
+}
+.row__line {
+  flex: 1;
+  min-width: 12px;
+  height: 0;
+  margin-top: 7px;
+  border-top: 1px dashed rgba(46, 29, 17, 0.3);
+}
+.row__value {
+  text-align: right;
+}
+.row__value a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.row__value a:hover {
+  color: #1046F9;
+}
+.row__value a:focus-visible {
+  outline: 2px solid #1046F9;
+  outline-offset: 2px;
+}
+
+/* scrollable images on the right (2px from the right and bottom) */
+.detail__gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  margin: 2px 2px 2px 8px;
+}
+.detail__gallery img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  background: #E3E3E3;
+}
+
+/* tablet and mobile: one column, slideshow underneath */
+@media (max-width: 900px) {
+  .detail {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+  .detail__main {
+    position: static; /* no pinning in one column */
+    max-width: none;
+    padding-top: 16px;
+  }
+  .detail__back,
+  .section__bar {
+    padding-left: 16px;
+  }
+  .section__body {
+    padding: 16px;
+  }
+  .detail__gallery {
+    margin: 2px 0 0;
+  }
+}

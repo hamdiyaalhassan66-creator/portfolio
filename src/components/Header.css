@@ -1,7 +1,11 @@
 .header {
+  position: sticky; /* stays on screen on every page */
+  top: 0;
+  z-index: 100;
   display: flex;
   gap: 2px;
   height: 48px;
+  background: var(--bg); /* the tabs are see-through, so the page would show through them while scrolling */
 }
 
 .header__logo {
@@ -38,16 +42,19 @@
 .header__nav {
   display: flex;
   gap: 2px;
-  flex: 1;
+  flex: 0 0 calc(50% - 8px); /* right half of the frame, lines up with the works preview (its 8px left margin) */
+  min-width: 0;
+  margin-left: auto;
 }
 
 .header__link {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
-  flex: 1;
+  gap: 10px;
+  flex: 1 1 0;
+  min-width: 0;
   padding: 10px;
-  background: #EFE9E7;
+  background: #E6E2E0;
   color: var(--fg);
   text-decoration: none;
   text-transform: uppercase;
@@ -67,6 +74,7 @@
 }
 
 .header__icon {
+  display: none; /* the Figma tabs are text only; delete this line to bring the icons back */
   width: 14px;
   height: 14px;
   flex: none;
@@ -134,14 +142,15 @@
   /* drawer that drops down from the top, styled like the header and the lore drawer */
   .menu__panel {
     position: absolute;
-    top: 0;
+    bottom: 0;
     left: 0;
     right: 0;
-    background: #EFE9E7; /* fills the 2px gaps between the links */
+    background: var(--bg); /* fills the 2px gaps between the links */
     display: flex;
     flex-direction: column;
     gap: 2px;
-    transform: translateY(-100%);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    transform: translateY(100%);
     transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
   .menu.is-open .menu__panel {
@@ -177,21 +186,30 @@
   .menu__link {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 18px 12px;
-    background: #EFE9E7;
+    padding: 16px 12px 24px;
+    background: var(--bg);
     color: var(--fg);
     text-decoration: none;
     text-transform: uppercase;
-    font: 500 18px/1 var(--font-mono);
+    font: 500 24px/1 var(--font-mono);
     letter-spacing: -0.01em;
   }
-  .menu__link .header__icon {
-    width: 18px;
-    height: 18px;
+  .menu .menu__link svg {
+    display: none !important;
   }
   .menu__link.is-active {
     background: var(--blue);
     color: var(--bg);
+  }
+}
+
+/* small laptops / large tablets in landscape: the right half gets narrow, so tighten the tabs */
+@media (min-width: 901px) and (max-width: 1100px) {
+  .header__logo {
+    width: 240px;
+  }
+  .header__link {
+    padding: 10px 8px;
+    font-size: 12px;
   }
 }

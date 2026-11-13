@@ -246,6 +246,7 @@ useEffect(() => {
   const root = rootRef.current;
   const head = headRef.current;
   if (!root || !head) return;
+  if (window.matchMedia("(max-width: 900px)").matches) return; // mobile: no floating/drag animation, the CSS carousel takes over
 
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const live = reduce ? 0 : 1;
@@ -424,24 +425,21 @@ useEffect(() => {
       <div className="threads__aurora" ref={auroraRef} aria-hidden="true">
         <svg className="aurora__svg" viewBox="0 0 1600 900" preserveAspectRatio="none">
           <defs>
-            <path id="au-curve" fill="none" strokeLinecap="round" d="M -120 640 C 200 660, 380 200, 800 210 C 1180 220, 1260 720, 1720 650" />
+            <path id="au-area" d="M -200 540 C 200 580, 560 620, 820 440 C 1040 290, 1260 190, 1460 235 C 1560 258, 1660 300, 1800 330 L 1800 1100 L -200 1100 Z" />
             <filter id="au-b1" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="75" /></filter>
             <filter id="au-b2" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="42" /></filter>
             <filter id="au-b3" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="26" /></filter>
             <filter id="au-b4" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="14" /></filter>
             <filter id="au-b5" x="-50%" y="-80%" width="200%" height="260%"><feGaussianBlur stdDeviation="70" /></filter>
+            <filter id="au-soft" filterUnits="userSpaceOnUse" x="-800" y="-800" width="3200" height="3000" colorInterpolationFilters="sRGB"><feGaussianBlur stdDeviation="60" /></filter>
           </defs>
-          {/* wide soft blue body, lowest */}
-          <use href="#au-curve" stroke="#1046F9" strokeWidth="430" opacity="0.55" transform="translate(0 190)" filter="url(#au-b1)" />
-          {/* magenta band under the rim */}
-          <use href="#au-curve" stroke="#F910BA" strokeWidth="190" opacity="0.8" transform="translate(0 55)" filter="url(#au-b2)" />
-          {/* yellow rim on the top edge, then a pale hot line on top of it */}
-          <use href="#au-curve" stroke="#F9C310" strokeWidth="80" transform="translate(0 -30)" filter="url(#au-b3)" />
-          <use href="#au-curve" stroke="#fff3c4" strokeWidth="26" transform="translate(0 -50)" filter="url(#au-b4)" />
-          {/* green glow, lower left */}
-          <ellipse cx="170" cy="780" rx="260" ry="150" fill="#10F94F" opacity="0.5" filter="url(#au-b5)" />
-          {/* warm glow, lower right */}
-          <ellipse cx="1330" cy="800" rx="260" ry="150" fill="#F9C310" opacity="0.7" filter="url(#au-b5)" />
+            <g filter="url(#au-soft)">
+              <use href="#au-area" fill="#fff3c4" opacity="0.8" transform="translate(0 -40)" />
+              <use href="#au-area" fill="#F9C310" opacity="0.55" transform="translate(0 20)" />
+              <use href="#au-area" fill="#F910BA" opacity="0.5" transform="translate(0 170)" />
+              <use href="#au-area" fill="#1046F9" opacity="0.4" transform="translate(0 340)" />
+              <use href="#au-area" fill="#f8f7f5" opacity="0.95" transform="translate(0 500)" />
+            </g>
         </svg>
       </div>
       <h2 className="threads__title">Dee Outside Of Design</h2>
@@ -452,6 +450,7 @@ useEffect(() => {
       <p className="threads__tag" ref={tagRef} aria-hidden="true" />
       <p className="threads__brand" aria-hidden="true">dee-space07</p>
 
+      <div className="threads__track">
       {picked.map((entry, i) => {
         const size = SLOTS[i][2];
         const Item: any = entry.decor ? "div" : Link; // decorations are plain, not links
@@ -508,6 +507,7 @@ useEffect(() => {
           </Fragment>
         );
       })}
+      </div>
     </section>
   );
 }

@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import Work from "./pages/Work";
 import Information from "./pages/Information";
 import Contact from "./pages/Contact";
+import WorkDetail from "./pages/WorkDetail";
 
 const Lab = lazy(() => import("./pages/Lab"));
 const Lore = lazy(() => import("./pages/Lore"));
@@ -17,6 +18,7 @@ export default function App() {
       <Suspense fallback={<p style={{ padding: 24 }}>Loading…</p>}>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/works/:id" element={<WorkDetail />} />
           <Route path="/work" element={<Work />} />
           <Route path="/lab" element={<Lab />} />
           <Route path="/information" element={<Information />} />

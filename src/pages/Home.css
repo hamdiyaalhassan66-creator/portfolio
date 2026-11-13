@@ -1,0 +1,240 @@
+.works {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-height: calc(100vh - 48px); /* the page minus the nav */
+  background: #F9F7F6;
+}
+
+.works__main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 715px;
+  min-width: 0;
+  padding-top: 2px; /* Figma: left column starts 2px under the nav, like the preview */
+}
+
+.works__intro {
+  max-width: 573px;
+  margin: 0;
+  padding: 24px;
+  font: 500 14px/17px var(--font-sans, "Inter", sans-serif);
+  letter-spacing: -0.01em;
+  color: #2E1D11;
+}
+
+.works__tab {
+  width: fit-content;
+  margin: 0; /* Figma: the tab sits 2px below the intro (the column gap) */
+  padding: 8px 12px 8px 24px;
+  background: #2E1D11;
+  color: #F9F7F6;
+  font: 500 14px/16px "Azeret Mono", var(--font-mono, ui-monospace, monospace);
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.works__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* one project row */
+.work {
+  position: relative; /* the row's link stretches over the whole row */
+  display: flex;
+  align-items: center;
+  min-height: 100px;
+  padding-left: 24px;
+  background: #EFE9E7;
+  transition: background 0.2s ease;
+}
+.work:hover {
+  background: #E8E0DC;
+}
+
+.work__logo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 100px;
+  height: 100px;
+  overflow: hidden;
+}
+.work__logo span {
+  padding: 0 8px;
+  font: 800 16px/1 var(--font-sans, "Inter", sans-serif);
+  letter-spacing: -0.02em;
+  color: #1F1313;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.work__logo img {
+  display: block;
+  height: auto; /* width comes from logoSize in Home.tsx */
+  max-height: 85%;
+  object-fit: contain;
+}
+
+.work__body {
+  flex: 1;
+  align-self: stretch;
+  min-width: 0;
+  padding: 13px 12px;
+}
+
+.work__text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.work__name {
+  margin: 0;
+  font: 550 14px/16px var(--font-sans, "Inter", sans-serif);
+  letter-spacing: -0.01em;
+  color: #2E1D11;
+}
+.work__name a {
+  color: inherit;
+  text-decoration: none;
+}
+.work__name a::after {
+  content: "";
+  position: absolute;
+  inset: 0; /* the link covers the whole row */
+}
+.work:has(a:focus-visible) {
+  outline: 2px solid #1046F9;
+  outline-offset: -2px;
+}
+.work__blurb {
+  margin: 0;
+  font: 500 14px/16px var(--font-sans, "Inter", sans-serif);
+  letter-spacing: -0.01em;
+  color: rgba(46, 29, 17, 0.5);
+}
+
+/* chips, pinned to the bottom right of the row */
+.work__tags {
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.work__tags li {
+  padding: 4px 8px;
+  background: #2E1D11;
+  color: #F9F7F6;
+  font: 500 12px/14px "Azeret Mono", var(--font-mono, ui-monospace, monospace);
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* big grey panel on the right */
+.works__preview {
+  position: sticky;
+  top: 48px; /* sits under the sticky nav; the 2px margin below gives the Figma gap */
+  align-self: start;
+  height: calc(100vh - 52px); /* 2px gap under the panel */
+  margin: 2px 2px 0 8px; /* 2px from the right edge */
+  background: #E3E3E3;
+  overflow: hidden;
+}
+.works__shot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.05);
+  transition:
+    opacity 0.7s cubic-bezier(0.65, 0, 0.35, 1), /* ease-in-out fade */
+    transform 1.6s cubic-bezier(0.22, 1, 0.36, 1); /* slow ease-out zoom */
+  will-change: opacity, transform;
+}
+.works__shot.is-on {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* narrow desktop, tablet and mobile: same look as desktop (tags bottom right), but the tags sit in the row's flow so they never overlap the text */
+@media (max-width: 1200px) {
+  .work__body {
+    display: flex;
+    flex-direction: column;
+    padding: 13px 0 0 12px; /* no right/bottom padding, so the tags sit flush with the row edge like on desktop */
+  }
+  .work__text {
+    padding-right: 12px;
+    padding-bottom: 12px; /* keeps the tags clear of the text */
+  }
+  .work__tags {
+    position: static;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    margin: auto 0 0 auto; /* auto top margin pushes the tags to the bottom, auto left to the right */
+  }
+}
+
+/* tablet: one column, no hover panel */
+@media (max-width: 900px) {
+  .works {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+  .works__main {
+    max-width: none;
+    padding-top: 0;
+  }
+  .works__intro {
+    max-width: 573px;
+    padding: 20px 16px;
+  }
+  .works__preview {
+    display: none;
+  }
+  .works__tab {
+    padding-left: 16px;
+  }
+  .work {
+    padding-left: 16px;
+  }
+  .work__logo {
+    width: 88px;
+    height: 88px;
+  }
+  .work__logo span {
+    font-size: 13px;
+  }
+}
+
+/* mobile */
+@media (max-width: 480px) {
+  .works__intro {
+    padding: 16px;
+  }
+  .work {
+    align-items: stretch;
+    padding-left: 12px;
+  }
+  .work__logo {
+    width: 64px;
+    height: auto; /* matches the row height when text wraps */
+    min-height: 64px;
+  }
+  .work__logo span {
+    font-size: 11px;
+  }
+}

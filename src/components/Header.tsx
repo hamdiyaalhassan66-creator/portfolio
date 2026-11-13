@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import "./Header.css";
 
 import type { ReactNode } from "react";
@@ -22,13 +22,17 @@ const icons: Record<string, ReactNode> = {
 const links = [
   { to: "/", label: "Works", icon: "folder" },
   { to: "/lab", label: "Lab", icon: "flask" },
-  { to: "/information", label: "Information", icon: "user" },
-  { to: "/lore", label: "The Lore", icon: "star" },
+  { to: "/information", label: "Info", icon: "user" },
+  { to: "/archive", label: "Archive", icon: "star" },
   { to: "/contact", label: "Contact", icon: "contacts" },
 ];
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const { pathname } = useLocation();
+  const onLore = pathname.startsWith("/lore"); // the lore page is reached from Information, so that tab stays lit
+  const onWork = pathname.startsWith("/works/"); // a project page is reached from Works, so that tab stays lit
+  const isOn = (to: string, isActive: boolean) => isActive || (to === "/information" && onLore) || (to === "/" && onWork);
 
   // while the menu is open: lock page scroll, close on Escape, and close if the screen grows to desktop size
   useEffect(() => {
@@ -62,7 +66,7 @@ export default function Header() {
             end={to === "/"}
             aria-label={label}
             title={label}
-            className={({ isActive }) => "header__link" + (isActive ? " is-active" : "")}
+            className={({ isActive }) => "header__link" + (isOn(to, isActive) ? " is-active" : "")}
           >
             <svg className="header__icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
               {icons[icon]}
@@ -97,18 +101,15 @@ export default function Header() {
             </svg>
           </button>
         </div>
-        {links.map(({ to, label, icon }) => (
+        {links.map(({ to, label }) => (
           <NavLink
             key={to}
             to={to}
             end={to === "/"}
             tabIndex={open ? 0 : -1}
-            className={({ isActive }) => "menu__link" + (isActive ? " is-active" : "")}
+            className={({ isActive }) => "menu__link" + (isOn(to, isActive) ? " is-active" : "")}
             onClick={() => setOpen(false)}
           >
-            <svg className="header__icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-              {icons[icon]}
-            </svg>
             {label}
           </NavLink>
         ))}

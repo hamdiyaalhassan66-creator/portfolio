@@ -1,26 +1,15 @@
 .threads {
+  --nav-h: 48px; /* height of the pinned nav */
   position: relative;
   height: 100vh;
   overflow: clip; /* nothing inside the section can widen the page */
 }
 
-.threads__title {
-  position: absolute;
-  left: 24px;
-  top: 24px;
-  margin: 0;
-  font: 600 20px/23px var(--font-sans);
-  letter-spacing: -0.02em;
-  color: var(--blue);
-  z-index: 3;
-  pointer-events: none;
-}
-
 /* label for the hovered model, top right, level with the title */
 .threads__tag {
   position: absolute;
   right: 24px;
-  top: 24px;
+  top: calc(var(--nav-h) + 24px);
   height: 23px; /* same line box as the title so they sit level */
   margin: 0;
   display: flex;
@@ -32,6 +21,24 @@
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.2s ease;
+}
+@media (max-width: 900px) {
+  /* the aurora is normally faded in by the desktop script, so show it directly on mobile */
+  .threads {
+    position: relative;
+    overflow: hidden;
+  }
+  .threads__aurora {
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 0 !important;
+    opacity: 1 !important;
+    pointer-events: none;
+  }
+  .threads__aurora .aurora__svg {
+    width: 100%;
+    height: 100%;
+  }
 }
 .threads__tag.is-on {
   opacity: 1;
@@ -126,52 +133,19 @@
   width: 100%;
   height: 100%;
   display: block;
-  opacity: 0.5;
-}
-
-.threads__body {
-  position: absolute;
-  left: 24px; /* match .threads__title's left */
-  top: 54px; /* just under the title; nudge to taste */
-  width: calc(100% - 48px); /* 24px of space on each side, so it never overflows on small screens */
-  max-width: 691px; /* same as the top intro paragraph */
-  margin: 0;
-  z-index: 1;
-  font: 400 13px/1.35 var(--font-mono);
-  letter-spacing: -0.01em;
+  opacity: 1;
 }
 
 .threads__title {
   position: absolute;
   left: 24px;
-  top: 24px;
+  top: calc(var(--nav-h) + 24px);
   margin: 0;
   font: 600 20px/23px var(--font-sans);
   letter-spacing: -0.02em;
   color: var(--blue);
   z-index: 3;
   pointer-events: none;
-}
-
-/* label for the hovered model, top right, level with the title */
-.threads__tag {
-  position: absolute;
-  right: 24px;
-  top: 24px;
-  height: 23px; /* same line box as the title so they sit level */
-  margin: 0;
-  display: flex;
-  align-items: center;
-  font: 500 13px/1 var(--font-mono, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
-  letter-spacing: 0.02em;
-  color: var(--blue);
-  z-index: 3;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-.threads__tag.is-on {
-  opacity: 1;
 }
 
 /* the big cut-off wordmark */
@@ -187,7 +161,7 @@
   text-align: center;
   white-space: nowrap;
   color: #f8f7f5; /* page background */
-  filter: blur(8px);
+  filter: blur(4px);
   z-index: 0; /* behind the models, above the glows */
   pointer-events: none;
   user-select: none;
@@ -257,23 +231,102 @@
   display: block;
 }
 
-.aurora__svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  opacity: 0.5;
-}
-
 .threads__body {
   position: absolute;
   left: 24px; /* match .threads__title's left */
-  top: 54px; /* just under the title; nudge to taste */
+  top: calc(var(--nav-h) + 54px); /* just under the title; nudge to taste */
   width: calc(100% - 48px); /* 24px of space on each side, so it never overflows on small screens */
   max-width: 691px; /* same as the top intro paragraph */
   margin: 0;
   z-index: 1;
-  font: 400 13px/1.35 var(--font-mono);
+  font: 500 14px/1.35 var(--font-sans);
   letter-spacing: -0.01em;
+}
+
+/* desktop: the wrapper is invisible, so the items still position against the section */
+.threads__track {
+  display: contents;
+}
+
+@media (max-width: 900px) {
+  .threads {
+    height: auto !important;
+    min-height: 0 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 48px 16px 32px !important; /* 16px left and right */
+    box-sizing: border-box;
+  }
+  .threads__title,
+  .threads__body {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    z-index: 1;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .threads__tag {
+    display: none;
+  }
+
+  /* carousel: one model per slide, swipe to change */
+  .threads__track {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 48px;
+    padding: 36px 0; /* room so the scroll container doesn't clip the models top and bottom */
+    margin: 0 -16px; /* cancels the section's 16px side padding so the models run edge to edge */
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .threads__track::-webkit-scrollbar {
+    display: none;
+  }
+  .threads__track .thread-item {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    flex: 0 0 38%;
+    width: 38% !important;
+    height: auto !important;
+    aspect-ratio: 1;
+    max-height: 20vh;
+    overflow: visible !important;
+    scroll-snap-align: center;
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+    z-index: auto !important;
+  }
+    /* canvas is larger than its slot so rotated models never get cut off */
+  .threads__track .thread-item__model {
+    position: absolute !important;
+    inset: -20% !important;
+    width: 140% !important;
+    height: 140% !important;
+  }
+    /* models are tappable on mobile, same as desktop (they link to /lore) */
+  .threads__track .thread-item:not(.thread-item--decor),
+  .threads__track .thread-item:not(.thread-item--decor) .thread-item__model,
+  .threads__track .thread-item__hit {
+    pointer-events: auto !important;
+    cursor: pointer;
+  }
+  /* let a horizontal swipe still scroll the carousel instead of the canvas swallowing it */
+  .threads__track .thread-item__model,
+  .threads__track .thread-item__model canvas {
+    touch-action: pan-x !important;
+  }
+  /* headphones (5th item) a bit smaller */
+  .threads__track .thread-item:nth-child(5) .thread-item__model {
+    transform: scale(0.7);
+  }
 }

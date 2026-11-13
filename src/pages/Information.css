@@ -2,7 +2,7 @@
   position: relative;
   background: #F9F7F6;
   color: #2E1D11;
-  font: 400 13px/1.35 var(--font-mono);
+  font: 500 14px/1.35 var(--font-sans);
   letter-spacing: -0.01em;
   overflow-x: clip;
   overflow-y: clip;
@@ -274,4 +274,10 @@
   border: 0.25em solid var(--blue);
   border-radius: 50%;
   font: 700 1.2em/1 var(--font-sans);
+}
+
+@media (max-width: 900px) {
+  .information__head {
+    display: none !important;
+  }
 }
