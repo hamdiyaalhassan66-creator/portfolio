@@ -268,16 +268,39 @@ const now = useNowPlaying();
     return () => io.disconnect();
   }, []);
 
+  // phones: lighter rendering, and a WebGL context only for cards that are near the screen
+  const small = useMemo(() => window.matchMedia("(max-width: 900px)").matches, []);
+  const [near, setNear] = useState<Set<number>>(() => new Set());
+  useEffect(() => {
+    const els = itemRefs.current;
+    const io = new IntersectionObserver(
+      (entries) =>
+        setNear((prev) => {
+          const next = new Set(prev);
+          for (const e of entries) {
+            const i = els.indexOf(e.target as HTMLAnchorElement);
+            if (i < 0) continue;
+            if (e.isIntersecting) next.add(i);
+            else if (small) next.delete(i); // desktop keeps it once loaded
+          }
+          return next;
+        }),
+      { rootMargin: small ? "0px 150px" : "300px" }
+    );
+    els.forEach((el) => el && io.observe(el));
+    return () => io.disconnect();
+  }, [small]);
+
   // spread the picks evenly through the list so sleeves and discs are mixed
   const picked = useMemo<Entry[]>(
     () => [
       { id: "music", label: "Music", model: "/models/cd_player_split.glb", front: 0.55, pitch: (70 * Math.PI) / 180, roll: (-14 * Math.PI) / 180 },
-      { id: "films", label: "Films", model: "/models/vhs-player.glb", front: -0.6, pitch: (30 * Math.PI) / 180, roll: (9 * Math.PI) / 180 },
-      { id: "books", label: "Illustrated Books", model: "/models/coffee_table_books.glb", front: -0.3, pitch: (38 * Math.PI) / 180, roll: (-11 * Math.PI) / 180 },
-      { id: "photos", label: "Photographs", model: "/models/camera.glb", over: true, pitch: (14 * Math.PI) / 180, roll: (8 * Math.PI) / 180 },
-      { id: "headphones", label: "Headphones", tag: "[I LOVE MY HEADPHONES]", decor: true, model: "/models/headphones.glb", front: 0.5, pitch: (8 * Math.PI) / 180, roll: (-10 * Math.PI) / 180 },
-      { id: "dumbbell", label: "Dumbbell", tag: "[I LOVE WORKING OUT]", decor: true, model: "/models/dumbbell.glb", front: -0.4, pitch: (28 * Math.PI) / 180, roll: (-22 * Math.PI) / 180 },
-      { id: "game", label: "Game", tag: "[MY ALL-TIME FAVOURITE GAME]", decor: true, model: "/models/game.glb", front: 0.4, pitch: (20 * Math.PI) / 180, roll: (-8 * Math.PI) / 180 },
+      { id: "films", label: "Films", model: "/models/vhs-player.opt.glb", front: -0.6, pitch: (30 * Math.PI) / 180, roll: (9 * Math.PI) / 180 },
+      { id: "books", label: "Illustrated Books", model: "/models/coffee_table_books.opt.glb", front: -0.3, pitch: (38 * Math.PI) / 180, roll: (-11 * Math.PI) / 180 },
+      { id: "photos", label: "Photographs", model: "/models/camera.opt.glb", over: true, pitch: (14 * Math.PI) / 180, roll: (8 * Math.PI) / 180 },
+      { id: "headphones", label: "Headphones", tag: "[I LOVE MY HEADPHONES]", decor: true, model: "/models/headphones.opt.glb", front: 0.5, pitch: (8 * Math.PI) / 180, roll: (-10 * Math.PI) / 180 },
+      { id: "dumbbell", label: "Dumbbell", tag: "[I LOVE WORKING OUT]", decor: true, model: "/models/dumbbell.opt.glb", front: -0.4, pitch: (28 * Math.PI) / 180, roll: (-22 * Math.PI) / 180 },
+      { id: "game", label: "Game", tag: "[MY ALL-TIME FAVOURITE GAME]", decor: true, model: "/models/game.opt.glb", front: 0.4, pitch: (20 * Math.PI) / 180, roll: (-8 * Math.PI) / 180 },
     ],
     []
   );
@@ -506,19 +529,23 @@ useEffect(() => {
             onPointerLeave={() => tagRef.current?.classList.remove("is-on")}
             style={{ width: size, height: size }}
           >
-            {entry.item || entry.model ? (
+            {(entry.item || entry.model) && near.has(i) ? (
               <Canvas
                 className="thread-item__model"
                 resize={{ offsetSize: true, scroll: false }}
                 frameloop={live ? "always" : "never"}
-                dpr={[1, 1.5]}
+                dpr={small ? 1 : [1, 1.5]}
                 flat
-                gl={{ alpha: true, antialias: true }}
+                gl={{ alpha: true, antialias: !small, powerPreference: small ? "low-power" : "high-performance" }}
                 camera={{ fov: 36, position: [0, 0, 9.9] }}
+                onCreated={({ gl }) =>
+                  // let the browser restore the context instead of leaving a dead canvas
+                  gl.domElement.addEventListener("webglcontextlost", (e) => e.preventDefault())
+                }
               >
                 <ambientLight intensity={0.55} />
                 <directionalLight position={[3, 4, 10]} intensity={0.35} />
-                <Environment resolution={128}>
+                <Environment resolution={small ? 64 : 128}>
                   <Lightformer form="rect" intensity={0.4} position={[0, 0, 8]} scale={[12, 12, 1]} />
                   <Lightformer form="rect" intensity={4} position={[-6, 3, 6]} rotation-y={Math.PI / 4} scale={[3, 9, 1]} />
                   <Lightformer form="rect" intensity={4} position={[6, -3, 6]} rotation-y={-Math.PI / 4} scale={[3, 9, 1]} />

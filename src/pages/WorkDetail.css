@@ -1,119 +1,58 @@
 .detail {
-  --nav-h: 40px; /* must match the .header height in Header.css */
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--panel-w); /* same split as the works page and the nav tabs (set in index.css) */
-  column-gap: 8px; /* space between the left panel and the images */
-  min-height: calc(100vh - var(--nav-h));
+  position: relative;
   background: #F9F7F6;
+  color: var(--fg);
+  padding: 2px 0 24px; /* Figma: 2px under the nav */
+  overflow-x: clip;
 }
 
-.detail__main {
-  position: sticky; /* stays in view while the images scroll */
-  top: var(--nav-h); /* under the sticky nav */
-  align-self: start;
+/* header: back link, logo, title and description on the left, the two accordions on the right */
+.detail__head {
+  position: relative;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  min-height: calc(100vh - var(--nav-h)); /* lets the pager sit at the bottom of the screen */
-  padding: 2px 0; /* Figma: 2px under the nav and 2px above the bottom edge */
-}
-
-.detail__back {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 24px; /* Figma: 8px 24px */
-  background: #2E1D11;
-  color: #F9F7F6;
-  text-decoration: none;
-  font: 500 13px/15px var(--font-mono);
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
-}
-.detail__back:focus-visible {
-  outline: 2px solid #1046F9;
-  outline-offset: 2px;
-}
-
-/* collapsible section */
-.section {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.section__bar {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  width: 100%;
-  height: 40px;
-  padding: 0 0 0 24px;
-  border: 0;
-  background: #EFE9E7;
-  text-align: left;
-  cursor: pointer;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 8px;
 }
-.section__title {
+.detail__headmain {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.detail__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  align-self: flex-start;
+  padding: 8px 24px;
   font: 500 13px/15px var(--font-mono);
   letter-spacing: -0.01em;
   text-transform: uppercase;
-  color: #1046F9;
-}
-.section__toggle {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 40px;
-  height: 40px;
-  background: #E5DEDC;
+  text-decoration: none;
   color: #1046F9;
   transition: background 0.2s ease;
 }
-.section__bar:hover .section__toggle {
-  background: #DDD4D1;
+.detail__back:hover {
+  background: #E6EAF7;
 }
-.section__bar:focus-visible {
+.detail__back:focus-visible {
   outline: 2px solid #1046F9;
   outline-offset: -2px;
 }
-.section__body {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-left: 24px; /* Figma: 24px gutter to the left of the open panel */
-  padding: 16px; /* Figma: 16px inside the panel */
-  background: #E5DEDC;
-  color: #2E1D11;
-}
-.section__body[hidden] {
-  display: none;
-}
-
-/* title row: name on the left, logo tile on the right */
-.detail__title {
+.detail__intro {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  min-height: 64px;
-  padding-left: 24px;
-}
-.detail__name {
-  min-width: 0;
-  margin: 0;
-  font: 600 18px/20px var(--font-sans);
-  letter-spacing: -0.04em;
-  color: #2E1D11;
-  overflow-wrap: anywhere;
+  gap: 16px;
+  padding: 0 24px;
 }
 .detail__mark {
   display: grid;
   place-items: center;
   flex: none;
-  width: 64px;
-  height: 64px;
+  width: 93px;
+  height: 93px;
   overflow: hidden;
 }
 .detail__mark img {
@@ -130,12 +69,122 @@
   text-align: center;
   overflow-wrap: anywhere;
 }
-
-/* project brief */
-.brief__text {
+.detail__text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  max-width: 517px;
+  min-width: 0;
+}
+.detail__name {
   margin: 0;
-  font: 500 13px/16px var(--font-sans);
+  font: 600 20px/25px var(--font-sans);
+  letter-spacing: -0.04em;
+  color: #2E1D11;
+  overflow-wrap: anywhere;
+}
+.detail__desc {
+  margin: 0;
+  font: 600 15px/20px var(--font-sans);
+  letter-spacing: -0.03em;
+  color: #2E1D11;
+}
+
+/* accordions: two bars; the open panel hangs below them, on top of the images */
+.detail__panels {
+  --bar: 40px;
+  position: relative;
+  z-index: 30; /* above the overlay */
+  flex: 0 0 413px;
+  height: calc(var(--bar) * 2 + 2px); /* two closed bars + the 2px gap; an open panel grows past this */
+}
+.acc__stack {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.acc {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.acc__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  height: var(--bar);
+  padding: 0 0 0 16px;
+  border: 0;
+  background: #EFE9E7;
+  text-align: left;
+  cursor: pointer;
+}
+.acc__title {
+  font: 500 13px/15px var(--font-mono);
   letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: #1046F9;
+}
+.acc__toggle {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--bar);
+  height: var(--bar);
+  background: #E5DEDC;
+  color: #1046F9;
+  transition: background 0.2s ease;
+}
+.acc__bar:hover .acc__toggle {
+  background: #DDD4D1;
+}
+.acc__bar:focus-visible {
+  outline: 2px solid #1046F9;
+  outline-offset: -2px;
+}
+.acc__body {
+  overflow: hidden; /* the spring animates this box's height */
+  background: #E5DEDC;
+  color: #2E1D11;
+}
+.acc__body[hidden] {
+  display: none;
+}
+.acc__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+/* blur layer behind an open panel (same look as the Lore info drawer) */
+.detail__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  padding: 0;
+  border: 0;
+  background: rgba(46, 29, 17, 0.2);
+  -webkit-backdrop-filter: blur(14.85px);
+  backdrop-filter: blur(14.85px);
+  opacity: 0;
+  visibility: hidden; /* closed: the blur isn't painted at all */
+  pointer-events: none;
+  transition: opacity 0.25s ease, visibility 0s linear 0.25s;
+  cursor: pointer;
+}
+.detail__overlay[data-open] {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.25s ease, visibility 0s;
 }
 
 /* details: label ---- value */
@@ -168,28 +217,31 @@
   outline-offset: 2px;
 }
 
-/* scrollable images on the right (2px from the right and bottom) */
+/* images: two columns, 2px gaps (Figma: 856 + 870 wide, 820 tall) */
 .detail__gallery {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 2px;
-  min-width: 0;
-  margin: 2px 2px 2px 0; /* 2px under the nav, from the right and from the bottom; the left gap comes from the grid */
+}
+.detail__gallery picture {
+  display: block;
 }
 .detail__gallery img {
   display: block;
   width: 100%;
-  height: calc(100vh - var(--nav-h) - 4px); /* one full panel per image, 2px gaps like Figma */
+  height: auto;
+  aspect-ratio: 864 / 820;
   object-fit: cover;
   background: #E3E3E3;
 }
 
-/* previous / next / all projects, pinned to the bottom of the left column */
+/* previous / next / all projects, centred under the images (Figma: 832px wide) */
 .pager {
   display: flex;
   flex-direction: column;
   gap: 2px; /* space between the Previous/Next row and the All projects button */
-  margin-top: auto;
+  width: min(832px, 100% - 32px);
+  margin: 2px auto 0;
 }
 .pager__row {
   display: flex;
@@ -278,77 +330,84 @@
 }
 .pager__all {
   display: flex;
-  justify-content: flex-start; /* Figma: label sits left */
+  justify-content: center; /* Figma: label sits in the middle */
   padding: 8px 24px;
-  background: #2E1D11;
-  color: #F9F7F6;
+  background: transparent;
+  color: #1046F9;
   text-decoration: none;
   font: 500 13px/15px var(--font-mono);
   letter-spacing: -0.01em;
   text-transform: uppercase;
+  transition: background 0.2s ease;
+}
+.pager__all:hover {
+  background: #E6EAF7;
 }
 .pager__all:focus-visible {
   outline: 2px solid #1046F9;
   outline-offset: -4px;
 }
 
-/* tablet and mobile: one column, the pager drops below the images */
-@media (max-width: 900px) {
-  .detail {
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: 2px;
-    min-height: 0;
-    padding: 2px 0;
+/* skip layout and paint for the pager until it's near the viewport */
+.pager {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 180px;
+}
+
+/* touch: bigger tap targets on the accordion bars */
+@media (pointer: coarse) {
+  .detail__panels { --bar: 48px; }
+}
+
+/* tablet: the header stacks and the accordions go full width */
+@media (max-width: 1100px) {
+  .detail { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+  .detail__head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 0;
   }
-  .detail__main {
-    display: contents; /* back button and sections join the page flow, so the pager can come after the gallery */
-  }
-  .detail__back,
-  .detail__title,
-  .section__bar,
+  .detail__back { padding: 8px 16px; }
+  .detail__intro { padding: 0 16px; }
+  .detail__text { max-width: none; }
+  .detail__panels { flex: none; width: 100%; }
+  .pager { width: 100%; margin: 2px 0 0; }
   .pager__label,
-  .pager__all {
-    padding-left: 16px;
+  .pager__card { padding-left: 16px; }
+}
+
+/* phone: one column of images, tighter type, lighter blur */
+@media (max-width: 700px) {
+  .detail__gallery { grid-template-columns: minmax(0, 1fr); }
+  .detail__mark { width: 72px; height: 72px; }
+  .detail__intro { align-items: flex-start; gap: 12px; }
+  .detail__name { font-size: 18px; line-height: 22px; }
+  .detail__desc { font-size: 14px; line-height: 19px; }
+  .pager__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
-  .section__body {
-    margin-left: 16px;
+  .pager__tag {
+    max-width: 60%;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .detail__gallery {
-    margin: 0;
-  }
-  .detail__gallery img {
-    height: auto;
-    aspect-ratio: 1153 / 1073; /* same framing as the desktop panel */
-  }
-  .pager {
-    order: 1; /* after the images */
-    margin-top: 0;
-  }
-  .pager__card {
-    padding-left: 16px;
+  .detail__overlay {
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
   }
 }
 
 /* small phones: Previous and Next stack so each card gets the full width */
 @media (max-width: 480px) {
-  .pager__row {
-    flex-direction: column;
-  }
-  .pager__item {
-    flex: none;
-  }
-  .detail__name {
-    font-size: 18px;
-    line-height: 24px;
-  }
-  .detail__mark {
-    width: 56px;
-    height: 56px;
-  }
-  .row {
-    flex-wrap: wrap; /* long values drop below their label instead of squeezing */
-  }
-  .row__line {
-    min-width: 0;
-  }
+  .pager__row { flex-direction: column; }
+  .pager__item { flex: none; }
+  .row { flex-wrap: wrap; } /* long values drop below their label instead of squeezing */
+  .row__line { min-width: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .detail__overlay { transition: none; }
 }

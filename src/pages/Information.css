@@ -23,12 +23,17 @@
   padding-top: 42px; /* Figma: 82px from the frame top, minus the 40px nav */
 }
 
-.information__hello {
+.information__intro {
   grid-column: 1;
   grid-row: 1;
-  width: min(362px, 100%);
-  margin: 0;
+  display: flow-root; /* contains the floated bobblehead */
+  box-sizing: border-box;
+  width: min(420px, 100%);
   padding-left: 24px;
+}
+.information__hello {
+  margin: 0;
+  padding-left: 0;
   font: 600 20px/20px var(--font-sans);
   letter-spacing: -0.03em;
   color: var(--fg);
@@ -152,26 +157,11 @@
   padding: 0;
   list-style: none;
 }
-
-.information .information__bobble {
-  grid-column: 1;
-  grid-row: 3;
-  align-self: end;
-  padding: 0 0 0 24px;
-}
-
-/* tall desktop screens: pin the bobblehead to the bottom of the first screen, under the education text */
-@media (min-width: 1101px) and (min-height: 860px) {
-  .information .information__bobble {
-    grid-column: auto; /* "auto" so it positions against the page, not a grid row */
-    grid-row: auto;
-    position: absolute;
-    left: 0;
-    top: calc(100vh - 46px - clamp(100px, 8.68vw, 150px) * 1.034); /* 46px = nav + a small gap; the multiplier is the figure's height/width ratio */
-  }
+.information {
+  --bobble-w: clamp(70px, 5.2vw, 90px); /* width of the whole image, including its transparent sides */
 }
 .information .bobble__fig {
-  width: clamp(100px, 8.68vw, 150px); /* Figma: 150px at 1728px wide */
+  width: var(--bobble-w);
 }
 
 /* small laptops, tablets: two columns, everything flows in order */
@@ -193,9 +183,12 @@
     margin: 0;
     padding: 0;
   }
-  .information__hello {
+  .information__intro {
     grid-column: 1 / -1;
-    max-width: 338px;
+    grid-row: auto;
+    width: auto;
+    max-width: 420px;
+    padding-left: 0; /* the page already has 16px side padding here */
   }
   .information__bottom {
     grid-column: 1 / -1;
@@ -217,14 +210,8 @@
     padding: 0;
     margin: 0;
   }
-  .information .information__bobble {
-    grid-column: 1 / -1;
-    grid-row: auto;
-    align-self: start;
-    padding: 0;
-  }
-  .information .bobble__fig {
-    width: 120px;
+  .information {
+    --bobble-w: 120px;
   }
 }
 
@@ -244,6 +231,9 @@
     width: 89.2%;
     max-width: none;
     margin: 3.8% 0 0 5.4%; /* same proportions as the desktop frame */
+  }
+    .information .bobble__fig {
+    width: 100px;
   }
 }
 

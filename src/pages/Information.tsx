@@ -58,9 +58,10 @@ export default function Information() {
   return (
     <main className="information">
       <div className="information__top">
-        <Bobblehead />
-
-        <h1 className="information__hello">Hello there, my name is Hamdiya or simply Diya</h1>
+        <div className="information__intro">
+          <Bobblehead />
+          <h1 className="information__hello">Hello there, my name is Hamdiya or simply Diya. A product and UI/UX designer who also builds what she designs. I also can be called a visual & interaction designer. I’m based in Ghana.</h1>
+        </div>
 
         <div className="information__frame">
           <div className="information__head" ref={headRef} onPointerEnter={handleEnter} onPointerLeave={stop}>
@@ -71,10 +72,6 @@ export default function Information() {
         <section className="information__block information__about">
           <h2 className="information__label">About me</h2>
           <div className="information__copy">
-            <p>
-              I’m Diya, a <em>product and UI/UX designer</em> who also builds what she designs. I also can be called a{" "}
-              <em>visual &amp; interaction designer</em>. I’m based in Ghana.
-            </p>
             <p>
               I’ve spent <em>4+ years</em> designing interfaces and developing some of them in Framer. I recently started
               building my own apps and tools with the help of AI too. I like owning the whole path, from the first sketch to

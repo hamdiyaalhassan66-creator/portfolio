@@ -3,6 +3,12 @@ import { useEffect, useRef } from "react";
 const SRC = "/information/bobblehead.png";
 const PIVOT_X = 0.487; // where the spring sits across the image (fraction of width)
 
+// outline of the figure traced from bobblehead.png, in % of the visible figure (the middle 52% of the image)
+const SHAPE =
+  "polygon(50% 0%, 69% 2%, 87% 7%, 94% 14%, 98% 24%, 98% 36%, 90% 47%, 85% 53%, 75% 58%, 62% 60%, 58% 64%, " +
+  "81% 66%, 92% 70%, 98% 77%, 89% 83%, 77% 87%, 77% 99%, 27% 99%, 27% 87%, 15% 83%, 4% 77%, 8% 70%, 19% 66%, " +
+  "42% 64%, 38% 60%, 25% 58%, 15% 53%, 8% 47%, 2% 36%, 2% 24%, 6% 14%, 14% 7%, 31% 2%)";
+
 // a bobblehead: drag it and it leans toward the cursor; let go and it wiggles back on a loose spring
 export default function Bobblehead() {
   const boxRef = useRef<HTMLDivElement>(null);
@@ -97,8 +103,11 @@ export default function Bobblehead() {
   };
 
   return (
-    <div className="information__bobble">
-      <div className="bobble__fig" ref={boxRef}>
+    <div
+      className="information__bobble"
+      style={{ float: "left", width: "calc(var(--bobble-w, 90px) * 0.52)", margin: 0, padding: 0, shapeOutside: SHAPE, shapeMargin: "12px" }}
+    >
+      <div className="bobble__fig" ref={boxRef} style={{ marginLeft: "calc(var(--bobble-w, 90px) * -0.24)" }}>
         <img className="bobble__body" src={SRC} alt="" draggable={false} />
         <img
           className="bobble__head"

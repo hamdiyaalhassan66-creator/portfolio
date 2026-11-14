@@ -27,6 +27,11 @@ const TEAM: Collaborator[] = [
 
 const shots = (id: string) => [1, 2, 3, 4, 5].map((n) => `/works/${id}-${n}.jpg`);
 
+// responsive variants made by scripts/optimize-images.mjs
+const WIDTHS = [480, 864, 1296];
+export const srcSet = (src: string, ext: "avif" | "webp") =>
+  WIDTHS.map((w) => `${src.replace(/\.jpg$/, "")}-${w}.${ext} ${w}w`).join(", ");
+
 export const PROJECTS: Project[] = [
   { id: "dex", name: "dEX Ghana", blurb: "A platform for building, connecting, and championing Africa's design community.", description: "A website design done for dEX Ghana. It is essentially a platform for building, connecting, educating, and championing Africa's design community.", color: "#FFC200", logo: "/works/dex-logo.svg", logoSize: 45, images: shots("dex"), tags: ["Website design", "Community", "2026"], deliverables: "Website Design", industry: "Community", year: "2026", collaborators: TEAM, link: "https://dexghana.com" },
   { id: "manntion", name: "MANNTION", blurb: BLURB, description: brief("MANNTION"), color: "#FFFFFF", logo: "/works/manntion-logo.svg", logoSize: 78, images: shots("manntion"), tags: ["Website design", "Portfolio", "Framer", "2025"], deliverables: "Website Design", industry: "Portfolio", year: "2025", collaborators: TEAM, link: "https://manntion.com" },
