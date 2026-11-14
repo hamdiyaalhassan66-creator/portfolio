@@ -1,8 +1,8 @@
 .works {
   --nav-h: 40px; /* must match the .header height in Header.css */
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 66.72%; /* right panel = 1152 / 1728, same width as the nav tabs */
-  column-gap: 2px;
+  grid-template-columns: minmax(0, 1fr) var(--panel-w); /* right panel; the nav tabs use the same width (index.css) */
+  column-gap: 8px;
   min-height: calc(100vh - var(--nav-h));
   padding-top: 2px; /* Figma: content starts 2px under the nav */
   background: #F9F7F6;
@@ -41,7 +41,7 @@
 .works__list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 8px; /* Figma: 8px between rows */
   margin: 0;
   padding: 0;
   list-style: none;
@@ -54,9 +54,16 @@
   align-items: center;
   min-height: 100px;
   padding-left: 24px;
+  background: #EDEAE9; /* Figma: the row colour includes the 24px left gutter */
+  transition: background 0.2s ease;
 }
-.work:hover .work__body {
-  background: #DDD8D4;
+.work:hover {
+  background: #E2DDDA;
+}
+
+/* project preview under each row: only shown where the side panel is hidden (900px and below) */
+.work__preview {
+  display: none;
 }
 
 .work__logo {
@@ -88,8 +95,7 @@
   align-self: stretch;
   min-width: 0;
   padding: 13px 12px;
-  background: #E6E2E0;
-  transition: background 0.2s ease;
+  background: transparent; /* shows the row colour, so the whole row changes on hover */
 }
 
 .work__text {
@@ -137,7 +143,7 @@
 }
 .work__tags li {
   padding: 4px 8px;
-  background: #D4CFCC;
+  background: var(--bg); /* Figma: #F9F7F6 */
   color: #2E1D11;
   font: 500 12px/14px var(--font-mono);
   letter-spacing: -0.01em;
@@ -174,7 +180,7 @@
 }
 
 /* narrow desktop, tablet and mobile: same look as desktop (tags bottom right), but the tags sit in the row's flow so they never overlap the text */
-@media (max-width: 1200px) {
+@media (max-width: 1440px) {
   .work__body {
     display: flex;
     flex-direction: column;
@@ -209,7 +215,7 @@
     padding-left: 16px;
   }
   .work {
-    padding-left: 16px;
+    padding: 0 16px; /* the row's background fills the screen; the logo and text sit 16px in from each edge */
   }
   .work__logo {
     width: 88px;
@@ -217,6 +223,20 @@
   }
   .work__logo span {
     font-size: 13px;
+  }
+  .work__tags li:not(:first-child) {
+    display: none; /* tablet and mobile: only the deliverable tag */
+  }
+  .work__preview {
+    display: block;
+    margin-top: 2px; /* 2px between the row and its preview */
+  }
+  .work__preview img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    background: #E3E3E3;
   }
 }
 
@@ -227,7 +247,7 @@
   }
   .work {
     align-items: stretch;
-    padding-left: 12px;
+    padding: 0 16px;
   }
   .work__logo {
     width: 64px;

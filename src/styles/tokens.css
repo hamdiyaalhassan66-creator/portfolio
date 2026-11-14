@@ -21,6 +21,22 @@
   --space-6: 96px;
 
   --max-width: 1200px;
+
+  --panel-w: 66.38%; /* the works page's right panel and the nav tabs above it (Figma: 1147 / 1728) */
+}
+
+/* narrower laptops and large tablets: a wider left column gives the project rows room */
+@media (max-width: 1280px) {
+  :root {
+    --panel-w: 50%;
+  }
+}
+
+/* single column (no panel on the works page): only the nav uses this, so the tabs get more room */
+@media (max-width: 900px) {
+  :root {
+    --panel-w: 70%;
+  }
 }
 
 * {

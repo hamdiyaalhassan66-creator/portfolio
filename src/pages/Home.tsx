@@ -26,7 +26,8 @@ export default function Home() {
         <h2 className="works__tab">Recent Works</h2>
         <ul className="works__list">
           {PROJECTS.map((p) => (
-            <li key={p.id} className="work" onPointerEnter={() => setActive(p.id)} onPointerLeave={() => setActive(null)}>
+            <li key={p.id} className="work-item">
+              <div className="work" onPointerEnter={() => setActive(p.id)} onPointerLeave={() => setActive(null)}>
               <div className="work__logo" style={{ background: p.color }}>
                 {p.logo ? <img src={p.logo} alt="" style={{ width: `${p.logoSize ?? 45}%` }} /> : <span>{p.mark ?? p.name}</span>}
               </div>
@@ -38,11 +39,19 @@ export default function Home() {
                   <p className="work__blurb">{p.blurb}</p>
                 </div>
                 <ul className="work__tags">
-                  {p.tags.map((t) => (
-                    <li key={t}>{t}</li>
-                  ))}
+                  {p.tags
+                    .filter((t) => !/^\d{4}$/.test(t) && t.toLowerCase() !== "framer") // drops the year and Framer tags
+                    .map((t) => (
+                      <li key={t}>{t}</li>
+                    ))}
                 </ul>
               </div>
+              </div>
+              {p.images[0] && (
+                <Link to={`/works/${p.id}`} className="work__preview" tabIndex={-1} aria-hidden="true">
+                  <img src={p.images[0]} alt="" loading="lazy" />
+                </Link>
+              )}
             </li>
           ))}
         </ul>

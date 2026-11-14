@@ -48,6 +48,47 @@ export default function Bobblehead() {
     return () => window.clearTimeout(t);
   }, []);
 
+  // shake the phone and the head rocks: reads the accelerometer and kicks the swing on a hard jolt
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!("DeviceMotionEvent" in window)) return;
+    let px = 0;
+    let py = 0;
+    let pz = 0;
+    let ready = false; // the first reading only sets the baseline
+    let lastKick = 0;
+    const onMotion = (e: DeviceMotionEvent) => {
+      const a = e.accelerationIncludingGravity;
+      if (!a || a.x == null || a.y == null || a.z == null) return;
+      const dx = a.x - px;
+      const jolt = Math.abs(dx) + Math.abs(a.y - py) + Math.abs(a.z - pz);
+      px = a.x;
+      py = a.y;
+      pz = a.z;
+      if (!ready) {
+        ready = true;
+        return;
+      }
+      const now = performance.now();
+      const s = w.current;
+      if (jolt > 15 && now - lastKick > 50 && !s.drag) { // 15 = how hard the shake has to be (lower = more sensitive)
+        lastKick = now;
+        s.v += Math.max(-6, Math.min(6, -dx * 0.5)); // 6 = strongest single kick
+      }
+    };
+    window.addEventListener("devicemotion", onMotion);
+    return () => window.removeEventListener("devicemotion", onMotion);
+  }, []);
+
+  // iPhones only send motion data after a one-time permission, which has to be asked from a tap
+  const motionAsked = useRef(false);
+  const askMotion = () => {
+    if (motionAsked.current) return;
+    motionAsked.current = true;
+    const DME = (window as any).DeviceMotionEvent;
+    if (typeof DME?.requestPermission === "function") DME.requestPermission().catch(() => {});
+  };
+
   const pull = (e: React.PointerEvent) => {
     const r = boxRef.current?.getBoundingClientRect();
     if (!r) return;
@@ -74,7 +115,10 @@ export default function Bobblehead() {
             if (w.current.drag) pull(e);
             else w.current.v += Math.max(-4, Math.min(4, e.movementX * 0.1)); // brushing past it gives it a push
           }}
-          onPointerUp={() => (w.current.drag = false)}
+          onPointerUp={() => {
+            w.current.drag = false;
+            askMotion();
+          }}
           onPointerCancel={() => (w.current.drag = false)}
         />
       </div>

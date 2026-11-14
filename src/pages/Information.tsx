@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from "react";
-import ThreadIndex from "../components/ThreadIndex";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import Bobblehead from "../components/Bobblehead";
 import "./Information.css";
+
+// three.js lives in its own chunk, so the text and portrait paint first
+const ThreadIndex = lazy(() => import("../components/ThreadIndex"));
 
 // the cut-out head shots; hovering the head steps to the next one
 const PORTRAITS = [
@@ -43,94 +45,91 @@ export default function Information() {
 
   useEffect(() => stop, []); // clear on unmount
   useEffect(() => {
-    PORTRAITS.forEach((src) => {
-      const img = new Image();
-      img.src = src;
-    }); // preload so the swap never flashes
+    // preload the other faces when the browser is idle so the swap never flashes
+    const load = () =>
+      PORTRAITS.slice(1).forEach((src) => {
+        const img = new Image();
+        img.src = src;
+      });
+    const hasIdle = "requestIdleCallback" in window;
+    const id = hasIdle ? window.requestIdleCallback(load) : window.setTimeout(load, 800);
+    return () => (hasIdle ? window.cancelIdleCallback(id) : window.clearTimeout(id));
   }, []);
   return (
     <main className="information">
-      <div
-        className="information__head"
-        ref={headRef}
-        onPointerEnter={handleEnter}
-        onPointerLeave={stop}
-      >
-        <img
-          src={PORTRAITS[face]}
-          alt="Portrait of Dee"
-          draggable={false}
-        />
-      </div>
       <div className="information__top">
-        <div className="information__upper">
-          <Bobblehead />
-          <div className="information__col">
-            <section className="information__block">
-              <h2 className="information__label">About me</h2>
-              <div className="information__copy">
-                <p>
-                  I’m Diya, a <em>product and UI/UX designer</em> who also builds what she designs. I also can be called a{" "}
-                  <em>visual &amp; interaction designer</em>. I’m based in Ghana.
-                </p>
-                <p>
-                  I’ve spent <em>4+ years</em> designing interfaces and developing some of them in Framer. I recently
-                  started building my own apps and tools with the help of AI too. I like owning the whole path, from the
-                  first sketch to the shipped component.
-                </p>
-                <p>
-                  My approach focuses on visual direction, consistency, and story-telling, shaping ideas into visuals that
-                  feel intentional and relevant. I refine each project according to how I think and see things
-                </p>
-              </div>
-            </section>
+        <Bobblehead />
 
-            <section className="information__block">
-              <h2 className="information__label">Education</h2>
-              <div className="information__copy">
-                <p>
-                  I’ve always been a creative and visual individual growing up and I guess it was natural for me to switch
-                  to the design path after studying Statistics with Computer Science from the University of Ghana. I used
-                  to illustrate, and it still shapes how I design. I look for the small, odd detail that makes a screen
-                  feel like someone made it.
-                </p>
-                <p>
-                  I’m opened to any<em> freelance projects, collaborations, or full-time opportunities</em>.
-                </p>
-              </div>
-            </section>
+        <h1 className="information__hello">Hello there, my name is Hamdiya or simply Diya</h1>
 
-            <section className="information__block">
-              <h2 className="information__label">Capabilities</h2>
-              <div className="information__caps">
-                {CAPABILITIES.map((col, i) => (
-                  <ul key={i}>
-                    {col.map((c) => (
-                      <li key={c}>{c}</li>
-                    ))}
-                  </ul>
-                ))}
-              </div>
-            </section>
-
-            <section className="information__block information__work">
-              <h2 className="information__label">Work experience</h2>
-              <div className="information__jobs">
-                {WORK.map((w, i) => (
-                  <div className="information__job" key={i}>
-                    <div className="information__job-main">
-                      <div>{w.role}</div>
-                      <div>{w.place}</div>
-                    </div>
-                    <span className="information__years">{w.years}</span>
-                  </div>
-                ))}
-              </div>
-            </section>
+        <div className="information__frame">
+          <div className="information__head" ref={headRef} onPointerEnter={handleEnter} onPointerLeave={stop}>
+            <img src={PORTRAITS[face]} alt="Portrait of Dee" draggable={false} />
           </div>
         </div>
+
+        <section className="information__block information__about">
+          <h2 className="information__label">About me</h2>
+          <div className="information__copy">
+            <p>
+              I’m Diya, a <em>product and UI/UX designer</em> who also builds what she designs. I also can be called a{" "}
+              <em>visual &amp; interaction designer</em>. I’m based in Ghana.
+            </p>
+            <p>
+              I’ve spent <em>4+ years</em> designing interfaces and developing some of them in Framer. I recently started
+              building my own apps and tools with the help of AI too. I like owning the whole path, from the first sketch to
+              the shipped component.
+            </p>
+            <p>
+              My approach focuses on visual direction, consistency, and story-telling, shaping ideas into visuals that feel
+              intentional and relevant. I refine each project according to how I think and see things
+            </p>
+          </div>
+        </section>
+
+        <div className="information__bottom">
+          <section className="information__block information__education">
+            <h2 className="information__label">Education</h2>
+            <div className="information__copy">
+              <p>
+                I’ve always been a creative and visual individual growing up and I guess it was natural for me to switch to the
+                design path after studying Statistics with Computer Science from the University of Ghana. I used to illustrate,
+                and it still shapes how I design. I look for the small, odd detail that makes a screen feel like someone made it.
+              </p>
+              <p>
+                I’m opened to any<em> freelance projects, collaborations, or full-time opportunities</em>.
+              </p>
+            </div>
+          </section>
+
+          <section className="information__block information__work">
+            <h2 className="information__label">Work experience</h2>
+            <div className="information__jobs">
+              {WORK.map((w) => (
+                <div className="information__job" key={`${w.place}-${w.years}`}>
+                  <div className="information__job-main">
+                    <div>{w.role}</div>
+                    <div>{w.place}</div>
+                  </div>
+                  <span className="information__years">{w.years}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="information__block information__skills">
+            <h2 className="information__label">Capabilities</h2>
+            <ul className="information__caplist">
+              {CAPABILITIES.flat().map((c) => (
+                <li key={c}>{c}</li>
+              ))}
+            </ul>
+          </section>
+        </div>
       </div>
-      <ThreadIndex headRef={headRef} />
+      <Suspense fallback={null}>
+        <ThreadIndex headRef={headRef} />
+      </Suspense>
     </main>
   );
 }

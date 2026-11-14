@@ -1,4 +1,4 @@
-import { Fragment, Suspense, useEffect, useMemo, useRef } from "react";
+import { Fragment, Suspense, memo, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode, RefObject } from "react";
 import { Link } from "react-router-dom";
 import { Canvas, createPortal, useFrame } from "@react-three/fiber";
@@ -56,10 +56,35 @@ const STAGGER = 0.05; // each following model waits a little longer
 const REVEAL_SPEED = 0.1; // how fast each one comes out (higher = faster)
 const ARRIVE_EASE = 0.08; // how fast the reveal clock runs (higher = models come out sooner)
 const TRIP_EASE = 0.12; // how closely the head follows the scroll (higher = tighter, lower = floatier)
-const HEAD_END = 0.7; // size of the portrait once it has landed (1 = no shrink)
+const HEAD_END = 1.15; // size of the portrait once it has landed (1 = no shrink)
 // ----------------------------
 
 const clamp = (v: number, a: number, b: number) => Math.min(Math.max(v, a), b);
+
+// the portrait's route, read off the path you drew: [how far through the scroll (0..1), sideways shift as a fraction of the screen width]
+// it swings out to the right, then curves back to the middle, where it lands (the final point is added in the loop below)
+const ROUTE: [number, number][] = [
+  [0, 0],
+  [0.24, 0.164],
+  [0.44, 0.312],
+  [0.61, 0.387],
+  [0.75, 0.417], // the furthest point on the right
+  [0.84, 0.364],
+  [0.89, 0.237],
+  [0.97, 0.09],
+];
+
+// smooth curve through the route points (Catmull-Rom)
+function along(pts: [number, number][], t: number) {
+  let i = 0;
+  while (i < pts.length - 2 && t > pts[i + 1][0]) i++;
+  const [t0, y1] = pts[i];
+  const [t1, y2] = pts[i + 1];
+  const y0 = (pts[i - 1] ?? pts[i])[1];
+  const y3 = (pts[i + 2] ?? pts[i + 1])[1];
+  const u = clamp((t - t0) / (t1 - t0), 0, 1);
+  return 0.5 * (2 * y1 + (y2 - y0) * u + (2 * y0 - 5 * y1 + 4 * y2 - y3) * u * u + (3 * y1 - y0 - 3 * y2 + y3) * u * u * u);
+}
 
 const DEMO = false; // true = fake play/idle cycle with no Spotify
 // where the song is engraved, in the body's own space. x/y are fractions of the body's size from its centre
@@ -228,12 +253,20 @@ useFrame(({ clock }, dt) => {
   );
 }
 
-export default function ThreadIndex({ headRef }: Props) {
+function ThreadIndex({ headRef }: Props) {
   const rootRef = useRef<HTMLElement>(null);
 const now = useNowPlaying();
   const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
   const tagRef = useRef<HTMLParagraphElement>(null);
   const rotRef = useRef<number[]>([]); // per item: yaw, pitch
+    const [live, setLive] = useState(false);
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const io = new IntersectionObserver(([e]) => setLive(e.isIntersecting), { rootMargin: "300px 0px" });
+    io.observe(root);
+    return () => io.disconnect();
+  }, []);
 
   // spread the picks evenly through the list so sleeves and discs are mixed
   const picked = useMemo<Entry[]>(
@@ -321,12 +354,18 @@ useEffect(() => {
     const goal = maxY > 0 ? clamp(window.scrollY / maxY, 0, 1) : 1;
     trip += (goal - trip) * (started && !reduce ? Math.min(TRIP_EASE * s, 1) : 1);
     if (Math.abs(goal - trip) < 0.0005) trip = goal;
-    // where the middle of this section is, measured from the head's own spot
-    const toX = root.offsetLeft + W / 2 - hw / 2 - head.offsetLeft;
-    const toY = root.offsetTop + H / 2 - hh / 2 - head.offsetTop;
-    hx = toX * trip ** 3; // slides sideways late, so it drops down the right edge first and stays clear of the text
+    // where the portrait rests (inside its frame) and where the middle of this section is, in screen coordinates
+    const fr = head.offsetParent!.getBoundingClientRect();
+    const rr = root.getBoundingClientRect();
+    const restX = fr.left + head.offsetLeft;
+    const restY = fr.top + head.offsetTop;
+    const toX = rr.left + W / 2 - (restX + hw / 2);
+    const toY = rr.top + H / 2 - (restY + hh / 2);
+    // sideways: follows the drawn route, kept 24px inside the right edge; down: steadily with the scroll
+    const sc = 1 - (1 - HEAD_END) * trip;
+    hx = Math.min(along([...ROUTE, [1, toX / W]], trip) * W, window.innerWidth - 24 - (hw * sc) / 2 - (restX + hw / 2));
     hy = toY * trip;
-    head.style.transform = `translate(${hx}px, ${hy}px) scale(${1 - (1 - HEAD_END) * trip})`;
+    head.style.transform = `translate(${hx}px, ${hy}px) scale(${sc})`;
     if (!shown && trip > LAND_AT) shown = true; // the models come out as the head lands; plays once
     arrive += ((shown ? 1 : 0) - arrive) * (started && !reduce ? Math.min(ARRIVE_EASE * s, 1) : 1);
     started = true;
@@ -344,8 +383,8 @@ useEffect(() => {
     const fit = clamp(Math.min(W / REF_W, H / REF_H), SCALE_MIN, SCALE_MAX);
 
     // where the head's centre is right now, in this section's space (items start here)
-    const ox = head.offsetLeft - root.offsetLeft + hx + hw / 2;
-    const oy = head.offsetTop - root.offsetTop + hy + hh / 2;
+    const ox = restX + hx + hw / 2 - rr.left;
+    const oy = restY + hy + hh / 2 - rr.top;
 
     for (let t = 0; t < count; t++) {
       const [fx, fy, base, depth] = SLOTS[t];
@@ -471,6 +510,7 @@ useEffect(() => {
               <Canvas
                 className="thread-item__model"
                 resize={{ offsetSize: true, scroll: false }}
+                frameloop={live ? "always" : "never"}
                 dpr={[1, 1.5]}
                 flat
                 gl={{ alpha: true, antialias: true }}
@@ -478,7 +518,7 @@ useEffect(() => {
               >
                 <ambientLight intensity={0.55} />
                 <directionalLight position={[3, 4, 10]} intensity={0.35} />
-                <Environment resolution={256}>
+                <Environment resolution={128}>
                   <Lightformer form="rect" intensity={0.4} position={[0, 0, 8]} scale={[12, 12, 1]} />
                   <Lightformer form="rect" intensity={4} position={[-6, 3, 6]} rotation-y={Math.PI / 4} scale={[3, 9, 1]} />
                   <Lightformer form="rect" intensity={4} position={[6, -3, 6]} rotation-y={-Math.PI / 4} scale={[3, 9, 1]} />
@@ -501,3 +541,5 @@ useEffect(() => {
     </section>
   );
 }
+
+export default memo(ThreadIndex);

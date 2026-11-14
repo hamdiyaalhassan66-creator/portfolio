@@ -35,9 +35,9 @@
 .header__nav {
   display: flex;
   gap: 2px;
-  flex: 0 0 66.72%; /* 1153px of the 1728px Figma frame */
+  flex: 0 0 var(--panel-w); /* same width as the preview panel on the works page, set in index.css */
   min-width: 0;
-  margin-left: auto;
+  margin-left: auto; /* pushes the tabs to the right edge, above the preview panel */
 }
 
 .header__link {
@@ -82,7 +82,7 @@
 @media (max-width: 767px) {
   .header__logo {
     width: auto;
-    padding: 10px 12px;
+    padding: 10px 16px;
   }
   .header__nav {
     display: none; /* the tabs live in the menu on small screens */
@@ -200,9 +200,6 @@
 @media (min-width: 768px) and (max-width: 1100px) {
   .header__logo {
     padding: 10px 16px;
-  }
-  .header__nav {
-    flex-basis: 70%;
   }
   .header__link {
     padding: 10px 8px;

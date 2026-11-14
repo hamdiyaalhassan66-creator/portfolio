@@ -56,6 +56,7 @@ function PagerItem({ label, project }: { label: string; project: Project }) {
       <span className="pager__card">
         <ProjectLogo project={project} className="pager__logo" />
         <span className="pager__name">{project.name}</span>
+        <span className="pager__tag">{project.deliverables}</span>
       </span>
     </Link>
   );

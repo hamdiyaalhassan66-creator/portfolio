@@ -11,22 +11,56 @@
 .information p { margin: 0; }
 .information em { font-style: normal; color: inherit; }
 
+/* the page is a 3-column grid that scales with the screen (Figma: 1728px frame) */
 .information__top {
   position: relative;
-  padding-bottom: 28px; /* plus the 72px above the bottom section's title = Figma's 100px gap */
-}
-.information__upper {
-  position: relative;
-  padding-top: 40px; /* Figma: 80px from the frame top, minus the 40px nav */
-}
-.information__col {
-  display: flex;
-  flex-direction: column;
-  gap: 77px; /* Figma: 77px between the sections */
-  width: min(40.8%, 705px); /* Figma: 705px of the 1728px frame */
-  margin-left: 33.27%; /* Figma: 575px of the 1728px frame */
+  display: grid;
+  grid-template-columns: 557fr 345fr 826fr; /* 24→581 | portrait frame 581→926 | the rest */
+  grid-template-rows: auto auto 1fr; /* the last row holds the bobblehead and stretches to fill the first screen */
+  align-items: start;
+  row-gap: clamp(48px, 6.65vw, 115px); /* Figma: 115px between the rows */
+  min-height: calc(100vh - 40px); /* the bobblehead sits at the bottom of the first screen */
+  padding-top: 42px; /* Figma: 82px from the frame top, minus the 40px nav */
 }
 
+.information__hello {
+  grid-column: 1;
+  grid-row: 1;
+  width: min(362px, 100%);
+  margin: 0;
+  padding-left: 24px;
+  font: 600 20px/20px var(--font-sans);
+  letter-spacing: -0.03em;
+  color: var(--fg);
+}
+
+/* grey frame: it stays put, the portrait leaves it when you scroll */
+.information__frame {
+  position: relative;
+  grid-column: 2;
+  grid-row: 1;
+  width: 100%;
+  aspect-ratio: 1;
+  background: rgba(46, 29, 17, 0.1);
+}
+.information__head {
+  position: absolute;
+  left: 5.4%; /* Figma: 307.74px wide, centred in the 345px frame */
+  top: 3.8%;
+  width: 89.2%;
+  z-index: 5;
+  pointer-events: none;
+  will-change: transform;
+}
+.information__head img {
+  display: block;
+  width: 100%;
+  height: auto;
+  -webkit-user-drag: none;
+  pointer-events: auto;
+}
+
+/* text blocks */
 .information__block {
   display: flex;
   flex-direction: column;
@@ -48,26 +82,37 @@
   gap: 24px;
 }
 
-/* capabilities: two columns */
-.information__caps {
-  display: flex;
-  gap: 8px;
+.information__about {
+  grid-column: 3;
+  grid-row: 1;
+  width: min(487px, calc(100% - 8px));
+  margin-left: 8px;
 }
-.information__caps ul {
-  display: flex;
-  flex: 1 1 0;
-  flex-direction: column;
-  gap: 4px;
+/* bottom stack: same 3 columns as the row above, so capabilities lines up with About me */
+.information__bottom {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: 557fr 345fr 826fr;
+  align-items: start;
   min-width: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+}
+.information__education {
+  box-sizing: border-box;
+  width: min(573px, 100%); /* 24px padding + 549px of text (Figma) */
+  padding-left: 24px;
+  min-width: 0;
+}
+.information__work {
+  padding-right: 16px; /* 16px + the 8px offset on capabilities = Figma's 24px gap */
+  min-width: 0;
+}
+.information__skills {
+  margin-left: 8px; /* same offset as .information__about */
+  min-width: 0;
 }
 
-/* work experience */
-.information__work {
-  width: 90.64%; /* Figma: 639px of the 705px column */
-}
+/* work experience: dates on the left, role and company on the right */
 .information__jobs {
   display: flex;
   flex-direction: column;
@@ -75,8 +120,7 @@
 }
 .information__job {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-start;
   gap: 8px;
 }
 .information__job-main {
@@ -84,86 +128,122 @@
   flex-direction: column;
   justify-content: center;
   gap: 2px;
+  flex: 1 1 0;
   min-width: 0;
 }
 .information__years {
   flex: none;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  height: 15px;
+  background: rgba(46, 29, 17, 0.1);
+  font: 500 13px/15px var(--font-mono);
+  letter-spacing: -0.03em;
   white-space: nowrap;
 }
 
-/* card portrait, top right */
-.information__head {
-  position: absolute;
-  right: 0;
-  top: 2px; /* Figma: 2px under the nav */
-  width: 25.75%; /* Figma: 445px of the 1728px frame */
-  max-width: 445px;
-  aspect-ratio: 445 / 582;
-  overflow: hidden;
-  pointer-events: none;
-  will-change: transform;
-  z-index: 5;
-}
-.information__head img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* switch to contain if the cut-out looks cropped */
-  object-position: 50% 100%;
-  -webkit-user-drag: none;
-  pointer-events: auto;
+/* capabilities: one column */
+.information__caplist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-/* desktop and large tablets: the bobblehead sits at the bottom left of the first screen */
-@media (min-width: 901px) {
-  .information {
-    --bobble-w: clamp(110px, 10.5vw, 181px); /* Figma: 181px at 1728px wide */
-  }
+.information .information__bobble {
+  grid-column: 1;
+  grid-row: 3;
+  align-self: end;
+  padding: 0 0 0 24px;
+}
+
+/* tall desktop screens: pin the bobblehead to the bottom of the first screen, under the education text */
+@media (min-width: 1101px) and (min-height: 860px) {
   .information .information__bobble {
+    grid-column: auto; /* "auto" so it positions against the page, not a grid row */
+    grid-row: auto;
     position: absolute;
     left: 0;
-    top: calc(100vh - 40px - var(--bobble-w) * 1275 / 1233); /* 100vh minus the 40px nav, minus the figure's own height */
-    z-index: 3;
+    top: calc(100vh - 46px - clamp(100px, 8.68vw, 150px) * 1.034); /* 46px = nav + a small gap; the multiplier is the figure's height/width ratio */
+  }
+}
+.information .bobble__fig {
+  width: clamp(100px, 8.68vw, 150px); /* Figma: 150px at 1728px wide */
+}
+
+/* small laptops, tablets: two columns, everything flows in order */
+@media (max-width: 1100px) {
+  .information__top {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: none;
+    column-gap: 24px;
+    row-gap: 40px;
+    min-height: 0;
+    padding: 24px 16px 48px; /* 16px left and right */
+  }
+  .information__hello,
+  .information__frame,
+  .information__about {
+    grid-column: auto;
+    grid-row: auto;
+    width: auto;
+    margin: 0;
+    padding: 0;
+  }
+  .information__hello {
+    grid-column: 1 / -1;
+    max-width: 338px;
+  }
+  .information__bottom {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 24px;
+    row-gap: 40px;
+    padding: 0;
+  }
+  .information__education {
+    grid-column: 1 / -1;
+    width: auto;
+    max-width: 549px;
+    padding-left: 0;
+  }
+  .information__work,
+  .information__skills {
+    padding: 0;
+    margin: 0;
+  }
+  .information .information__bobble {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    align-self: start;
     padding: 0;
   }
   .information .bobble__fig {
-    width: var(--bobble-w);
+    width: 120px;
   }
 }
 
-/* small laptops and large tablets: a narrower column leaves air before the portrait */
-@media (min-width: 901px) and (max-width: 1100px) {
-  .information__col {
-    width: 38%;
-  }
-}
-
-/* tablet portrait and mobile: one column, the bobblehead sits above the text */
-@media (max-width: 900px) {
+/* phones: one column */
+@media (max-width: 600px) {
   .information__top {
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
-    padding: 24px 16px 48px; /* 16px left and right */
+    grid-template-columns: minmax(0, 1fr);
   }
-  .information__upper {
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-    padding-top: 0;
+  .information__bottom {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 32px;
   }
-  .information .information__bobble {
-    order: -1;
-    padding: 0;
+  .information__frame {
+    max-width: none;
   }
-  .information__col {
-    gap: 40px;
-    width: 100%;
-    max-width: 705px;
-    margin-left: 0;
-  }
-  .information__work {
-    width: 100%;
+  .information .information__head {
+    width: 89.2%;
+    max-width: none;
+    margin: 3.8% 0 0 5.4%; /* same proportions as the desktop frame */
   }
 }
 

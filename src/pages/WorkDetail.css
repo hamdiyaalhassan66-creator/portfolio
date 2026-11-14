@@ -1,8 +1,8 @@
 .detail {
   --nav-h: 40px; /* must match the .header height in Header.css */
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 66.72%; /* same split as the works page */
-  column-gap: 2px;
+  grid-template-columns: minmax(0, 1fr) var(--panel-w); /* same split as the works page and the nav tabs (set in index.css) */
+  column-gap: 8px; /* space between the left panel and the images */
   min-height: calc(100vh - var(--nav-h));
   background: #F9F7F6;
 }
@@ -220,17 +220,17 @@
   text-transform: uppercase;
 }
 .pager__card {
+  position: relative; /* the tag pins to the bottom right */
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: stretch;
   height: 64px;
   min-width: 0;
-  margin-left: 24px;
-  background: #E5DEDC;
+  padding-left: 24px; /* the row colour fills the gutter, like the works page rows */
+  background: #EDEAE9;
   transition: background 0.2s ease;
 }
 .pager__item:hover .pager__card {
-  background: #DDD4D1;
+  background: #E2DDDA; /* the whole card, gutter included */
 }
 .pager__logo {
   display: grid;
@@ -256,11 +256,25 @@
   object-fit: contain;
 }
 .pager__name {
+  flex: 1;
   min-width: 0;
-  padding-right: 12px;
+  padding: 13px 12px;
   font: 550 14px/16px var(--font-sans);
   letter-spacing: -0.01em;
-  color: #2E1D11;
+  color: var(--fg);
+}
+.pager__tag {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding: 4px 8px;
+  background: var(--bg);
+  font: 500 12px/14px var(--font-mono);
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--fg);
+  white-space: nowrap;
+  pointer-events: none;
 }
 .pager__all {
   display: flex;
@@ -311,7 +325,7 @@
     margin-top: 0;
   }
   .pager__card {
-    margin-left: 16px;
+    padding-left: 16px;
   }
 }
 
