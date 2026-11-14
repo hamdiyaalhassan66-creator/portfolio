@@ -4,45 +4,38 @@
   z-index: 100;
   display: flex;
   gap: 2px;
-  height: 48px;
+  height: 40px;
   background: var(--bg); /* the tabs are see-through, so the page would show through them while scrolling */
 }
 
 .header__logo {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  gap: 10px;
   flex: none;
-  width: 291px;
   padding: 10px 24px;
-  background: var(--fg);
-  color: var(--bg);
+  color: var(--fg);
   text-decoration: none;
 }
 
-.header__logo-mark,
-.header__logo-name {
-  font: 800 16.5px/12px var(--font-sans);
-  letter-spacing: -0.02em;
-}
-
 .header__logo-mark {
-  display: flex;
-  align-items: center;
+  flex: none;
+  width: 20px;
   height: 20px;
-  padding: 4px 6px;
-  margin-right: 8px;
-  background: var(--bg);
-  color: var(--fg);
+  background: var(--fg);
+  border-radius: 0 10px 10px 0; /* flat left edge, fully rounded right side = the D */
 }
 
 .header__logo-name {
-  line-height: 20px;
+  font: 800 17px/17px var(--font-sans);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
 .header__nav {
   display: flex;
   gap: 2px;
-  flex: 0 0 calc(50% - 8px); /* right half of the frame, lines up with the works preview (its 8px left margin) */
+  flex: 0 0 66.72%; /* 1153px of the 1728px Figma frame */
   min-width: 0;
   margin-left: auto;
 }
@@ -86,7 +79,7 @@
   display: none;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 767px) {
   .header__logo {
     width: auto;
     padding: 10px 12px;
@@ -100,7 +93,7 @@
     align-items: center;
     justify-content: center;
     flex: none;
-    width: 48px;
+    width: 40px;
     margin-left: auto;
     padding: 0;
     border: 0;
@@ -203,10 +196,13 @@
   }
 }
 
-/* small laptops / large tablets in landscape: the right half gets narrow, so tighten the tabs */
-@media (min-width: 901px) and (max-width: 1100px) {
+/* tablets and small laptops: the nav area gets narrow, so give it more room and tighten the tabs */
+@media (min-width: 768px) and (max-width: 1100px) {
   .header__logo {
-    width: 240px;
+    padding: 10px 16px;
+  }
+  .header__nav {
+    flex-basis: 70%;
   }
   .header__link {
     padding: 10px 8px;

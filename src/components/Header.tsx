@@ -40,7 +40,7 @@ export default function Header() {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const key = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    const size = () => window.innerWidth > 900 && setOpen(false);
+    const size = () => window.innerWidth > 767 && setOpen(false);
     window.addEventListener("keydown", key);
     window.addEventListener("resize", size);
     return () => {
@@ -54,8 +54,8 @@ export default function Header() {
     <>
     <header className="header">
       <Link to="/" className="header__logo" aria-label="Dee-Space home">
-        <span className="header__logo-mark">D-S</span>
-        <span className="header__logo-name">DEE-SPACE</span>
+        <span className="header__logo-mark" aria-hidden="true" />
+        <span className="header__logo-name">dee-space07</span>
       </Link>
 
       <nav className="header__nav">

@@ -10,7 +10,7 @@
   position: absolute;
   right: 24px;
   top: calc(var(--nav-h) + 24px);
-  height: 23px; /* same line box as the title so they sit level */
+  height: 15px; /* same line box as the title so they sit level */
   margin: 0;
   display: flex;
   align-items: center;
@@ -28,37 +28,27 @@
     position: relative;
     overflow: hidden;
   }
-  .threads__aurora {
-    position: absolute !important;
-    inset: 0 !important;
-    z-index: 0 !important;
-    opacity: 1 !important;
-    pointer-events: none;
-  }
-  .threads__aurora .aurora__svg {
-    width: 100%;
-    height: 100%;
-  }
 }
 .threads__tag.is-on {
   opacity: 1;
 }
 
-/* the big cut-off wordmark */
+/* the big wordmark: the nav wordmark used as a mask, so it takes the blue whatever fill the SVG has */
 .threads__brand {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -8vw; /* cut off at the bottom of the page */
-  margin: 0;
-  font: 550 18.15vw/1.21 var(--font-sans);
-  font-variation-settings: "slnt" 0;
-  letter-spacing: -0.09em;
-  text-align: center;
-  white-space: nowrap;
-  color: #f8f7f5; /* page background */
-  filter: blur(8px);
-  z-index: 0; /* behind the models, above the glows */
+  left: 24px;
+  right: 24px;
+  bottom: 0;
+  aspect-ratio: 126 / 17; /* the wordmark's own proportions (Figma: 126 x 17) */
+  transform: translateY(45%); /* cut off at the bottom of the page; raise for more cut-off */
+  background: var(--blue);
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  z-index: 0; /* behind the models */
   pointer-events: none;
   user-select: none;
 }
@@ -109,31 +99,6 @@
   width: 40%;
   height: 28%;
   pointer-events: var(--hit, none);
-}
-
-/* gradient that rises from the bottom once you reach the end of the page */
-.threads__aurora {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  opacity: 0;
-  overflow: hidden;
-  pointer-events: none;
-  -webkit-mask: linear-gradient(to bottom, transparent 0%, #000 24%);
-  mask: linear-gradient(to bottom, transparent 0%, #000 24%);
-}
-.au {
-  position: absolute;
-  display: block;
-}
-
-.aurora__svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  opacity: 1;
 }
 
 .threads__title {
@@ -141,30 +106,12 @@
   left: 24px;
   top: calc(var(--nav-h) + 24px);
   margin: 0;
-  font: 600 20px/23px var(--font-sans);
-  letter-spacing: -0.02em;
+  font: 500 13px/15px var(--font-mono); /* Figma label */
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
   color: var(--blue);
   z-index: 3;
   pointer-events: none;
-}
-
-/* the big cut-off wordmark */
-.threads__brand {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -8vw; /* cut off at the bottom of the page */
-  margin: 0;
-  font: 550 18.15vw/1.21 var(--font-sans);
-  font-variation-settings: "slnt" 0;
-  letter-spacing: -0.09em;
-  text-align: center;
-  white-space: nowrap;
-  color: #f8f7f5; /* page background */
-  filter: blur(4px);
-  z-index: 0; /* behind the models, above the glows */
-  pointer-events: none;
-  user-select: none;
 }
 
 .thread-item {
@@ -215,32 +162,16 @@
   pointer-events: var(--hit, none);
 }
 
-/* gradient that rises from the bottom once you reach the end of the page */
-.threads__aurora {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  opacity: 0;
-  overflow: hidden;
-  pointer-events: none;
-  -webkit-mask: linear-gradient(to bottom, transparent 0%, #000 24%);
-  mask: linear-gradient(to bottom, transparent 0%, #000 24%);
-}
-.au {
-  position: absolute;
-  display: block;
-}
-
 .threads__body {
   position: absolute;
   left: 24px; /* match .threads__title's left */
-  top: calc(var(--nav-h) + 54px); /* just under the title; nudge to taste */
+  top: calc(var(--nav-h) + 41px); /* 24px + 15px title + 2px gap, like Figma */
   width: calc(100% - 48px); /* 24px of space on each side, so it never overflows on small screens */
-  max-width: 691px; /* same as the top intro paragraph */
+  max-width: 549px; /* Figma */
   margin: 0;
   z-index: 1;
-  font: 500 14px/1.35 var(--font-sans);
-  letter-spacing: -0.01em;
+  font: 700 15px/20px var(--font-sans);
+  letter-spacing: -0.04em;
 }
 
 /* desktop: the wrapper is invisible, so the items still position against the section */
@@ -280,7 +211,7 @@
     position: relative;
     z-index: 1;
     display: flex;
-    gap: 48px;
+    gap: 24px;
     padding: 36px 0; /* room so the scroll container doesn't clip the models top and bottom */
     margin: 0 -16px; /* cancels the section's 16px side padding so the models run edge to edge */
     overflow-x: auto;
@@ -328,5 +259,13 @@
   /* headphones (5th item) a bit smaller */
   .threads__track .thread-item:nth-child(5) .thread-item__model {
     transform: scale(0.7);
+  }
+}
+
+/* tablet and mobile: same 16px side margins as the rest of the page */
+@media (max-width: 900px) {
+  .threads__brand {
+    left: 16px;
+    right: 16px;
   }
 }

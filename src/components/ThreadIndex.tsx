@@ -11,6 +11,7 @@ import type { Group } from "three";
 import type { LoreItem } from "../data/lore";
 import { VinylDisc } from "./DiscWheel";
 import "./ThreadIndex.css";
+import wordmark from "../assets/dee-space-wordmark.svg"; // the same file the nav uses; match the import path in Header.tsx
 
 type Props = {
   headRef: RefObject<HTMLDivElement | null>; // the page's one portrait, owned by Information
@@ -21,14 +22,19 @@ type Entry = { id: string; label: string; item?: LoreItem; model?: string; front
 
 // each item: offset from the head's centre (fraction of width, fraction of height), size in px, depth (bigger = closer, leans more)
 const SLOTS: [number, number, number, number][] = [
-  [-0.28, 0.24, 320, 1.5], // turntable, front (a bit smaller)
-  [-0.12, -0.31, 230, 0.7], // vhs, back
+  [-0.24, 0.29, 360, 1.5], // cd player / turntable, front (moved right and down)
+  [-0.12, -0.16, 230, 0.7], // vhs, back (moved down)
   [0.364, 0.253, 350, 1.4], // books, front (bottom-right)
-  [0.06, 0.37, 420, 1.5], // camera, front (moved down)
-  [0.1, -0.278, 195, 0.6], // headphones, furthest back (top box)
-  [0.31, -0.16, 300, 0.95], // dumbbell, middle
-  [-0.36, -0.12, 270, 1.0], // game, middle (a bit bigger)
+  [0.06, 0.37, 470, 1.5], // camera, front (bigger)
+  [0.1, -0.19, 195, 0.6], // headphones, furthest back
+  [0.34, -0.10, 300, 0.95], // dumbbell, middle (moved down and right)
+  [-0.31, -0.05, 260, 1.0], // game, middle (moved down, a bit smaller)
 ];
+const SIZE = 0.75; // scales every model together, keeping their relative sizes (1 = the old size)
+const REF_W = 1920; // the screen size the model sizes were tuned at; sizes are unchanged at exactly this size
+const REF_H = 1080;
+const SCALE_MIN = 0.45; // never smaller than this fraction of the tuned size
+const SCALE_MAX = 1.3; // never bigger than this
 const ITEM_K = 0.025; // how hard a shoved item drifts back to its spot (higher = stiffer)
 const ITEM_DAMP = 0.93; // shove decay (closer to 1 = floats longer)
 const REACH = 0.75; // cursor reach, as a fraction of the item's size
@@ -44,11 +50,13 @@ const REST_DAMP = 0.9; // how fast that return settles (lower = snappier, higher
 const DRIFT = 14; // px, how far an item bobs around its spot
 const DRIFT_SPEED = 0.0007; // bob speed
 const PARALLAX = 200; // px the field leans with the cursor (near items move most)
-const REVEAL_AT = 0.7; // how far into the head's trip the first model starts coming out
-const STAGGER = 0.04; // six models now, so each waits a little less // each following model waits a bit longer
-const REVEAL_SPEED = 0.07; // how fast each one comes out (higher = faster)
-const HEAD_AT = 0.6; // how far into the scroll the head starts to pop in (the models start at 0.7)
-const HEAD_SPAN = 0.12; // how much scroll it takes to finish popping in
+const LAND_AT = 0.9; // the models start once the head's trip is this far along (1 = fully landed)
+const REVEAL_AT = 0.02; // the first model starts coming out straight away
+const STAGGER = 0.05; // each following model waits a little longer
+const REVEAL_SPEED = 0.1; // how fast each one comes out (higher = faster)
+const ARRIVE_EASE = 0.08; // how fast the reveal clock runs (higher = models come out sooner)
+const TRIP_EASE = 0.12; // how closely the head follows the scroll (higher = tighter, lower = floatier)
+const HEAD_END = 0.7; // size of the portrait once it has landed (1 = no shrink)
 // ----------------------------
 
 const clamp = (v: number, a: number, b: number) => Math.min(Math.max(v, a), b);
@@ -64,7 +72,7 @@ useFrame((state) => {
     if (!g.current) return;
     const yaw = rotRef.current[index * 2] ?? 0;
     g.current.rotation.y =
-      swing === undefined ? yaw : front + yaw + Math.sin(state.clock.elapsedTime * 0.8) * swing;
+      front + yaw + (swing === undefined ? 0 : Math.sin(state.clock.elapsedTime * 0.8) * swing);
     g.current.rotation.x = (rotRef.current[index * 2 + 1] ?? 0) + pitch;
   });
   return (
@@ -224,20 +232,19 @@ export default function ThreadIndex({ headRef }: Props) {
   const rootRef = useRef<HTMLElement>(null);
 const now = useNowPlaying();
   const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
-  const auroraRef = useRef<HTMLDivElement>(null);
   const tagRef = useRef<HTMLParagraphElement>(null);
   const rotRef = useRef<number[]>([]); // per item: yaw, pitch
 
   // spread the picks evenly through the list so sleeves and discs are mixed
   const picked = useMemo<Entry[]>(
     () => [
-      { id: "music", label: "Music", model: "/models/cd_player_split.glb", front: 0.55, swing: 0.08, pitch: (70 * Math.PI) / 180, roll: (-14 * Math.PI) / 180 },
-      { id: "films", label: "Films", model: "/models/vhs-player.glb", front: -0.6, swing: 0.1, pitch: (30 * Math.PI) / 180, roll: (9 * Math.PI) / 180 },
-      { id: "books", label: "Illustrated Books", model: "/models/coffee_table_books.glb", front: -0.3, swing: 0.1, pitch: (38 * Math.PI) / 180, roll: (-11 * Math.PI) / 180 },
+      { id: "music", label: "Music", model: "/models/cd_player_split.glb", front: 0.55, pitch: (70 * Math.PI) / 180, roll: (-14 * Math.PI) / 180 },
+      { id: "films", label: "Films", model: "/models/vhs-player.glb", front: -0.6, pitch: (30 * Math.PI) / 180, roll: (9 * Math.PI) / 180 },
+      { id: "books", label: "Illustrated Books", model: "/models/coffee_table_books.glb", front: -0.3, pitch: (38 * Math.PI) / 180, roll: (-11 * Math.PI) / 180 },
       { id: "photos", label: "Photographs", model: "/models/camera.glb", over: true, pitch: (14 * Math.PI) / 180, roll: (8 * Math.PI) / 180 },
-      { id: "headphones", label: "Headphones", tag: "[I LOVE MY HEADPHONES]", decor: true, model: "/models/headphones.glb", front: 0.5, swing: 0.1, pitch: (8 * Math.PI) / 180, roll: (-10 * Math.PI) / 180 },
-      { id: "dumbbell", label: "Dumbbell", tag: "[I LOVE WORKING OUT]", decor: true, model: "/models/dumbbell.glb", front: -0.4, swing: 0.1, pitch: (28 * Math.PI) / 180, roll: (-22 * Math.PI) / 180 },
-      { id: "game", label: "Game", tag: "[MY ALL-TIME FAVOURITE GAME]", decor: true, model: "/models/game.glb", front: 0.4, swing: 0.1, pitch: (20 * Math.PI) / 180, roll: (-8 * Math.PI) / 180 },
+      { id: "headphones", label: "Headphones", tag: "[I LOVE MY HEADPHONES]", decor: true, model: "/models/headphones.glb", front: 0.5, pitch: (8 * Math.PI) / 180, roll: (-10 * Math.PI) / 180 },
+      { id: "dumbbell", label: "Dumbbell", tag: "[I LOVE WORKING OUT]", decor: true, model: "/models/dumbbell.glb", front: -0.4, pitch: (28 * Math.PI) / 180, roll: (-22 * Math.PI) / 180 },
+      { id: "game", label: "Game", tag: "[MY ALL-TIME FAVOURITE GAME]", decor: true, model: "/models/game.glb", front: 0.4, pitch: (20 * Math.PI) / 180, roll: (-8 * Math.PI) / 180 },
     ],
     []
   );
@@ -291,7 +298,8 @@ useEffect(() => {
 
   let hx = 0;
   let hy = 0;
-  let arrive = 0; // smoothed 0..1 progress of the head's trip, drives the head and the models
+  let trip = 0; // 0..1 how far down the page the head has travelled (follows the scroll)
+  let arrive = 0; // smoothed 0..1, starts once the head has landed, drives the models
   let parx = 0;
   let pary = 0;
   let started = false;
@@ -308,24 +316,19 @@ useEffect(() => {
     // the head glides down the page and lands in the middle of this section
     const hh = head.offsetHeight;
     const hw = head.offsetWidth;
-    const view = root.getBoundingClientRect();
-    const vis = clamp(
-      (Math.min(view.bottom, window.innerHeight) - Math.max(view.top, 0)) / Math.min(view.height, window.innerHeight),
-      0,
-      1
-    ); // fraction of the screen this section fills
-    if (!shown && (vis > 0.6 || window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 40)) shown = true; // plays once, never resets
-    const target = shown ? 1 : 0;
-    const ease = started && !reduce ? Math.min(0.04 * s, 1) : 1;
-    arrive += (target - arrive) * ease; // one smoothed value drives the head AND the models
-    // the head no longer travels: it waits in the middle of this section and pops in as you reach the bottom
-    hx = root.offsetLeft + W / 2 - hw / 2 - head.offsetLeft;
-    hy = root.offsetTop + H / 2 - hh / 2 - head.offsetTop;
-    const pop = reduce ? (arrive > HEAD_AT ? 1 : 0) : clamp((arrive - HEAD_AT) / HEAD_SPAN, 0, 1);
-    const popE = pop * pop * (3 - 2 * pop);
-    head.style.transform = `translate(${hx}px, ${hy}px) scale(${0.6 + 0.4 * popE})`;
-    head.style.opacity = String(popE);
-    head.style.visibility = pop > 0 ? "visible" : "hidden"; // hidden means it can't be hovered either
+    // 0 = the head sits top right, 1 = it has landed in the middle of this section at the bottom of the page
+    const maxY = document.documentElement.scrollHeight - window.innerHeight;
+    const goal = maxY > 0 ? clamp(window.scrollY / maxY, 0, 1) : 1;
+    trip += (goal - trip) * (started && !reduce ? Math.min(TRIP_EASE * s, 1) : 1);
+    if (Math.abs(goal - trip) < 0.0005) trip = goal;
+    // where the middle of this section is, measured from the head's own spot
+    const toX = root.offsetLeft + W / 2 - hw / 2 - head.offsetLeft;
+    const toY = root.offsetTop + H / 2 - hh / 2 - head.offsetTop;
+    hx = toX * trip ** 3; // slides sideways late, so it drops down the right edge first and stays clear of the text
+    hy = toY * trip;
+    head.style.transform = `translate(${hx}px, ${hy}px) scale(${1 - (1 - HEAD_END) * trip})`;
+    if (!shown && trip > LAND_AT) shown = true; // the models come out as the head lands; plays once
+    arrive += ((shown ? 1 : 0) - arrive) * (started && !reduce ? Math.min(ARRIVE_EASE * s, 1) : 1);
     started = true;
 
     // cursor position inside this section, and how far the whole field leans because of it
@@ -337,15 +340,16 @@ useEffect(() => {
     pvx *= 0.85;
     pvy *= 0.85;
     const speed = Math.hypot(pvx, pvy);
+    // grows and shrinks with the window; the smaller of width and height wins so models never crowd each other
+    const fit = clamp(Math.min(W / REF_W, H / REF_H), SCALE_MIN, SCALE_MAX);
 
     // where the head's centre is right now, in this section's space (items start here)
     const ox = head.offsetLeft - root.offsetLeft + hx + hw / 2;
     const oy = head.offsetTop - root.offsetTop + hy + hh / 2;
 
-    if (auroraRef.current) auroraRef.current.style.opacity = String(clamp((arrive - 0.6) / 0.4, 0, 1));
-
     for (let t = 0; t < count; t++) {
-      const [fx, fy, sz, depth] = SLOTS[t];
+      const [fx, fy, base, depth] = SLOTS[t];
+      const sz = base * SIZE * fit;
       const m = itm[t];
 
       // each item pops out from behind the head as it lands
@@ -355,10 +359,10 @@ useEffect(() => {
       const rv = rvs[t];
 
       // resting spot around the head, with a slow idle drift and the cursor lean
-      const rx = W / 2 + fx * W + Math.sin(now * DRIFT_SPEED + t * 2.1) * DRIFT * live;
-      const ry = H / 2 + fy * H + Math.cos(now * DRIFT_SPEED * 0.8 + t * 1.7) * DRIFT * live;
-      const bx = ox + (rx - ox) * rv - parx * PARALLAX * depth * live * rv;
-      const by = oy + (ry - oy) * rv - pary * PARALLAX * depth * live * rv;
+      const rx = W / 2 + fx * W + Math.sin(now * DRIFT_SPEED + t * 2.1) * DRIFT * live * fit;
+      const ry = H / 2 + fy * H + Math.cos(now * DRIFT_SPEED * 0.8 + t * 1.7) * DRIFT * live * fit;
+      const bx = ox + (rx - ox) * rv - parx * PARALLAX * depth * live * rv * fit;
+      const by = oy + (ry - oy) * rv - pary * PARALLAX * depth * live * rv * fit;
 
       // a moving cursor shoves the item away and sets it spinning
       if (inside && live && rv > 0.9) {
@@ -398,6 +402,8 @@ useEffect(() => {
 
       const el = itemRefs.current[t];
       if (el) {
+        el.style.width = `${sz}px`;
+        el.style.height = `${sz}px`;
         el.style.left = `${bx + m[0] - sz / 2}px`;
         el.style.top = `${by + m[1] - sz / 2}px`;
         const far = clamp(1 - depth / 1.2, 0, 1); // 0 = closest, 1 = furthest
@@ -422,37 +428,21 @@ useEffect(() => {
 
   return (
     <section className="threads" ref={rootRef} aria-label="An index of Dee's mind">
-      <div className="threads__aurora" ref={auroraRef} aria-hidden="true">
-        <svg className="aurora__svg" viewBox="0 0 1600 900" preserveAspectRatio="none">
-          <defs>
-            <path id="au-area" d="M -200 540 C 200 580, 560 620, 820 440 C 1040 290, 1260 190, 1460 235 C 1560 258, 1660 300, 1800 330 L 1800 1100 L -200 1100 Z" />
-            <filter id="au-b1" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="75" /></filter>
-            <filter id="au-b2" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="42" /></filter>
-            <filter id="au-b3" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="26" /></filter>
-            <filter id="au-b4" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="14" /></filter>
-            <filter id="au-b5" x="-50%" y="-80%" width="200%" height="260%"><feGaussianBlur stdDeviation="70" /></filter>
-            <filter id="au-soft" filterUnits="userSpaceOnUse" x="-800" y="-800" width="3200" height="3000" colorInterpolationFilters="sRGB"><feGaussianBlur stdDeviation="60" /></filter>
-          </defs>
-            <g filter="url(#au-soft)">
-              <use href="#au-area" fill="#fff3c4" opacity="0.8" transform="translate(0 -40)" />
-              <use href="#au-area" fill="#F9C310" opacity="0.55" transform="translate(0 20)" />
-              <use href="#au-area" fill="#F910BA" opacity="0.5" transform="translate(0 170)" />
-              <use href="#au-area" fill="#1046F9" opacity="0.4" transform="translate(0 340)" />
-              <use href="#au-area" fill="#f8f7f5" opacity="0.95" transform="translate(0 500)" />
-            </g>
-        </svg>
-      </div>
       <h2 className="threads__title">Dee Outside Of Design</h2>
       <p className="threads__body">
         Outside of design, I spend my free time listening to and finding new music, watching shows (animations and shows
         especially), reading webtoons or playing tetris. I love working out at home too (not everyday though).
       </p>
       <p className="threads__tag" ref={tagRef} aria-hidden="true" />
-      <p className="threads__brand" aria-hidden="true">dee-space07</p>
+      <div
+        className="threads__brand"
+        aria-hidden="true"
+        style={{ WebkitMaskImage: `url(${wordmark})`, maskImage: `url(${wordmark})` }}
+      />
 
       <div className="threads__track">
       {picked.map((entry, i) => {
-        const size = SLOTS[i][2];
+        const size = SLOTS[i][2] * SIZE;
         const Item: any = entry.decor ? "div" : Link; // decorations are plain, not links
         return (
           <Fragment key={entry.id}>

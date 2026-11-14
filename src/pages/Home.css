@@ -1,7 +1,10 @@
 .works {
+  --nav-h: 40px; /* must match the .header height in Header.css */
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  min-height: calc(100vh - 48px); /* the page minus the nav */
+  grid-template-columns: minmax(0, 1fr) 66.72%; /* right panel = 1152 / 1728, same width as the nav tabs */
+  column-gap: 2px;
+  min-height: calc(100vh - var(--nav-h));
+  padding-top: 2px; /* Figma: content starts 2px under the nav */
   background: #F9F7F6;
 }
 
@@ -9,27 +12,28 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  max-width: 715px;
   min-width: 0;
-  padding-top: 2px; /* Figma: left column starts 2px under the nav, like the preview */
 }
 
 .works__intro {
-  max-width: 573px;
   margin: 0;
   padding: 24px;
-  font: 500 14px/17px var(--font-sans, "Inter", sans-serif);
-  letter-spacing: -0.01em;
+  font: 600 15px/20px var(--font-sans);
+  letter-spacing: -0.03em;
   color: #2E1D11;
 }
 
 .works__tab {
-  width: fit-content;
-  margin: 0; /* Figma: the tab sits 2px below the intro (the column gap) */
-  padding: 8px 12px 8px 24px;
-  background: #2E1D11;
-  color: #F9F7F6;
-  font: 500 14px/16px "Azeret Mono", var(--font-mono, ui-monospace, monospace);
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 10px;
+  height: 32px;
+  padding: 8px 12px 8px 24px; /* Figma */
+  margin: 0;
+  background: none;
+  color: var(--blue);
+  font: 500 14px/16px var(--font-mono);
   letter-spacing: -0.01em;
   text-transform: uppercase;
 }
@@ -50,11 +54,9 @@
   align-items: center;
   min-height: 100px;
   padding-left: 24px;
-  background: #EFE9E7;
-  transition: background 0.2s ease;
 }
-.work:hover {
-  background: #E8E0DC;
+.work:hover .work__body {
+  background: #DDD8D4;
 }
 
 .work__logo {
@@ -68,7 +70,7 @@
 }
 .work__logo span {
   padding: 0 8px;
-  font: 800 16px/1 var(--font-sans, "Inter", sans-serif);
+  font: 800 16px/1 var(--font-sans);
   letter-spacing: -0.02em;
   color: #1F1313;
   text-align: center;
@@ -86,6 +88,8 @@
   align-self: stretch;
   min-width: 0;
   padding: 13px 12px;
+  background: #E6E2E0;
+  transition: background 0.2s ease;
 }
 
 .work__text {
@@ -95,7 +99,7 @@
 }
 .work__name {
   margin: 0;
-  font: 550 14px/16px var(--font-sans, "Inter", sans-serif);
+  font: 550 14px/16px var(--font-sans);
   letter-spacing: -0.01em;
   color: #2E1D11;
 }
@@ -114,7 +118,7 @@
 }
 .work__blurb {
   margin: 0;
-  font: 500 14px/16px var(--font-sans, "Inter", sans-serif);
+  font: 500 14px/16px var(--font-sans);
   letter-spacing: -0.01em;
   color: rgba(46, 29, 17, 0.5);
 }
@@ -133,9 +137,9 @@
 }
 .work__tags li {
   padding: 4px 8px;
-  background: #2E1D11;
-  color: #F9F7F6;
-  font: 500 12px/14px "Azeret Mono", var(--font-mono, ui-monospace, monospace);
+  background: #D4CFCC;
+  color: #2E1D11;
+  font: 500 12px/14px var(--font-mono);
   letter-spacing: -0.01em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -144,10 +148,10 @@
 /* big grey panel on the right */
 .works__preview {
   position: sticky;
-  top: 48px; /* sits under the sticky nav; the 2px margin below gives the Figma gap */
+  top: calc(var(--nav-h) + 2px); /* 2px under the sticky nav */
   align-self: start;
-  height: calc(100vh - 52px); /* 2px gap under the panel */
-  margin: 2px 2px 0 8px; /* 2px from the right edge */
+  height: calc(100vh - var(--nav-h) - 4px); /* 2px gap above and below */
+  margin: 0 2px 0 0; /* 2px gap from the right edge */
   background: #E3E3E3;
   overflow: hidden;
 }
@@ -193,10 +197,6 @@
   .works {
     grid-template-columns: minmax(0, 1fr);
     min-height: 0;
-  }
-  .works__main {
-    max-width: none;
-    padding-top: 0;
   }
   .works__intro {
     max-width: 573px;

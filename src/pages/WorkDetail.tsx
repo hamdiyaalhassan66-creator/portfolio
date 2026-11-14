@@ -35,6 +35,32 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
+type Project = (typeof PROJECTS)[number];
+
+function ProjectLogo({ project, className }: { project: Project; className: string }) {
+  return (
+    <span className={className} style={{ background: project.color }}>
+      {project.logo ? (
+        <img src={project.logo} alt="" style={{ width: `${project.logoSize ?? 45}%` }} />
+      ) : (
+        <span>{project.mark ?? project.name}</span>
+      )}
+    </span>
+  );
+}
+
+function PagerItem({ label, project }: { label: string; project: Project }) {
+  return (
+    <Link to={`/works/${project.id}`} className="pager__item">
+      <span className="pager__label">{label}</span>
+      <span className="pager__card">
+        <ProjectLogo project={project} className="pager__logo" />
+        <span className="pager__name">{project.name}</span>
+      </span>
+    </Link>
+  );
+}
+
 export default function WorkDetail() {
   const { id } = useParams();
   const project = PROJECTS.find((p) => p.id === id);
@@ -43,6 +69,10 @@ export default function WorkDetail() {
   }, [id]);
 
   if (!project) return <Navigate to="/" replace />;
+
+  const i = PROJECTS.indexOf(project);
+  const prev = PROJECTS[(i - 1 + PROJECTS.length) % PROJECTS.length];
+  const next = PROJECTS[(i + 1) % PROJECTS.length];
 
   return (
     <main className="detail">
@@ -54,8 +84,12 @@ export default function WorkDetail() {
           Back to works
         </Link>
 
+        <div className="detail__title">
+          <h1 className="detail__name">{project.name}</h1>
+          <ProjectLogo project={project} className="detail__mark" />
+        </div>
+
         <Section title="Project Brief">
-          <h1 className="brief__title">{project.name}</h1>
           <p className="brief__text">{project.description}</p>
         </Section>
 
@@ -79,6 +113,16 @@ export default function WorkDetail() {
             </Row>
           ))}
         </Section>
+
+        <nav className="pager" aria-label="More projects">
+          <div className="pager__row">
+            <PagerItem label="Previous" project={prev} />
+            <PagerItem label="Next" project={next} />
+          </div>
+          <Link to="/" className="pager__all">
+            All projects
+          </Link>
+        </nav>
       </div>
 
       <section className="detail__gallery" aria-label={`${project.name} images`}>

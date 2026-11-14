@@ -7,8 +7,8 @@
   --blue-10: rgba(16, 70, 249, 0.1);
   --surface: #efe9e7;
 
-  --font-sans: "Inter Variable", "Inter", system-ui, sans-serif;
-  --font-mono: "Azeret Mono", ui-monospace, monospace;
+  --font-sans: "Geist Variable", "Geist", system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
 
   /* 1u = 1px at your 1728px Figma frame; scales with viewport width */
   --u: clamp(0.4px, min(calc(100vw / 1728), calc(100dvh / 1117)), 1.25px);
