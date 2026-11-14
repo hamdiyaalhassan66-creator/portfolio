@@ -166,12 +166,13 @@
   position: absolute;
   left: 24px; /* match .threads__title's left */
   top: calc(var(--nav-h) + 41px); /* 24px + 15px title + 2px gap, like Figma */
-  width: calc(100% - 48px); /* 24px of space on each side, so it never overflows on small screens */
-  max-width: 549px; /* Figma */
+  width: var(--span2); /* columns 1 and 2 of the site grid */
+  max-width: calc(100% - 48px); /* never overflows on small screens */
   margin: 0;
   z-index: 1;
-  font: 700 15px/20px var(--font-sans);
+  font: 500 13px/15px var(--font-sans);
   letter-spacing: -0.04em;
+  text-transform: uppercase;
 }
 
 /* desktop: the wrapper is invisible, so the items still position against the section */

@@ -24,7 +24,7 @@ export default function SleeveViewer({ item, ready }: { item: LoreItem; ready: b
             <Lightformer form="rect" intensity={4} position={[6, -3, 6]} rotation-y={-Math.PI / 4} scale={[3, 9, 1]} />
             <Lightformer form="rect" intensity={2.5} position={[0, 8, 3]} rotation-x={Math.PI / 3} scale={[10, 2, 1]} />
           </Environment>
-          <group rotation={[0.28, -0.32, 0.2, "YXZ"]}>
+          <group>
             <VinylDisc item={item} />
           </group>
         </Suspense>

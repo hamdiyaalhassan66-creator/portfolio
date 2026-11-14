@@ -25,6 +25,17 @@ const CAPABILITIES = [
   ["Animation / Prototyping", "User Experience & Interface", "Interaction Design", "Design Systems"],
 ];
 
+const CLIENTS = [
+  "dEX Ghana",
+  "Khaya AI",
+  "HIS SON JESUS",
+  "Gecric Integrity",
+  "Digiits Agency",
+  "Prekesse",
+  "Bittern Consulting",
+  "Turdemoji",
+];
+
 export default function Information() {
   const headRef = useRef<HTMLDivElement>(null);
   const [face, setFace] = useState(0);
@@ -99,25 +110,36 @@ export default function Information() {
             </div>
           </section>
 
-          <section className="information__block information__work">
-            <h2 className="information__label">Work experience</h2>
-            <div className="information__jobs">
-              {WORK.map((w) => (
-                <div className="information__job" key={`${w.place}-${w.years}`}>
-                  <div className="information__job-main">
-                    <div>{w.role}</div>
-                    <div>{w.place}</div>
+          <div className="information__col">
+            <section className="information__block information__work">
+              <h2 className="information__label">Work experience</h2>
+              <div className="information__jobs">
+                {WORK.map((w) => (
+                  <div className="information__job" key={`${w.place}-${w.years}`}>
+                    <div className="information__job-main">
+                      <div>{w.role}</div>
+                      <div>{w.place}</div>
+                    </div>
+                    <span className="information__years">{w.years}</span>
                   </div>
-                  <span className="information__years">{w.years}</span>
-                </div>
-              ))}
-            </div>
-          </section>
+                ))}
+              </div>
+            </section>
 
-          <section className="information__block information__skills">
-            <h2 className="information__label">Capabilities</h2>
+            <section className="information__block information__skills">
+              <h2 className="information__label">Capabilities</h2>
+              <ul className="information__caplist">
+                {CAPABILITIES.flat().map((c) => (
+                  <li key={c}>{c}</li>
+                ))}
+              </ul>
+            </section>
+          </div>
+
+          <section className="information__block information__clients">
+            <h2 className="information__label">Selected clients</h2>
             <ul className="information__caplist">
-              {CAPABILITIES.flat().map((c) => (
+              {CLIENTS.map((c) => (
                 <li key={c}>{c}</li>
               ))}
             </ul>

@@ -1,6 +1,6 @@
 .wheel {
-  position: absolute;
-  top: -135px; /* intro height, so the canvas runs up behind it */
+  position: fixed;
+  top: 40px; /* straight under the site header, so it no longer depends on the intro's height */
   left: 0;
   right: 0;
   height: calc(100dvh - 48px); /* same as .lore, so it fills the visible page */
@@ -46,8 +46,8 @@
 /* top: small glass patch where sleeves climb out on the top right */
 .wheel__glass--top {
   inset: 0 0 auto auto;
-  width: calc(360 * var(--u));
-  height: calc(100 * var(--u));
+  width: calc(560 * var(--u));
+  height: calc(140 * var(--u));
   background: linear-gradient(180deg, rgba(249, 247, 246, 0.3) 0%, rgba(249, 247, 246, 0) 100%);
   box-shadow: none;
   -webkit-mask-image:
@@ -96,4 +96,9 @@
     linear-gradient(to left, #000 45%, transparent),
     linear-gradient(to bottom, #000 55%, transparent 80%);
   mask-composite: intersect;
+}
+
+/* phones: one sleeve at a time, nothing runs off the edges, so skip the expensive glass filters */
+@media (max-width: 767px) {
+  .wheel__glass { display: none; }
 }

@@ -2,6 +2,7 @@ import { useCallback, useState, type CSSProperties } from "react";
 import { Link, useLocation } from "react-router-dom";
 import DiscWheel from "../components/DiscWheel";
 import LoreDrawer from "../components/LoreDrawer";
+import RecsDrawer from "../components/RecsDrawer";
 import { getLoreItems, type LoreCategory } from "../data/lore";
 import "./Lore.css";
 
@@ -23,6 +24,8 @@ export default function Lore() {
   const [category, setCategory] = useState<LoreCategory>(start);
   const [activeIndex, setActiveIndex] = useState(() => middle(getLoreItems(start).length));
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [recsOpen, setRecsOpen] = useState(false);
+  const closeRecs = useCallback(() => setRecsOpen(false), []);
   const [warmId, setWarmId] = useState<string | null>(null); // item whose drawer is pre-mounted hidden
   const closeDrawer = useCallback(() => {
     setDrawerOpen(false);
@@ -76,6 +79,10 @@ export default function Lore() {
       </svg>
 
       <section className="lore__intro">
+        <Link to="/information" className="lore__back">
+          Back to info
+        </Link>
+
         <p className="lore__text">
           Lorem ipsum dolor sit amet consectetur. Sed enim leo in velit urna id varius magna.
           Porttitor viverra maecenas sit at egestas ut sapien id. Aliquet feugiat nibh at cras
@@ -182,9 +189,11 @@ export default function Lore() {
         </button>
       </div>
 
-      <Link to="/contact" className="lore__recs">
+      <button type="button" className="lore__recs" onClick={() => setRecsOpen(true)}>
         Leave me your recommendations
-      </Link>
+      </button>
+
+      {recsOpen && <RecsDrawer onClose={closeRecs} />}
 
       {active && (drawerOpen || warmId === active.id) && (
         <LoreDrawer key={active.id} item={active} open={drawerOpen} onClose={closeDrawer} />

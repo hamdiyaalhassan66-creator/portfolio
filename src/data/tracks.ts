@@ -53,7 +53,7 @@ export const TRACKS: Record<string, Track[]> = {
     "Billie Jean", "The Way You Make Me Feel", "Black or White", "Rock with You", "She's Out of My Life",
     "Bad", "I Just Can't Stop Loving You", "Man in the Mirror", "Thriller", "Beat It", "The Girl Is Mine",
     "Remember the Time", "Don't Stop 'Til You Get Enough", "Wanna Be Startin' Somethin'", "Heal the World",
-    "Scream", "They Don't Care Information Us", "Stranger in Moscow", "This Time Around", "Earth Song", "D.S.",
+    "Scream", "They Don't Care About Us", "Stranger in Moscow", "This Time Around", "Earth Song", "D.S.",
     "Money", "Come Together", "You Are Not Alone", "Childhood (Theme from Free Willy 2)", "Tabloid Junkie",
     "2 Bad", "HIStory", "Little Susie", "Smile"
   ),
@@ -78,6 +78,59 @@ export const TRACKS: Record<string, Track[]> = {
     "Straight Up & Down", "Calling All My Lovelies", "Finesse", "Too Good to Say Goodbye"
   ),
   "not-cute-anymore": t("NOT CUTE ANYMORE", "NOT ME"),
+  "right-place-wrong-person": t(
+    "Right People, Wrong Place", "Nuts", "out of love", "Domodachi (feat. Little Simz)",
+    "? (Interlude)", "Groin", "Heaven", "LOST!",
+    "Around the world in a day (feat. Moses Sumney)", "ㅠㅠ (Credit Roll)", "Come back to me"
+  ),
+  "over-it": t(
+    "Over It", "Body", "Playing Games (Extended Version) (with Bryson Tiller)", "Drunk Dialing...LODT",
+    "Come Thru (with Usher)", "Potential", "Fun Girl", "Tonight", "Me", "Like It (with 6LACK)",
+    "Just Might (with PARTYNEXTDOOR)", "Stretch You Out (feat. A Boogie wit da Hoodie)", "Off of You",
+    "Anna Mae", "I'll Kill You (feat. Jhené Aiko)", "Nobody Else", "Playing Games",
+    "Girls Need Love (Remix) (with Drake)"
+  ),
+  "jack-in-the-box": t(
+    "Intro", "Pandora's Box", "MORE", "STOP", "= (Equal Sign)", "Music Box : Reflection",
+    "What if...", "Safety Zone", "Future", "Arson"
+  ),
+  "shot-callers": t("Backseat", "Saucin'", "Moonwalkin'", "FaceTime", "Never Let Go"),
+  "killin-it-girl": t("Killin' It Girl (feat. GloRilla)", "Killin' It Girl (solo version)"),
+  "woke-up": t("WOKE UP", "WOKE UP (INSTRUMENTAL)"),
+  "almost-tomorrow": t("Almost Tomorrow"),
+  "over-the-moon": t('คลาด (OVER THE MOON) - เพลงประกอบซีรีส์ "คาธ The ECLIPSE"'),
+  "shooting-star": t("SHOOTING STAR", "LEFT RIGHT"),
+  hypnotize: t("HYPNOTIZE"),
+  "sweet-dreams": t("Sweet Dreams (feat. Miguel)"),
+  "mona-lisa": t("MONA LISA"),
+  "good-goodbye": t("Good Goodbye", "Good Goodbye (with. Duomo)"),
+  "fly-me-to-the-moon": t("Fly Me to the Moon (In Other Words)"),
+  "my-way": t("My Way"),
+  easy: t("Easy"),
+  "nothing-without-you": t("Nothing Without You"),
+  lemonade: t(
+    "Pray You Catch Me", "Hold Up", "Don't Hurt Yourself (feat. Jack White)", "Sorry",
+    "6 Inch (feat. The Weeknd)", "Daddy Lessons", "Love Drought", "Sandcastles",
+    "Forward (feat. James Blake)", "Freedom (feat. Kendrick Lamar)", "All Night", "Formation"
+  ),
+  "the-greatest-showman": t(
+    "The Greatest Show", "A Million Dreams", "A Million Dreams (Reprise)", "Come Alive",
+    "The Other Side", "Never Enough", "This Is Me", "Rewrite the Stars", "Tightrope",
+    "Never Enough (Reprise)", "From Now On"
+  ),
+  golden: t(
+    "3D (feat. Jack Harlow)", "Closer to You (feat. Major Lazer)", "Seven (feat. Latto) - Explicit Ver.",
+    "Standing Next to You", "Yes or No", "Please Don't Change (feat. DJ Snake)", "Hate You", "Somebody",
+    "Too Sad to Dance", "Shot Glass of Tears", "Seven (feat. Latto) - Clean Ver."
+  ),
+  "plastic-hearts": t(
+    "WTF Do I Know", "Plastic Hearts", "Angels Like You", "Prisoner (feat. Dua Lipa)",
+    "Gimme What I Want", "Night Crawling (feat. Billy Idol)", "Midnight Sky", "High", "Hate Me",
+    "Bad Karma (feat. Joan Jett)", "Never Be Me", "Golden G String",
+    "Edge of Midnight (Midnight Sky Remix) (feat. Stevie Nicks)",
+    "Heart of Glass (Live from the iHeart Music Festival)",
+    "Zombie (Live from the NIVA Save Our Stages Festival)"
+  ),
 };
 
 // durations in track order, space separated
@@ -99,6 +152,23 @@ const DURATIONS: Record<string, string> = {
   "anti": "2:41 1:12 4:13 3:39 3:06 3:55 3:11 2:13 6:37 3:22 3:44 2:00 3:43",
   "24k-magic": "3:46 3:06 3:30 3:26 4:21 3:18 4:10 3:10 4:41",
   "not-cute-anymore": "2:11 2:34",
+  "right-place-wrong-person": "1:57 3:14 2:07 3:04 1:53 3:10 3:14 3:53 4:17 1:14 6:28",
+  "over-it": "2:11 3:13 2:23 2:14 3:01 2:53 1:49 2:56 2:08 2:51 3:25 2:23 2:05 2:17 2:59 3:53 2:23 3:42",
+  "shot-callers": "3:02 2:53 3:28 2:47 3:13",
+  "killin-it-girl": "2:28 2:18",
+  hypnotize: "2:51",
+  "sweet-dreams": "2:52",
+  lemonade: "3:16 3:41 3:54 3:53 4:20 4:47 3:57 3:02 1:19 4:49 5:22 3:26",
+  "the-greatest-showman": "5:02 4:29 1:00 3:45 3:34 3:27 3:54 3:37 3:54 1:20 5:49",
+  golden: "3:21 2:51 3:04 3:26 2:28 2:27 2:34 2:50 2:56 2:47 3:04",
+  "plastic-hearts": "2:51 3:25 3:16 2:49 2:31 3:09 3:43 3:16 2:37 3:08 3:35 3:49 3:40 3:33 4:50",
+  "almost-tomorrow": "5:18",
+  "mona-lisa": "2:17",
+  "good-goodbye": "3:43",
+  "fly-me-to-the-moon": "2:27",
+  "my-way": "4:35",
+  easy: "2:16",
+  "nothing-without-you": "5:19",
 };
 
 for (const [id, times] of Object.entries(DURATIONS)) {

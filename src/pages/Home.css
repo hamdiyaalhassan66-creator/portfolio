@@ -1,14 +1,17 @@
 .works {
   --nav-h: 40px; /* must match the .header height in Header.css */
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--panel-w); /* right panel; the nav tabs use the same width (index.css) */
-  column-gap: 8px;
+  grid-template-columns: repeat(6, minmax(0, 1fr)); /* site grid: rows take columns 1-2, the preview takes 3-6 */
+  column-gap: var(--grid-gutter);
+  padding-inline: var(--grid-margin);
   min-height: calc(100vh - var(--nav-h));
   padding-top: 2px; /* Figma: content starts 2px under the nav */
   background: #F9F7F6;
 }
 
 .works__main {
+  grid-column: 1 / span 2;
+  margin-left: calc(var(--grid-margin) * -1); /* rows still bleed to the left edge */
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -18,8 +21,9 @@
 .works__intro {
   margin: 0;
   padding: 24px;
-  font: 600 15px/20px var(--font-sans);
-  letter-spacing: -0.03em;
+  font: 500 13px/15px var(--font-sans);
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
   color: #2E1D11;
 }
 
@@ -124,8 +128,9 @@
 }
 .work__blurb {
   margin: 0;
-  font: 500 14px/16px var(--font-sans);
+  font: 500 13px/15px var(--font-sans);
   letter-spacing: -0.01em;
+  text-transform: uppercase;
   color: rgba(46, 29, 17, 0.5);
 }
 
@@ -157,7 +162,8 @@
   top: calc(var(--nav-h) + 2px); /* 2px under the sticky nav */
   align-self: start;
   height: calc(100vh - var(--nav-h) - 4px); /* 2px gap above and below */
-  margin: 0 2px 0 0; /* 2px gap from the right edge */
+  grid-column: 3 / span 4;
+  margin: 0;
   background: #E3E3E3;
   overflow: hidden;
 }
@@ -199,10 +205,16 @@
 }
 
 /* tablet: one column, no hover panel */
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .works {
     grid-template-columns: minmax(0, 1fr);
+    column-gap: 0;
+    padding-inline: 0;
     min-height: 0;
+  }
+  .works__main {
+    grid-column: 1;
+    margin-left: 0;
   }
   .works__intro {
     max-width: 573px;

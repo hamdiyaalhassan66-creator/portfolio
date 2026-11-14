@@ -15,34 +15,35 @@
 .information__top {
   position: relative;
   display: grid;
-  grid-template-columns: 557fr 345fr 826fr; /* 24→581 | portrait frame 581→926 | the rest */
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  column-gap: var(--grid-gutter);
   grid-template-rows: auto auto 1fr; /* the last row holds the bobblehead and stretches to fill the first screen */
   align-items: start;
   row-gap: clamp(48px, 6.65vw, 115px); /* Figma: 115px between the rows */
   min-height: calc(100vh - 40px); /* the bobblehead sits at the bottom of the first screen */
-  padding-top: 42px; /* Figma: 82px from the frame top, minus the 40px nav */
+  padding: 42px var(--grid-margin) 0; /* Figma: 82px from the frame top, minus the 40px nav */
 }
 
 .information__intro {
-  grid-column: 1;
+  grid-column: 1 / span 2;
   grid-row: 1;
   display: flow-root; /* contains the floated bobblehead */
   box-sizing: border-box;
-  width: min(420px, 100%);
-  padding-left: 24px;
+  width: auto;
+  padding-left: 0;
 }
 .information__hello {
   margin: 0;
   padding-left: 0;
   font: 600 20px/20px var(--font-sans);
-  letter-spacing: -0.03em;
+  letter-spacing: -0.01em;
   color: var(--fg);
 }
 
 /* grey frame: it stays put, the portrait leaves it when you scroll */
 .information__frame {
   position: relative;
-  grid-column: 2;
+  grid-column: 3 / span 2;
   grid-row: 1;
   width: 100%;
   aspect-ratio: 1;
@@ -70,8 +71,9 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  font: 600 15px/20px var(--font-sans);
-  letter-spacing: -0.03em;
+  font: 500 13px/15px var(--font-sans);
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
   color: var(--fg);
 }
 .information__label {
@@ -88,32 +90,38 @@
 }
 
 .information__about {
-  grid-column: 3;
+  grid-column: 5 / span 2;
   grid-row: 1;
-  width: min(487px, calc(100% - 8px));
-  margin-left: 8px;
+  width: 100%; /* fills its column, from the left of ARCHIVE to the right of CONTACT */
+  margin-left: 0;
 }
 /* bottom stack: same 3 columns as the row above, so capabilities lines up with About me */
 .information__bottom {
   grid-column: 1 / -1;
   grid-row: 2;
   display: grid;
-  grid-template-columns: 557fr 345fr 826fr;
+  grid-template-columns: repeat(6, minmax(0, 1fr)); /* fallback */
+  column-gap: var(--grid-gutter);
+  grid-template-columns: subgrid; /* reuse the page grid's tracks so column 2 is the portrait's column */
   align-items: start;
   min-width: 0;
 }
 .information__education {
-  box-sizing: border-box;
-  width: min(573px, 100%); /* 24px padding + 549px of text (Figma) */
-  padding-left: 24px;
+  grid-column: 1 / span 2;
+  min-width: 0;
+}
+/* work experience with capabilities stacked below it, starting at the nav's left edge */
+.information__col {
+  grid-column: 3 / span 2;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(32px, 3vw, 48px);
   min-width: 0;
 }
 .information__work {
-  padding-right: 16px; /* 16px + the 8px offset on capabilities = Figma's 24px gap */
   min-width: 0;
 }
 .information__skills {
-  margin-left: 8px; /* same offset as .information__about */
   min-width: 0;
 }
 
@@ -144,21 +152,31 @@
   height: 15px;
   background: rgba(46, 29, 17, 0.1);
   font: 500 13px/15px var(--font-mono);
-  letter-spacing: -0.03em;
+  letter-spacing: -0.01em;
   white-space: nowrap;
 }
 
-/* capabilities: one column */
+/* capabilities and selected clients: two columns */
 .information__caplist {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 24px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
+.information__caplist li {
+  min-width: 0;
+  overflow-wrap: anywhere; /* long names wrap inside their column instead of overflowing */
+}
+.information__clients {
+  grid-column: 5 / span 2; /* under About me, level with Education and Work experience */
+  min-width: 0;
+}
 .information {
   --bobble-w: clamp(70px, 5.2vw, 90px); /* width of the whole image, including its transparent sides */
+  container-type: inline-size; /* lets cqw units mean "1% of the page width" for the blocks inside */
+  --span2: calc((100cqw - 2 * var(--grid-margin) - 5 * var(--grid-gutter)) / 3 + var(--grid-gutter)); /* two grid columns plus the gutter between them */
 }
 .information .bobble__fig {
   width: var(--bobble-w);
@@ -204,6 +222,10 @@
     width: auto;
     max-width: 549px;
     padding-left: 0;
+  }
+  .information__col,
+  .information__clients {
+    grid-column: 1 / -1;
   }
   .information__work,
   .information__skills {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProp
 import { animate, spring } from "animejs";
 import type { LoreItem } from "../data/lore";
 import SleeveViewer from "./SleeveViewer";
+import { useSheetDrag } from "./useSheetDrag";
 import "./LoreDrawer.css";
 
 const PREVIEW = 20; // preview length in seconds
@@ -17,6 +18,7 @@ export default function LoreDrawer({ item, open, onClose }: { item: LoreItem; op
   const overlayRef = useRef<HTMLDivElement>(null);
   const drawerRef = useRef<HTMLElement>(null);
   const closing = useRef(false);
+  const barRef = useRef<HTMLDivElement>(null);
   const [entered, setEntered] = useState(false);
   const [warm] = useState(!open); // mounted hidden ahead of the click, so the canvas can build early
   const tracks = item.tracks ?? [];
@@ -57,7 +59,7 @@ export default function LoreDrawer({ item, open, onClose }: { item: LoreItem; op
   useLayoutEffect(() => {
     if (!open) return;
     const slide = animate(drawerRef.current!, {
-      x: ["100%", "0%"],
+      y: ["105%", "0%"],
       ease: EASE,
       onComplete: () => setEntered(true),
     });
@@ -73,8 +75,10 @@ export default function LoreDrawer({ item, open, onClose }: { item: LoreItem; op
     if (closing.current) return;
     closing.current = true;
     animate(overlayRef.current!, { opacity: 0, duration: 300, ease: "inQuad" });
-    animate(drawerRef.current!, { x: "100%", ease: EASE, onComplete: onClose });
+    animate(drawerRef.current!, { y: "105%", ease: EASE, onComplete: onClose });
   }, [onClose]);
+
+  useSheetDrag({ drawerRef, overlayRef, gripRef: barRef, closing, ease: EASE, onClose, enabled: open && entered });
 
   useEffect(() => {
     if (!open) return;
@@ -99,7 +103,7 @@ export default function LoreDrawer({ item, open, onClose }: { item: LoreItem; op
       style={open ? undefined : { visibility: "hidden" }}
       aria-label={`${item.title} details`}
     >
-      <div className="drawer__bar">
+      <div ref={barRef} className="drawer__bar">
         <span className="drawer__bar-title">
           {item.title} - {item.creator}
         </span>

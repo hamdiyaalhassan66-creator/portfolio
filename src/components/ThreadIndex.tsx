@@ -56,7 +56,7 @@ const STAGGER = 0.05; // each following model waits a little longer
 const REVEAL_SPEED = 0.1; // how fast each one comes out (higher = faster)
 const ARRIVE_EASE = 0.08; // how fast the reveal clock runs (higher = models come out sooner)
 const TRIP_EASE = 0.12; // how closely the head follows the scroll (higher = tighter, lower = floatier)
-const HEAD_END = 1.15; // size of the portrait once it has landed (1 = no shrink)
+const HEAD_END = 0.85; // size of the portrait once it has landed (1 = no shrink)
 // ----------------------------
 
 const clamp = (v: number, a: number, b: number) => Math.min(Math.max(v, a), b);

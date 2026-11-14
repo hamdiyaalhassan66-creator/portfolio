@@ -20,20 +20,25 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  max-width: 856px;
+  /* site grid columns 1-2 (2 columns + 1 gutter), plus the 24px side margins that the padding takes up */
+  width: calc(
+    (100% - 5 * var(--grid-gutter) - 2 * var(--grid-margin)) / 3 + var(--grid-gutter) + 2 * var(--grid-margin)
+  );
   padding: 24px;
 }
 
 .lore__text {
-  font: 500 13px/16px var(--font-sans);
+  font: 500 13px/15px var(--font-sans);
   letter-spacing: -0.01em;
+  text-transform: uppercase;
   color: var(--fg);
 }
 
 .lore__tabs {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 8px 12px;
 }
 
 .lore__tab {
@@ -49,6 +54,26 @@
 
 .lore__tab.is-active {
   color: var(--blue);
+}
+
+/* back link */
+.lore__back {
+  align-self: flex-start;
+  text-transform: uppercase;
+  text-decoration: underline;
+  font: 500 13px/15px var(--font-mono);
+  letter-spacing: -0.01em;
+  color: var(--blue);
+  transition: color 0.2s ease;
+}
+
+@media (hover: hover) {
+  .lore__back:hover { color: #0A2FB8; }
+}
+
+.lore__back:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 4px;
 }
 
 /* stage */
@@ -163,6 +188,11 @@ a.lore__creator {
   font: 500 13px/15px var(--font-mono);
   letter-spacing: -0.01em;
   color: var(--blue);
+  transition: color 0.2s ease;
+}
+
+@media (hover: hover) {
+  .lore__info:hover { color: #0A2FB8; }
 }
 
 .lore__info:focus-visible {
@@ -185,11 +215,11 @@ a.lore__creator {
 .player {
   position: fixed;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  /* site grid columns 3-4 */
+  left: calc(var(--grid-margin) + (100% + var(--grid-gutter) - 2 * var(--grid-margin)) / 3);
+  width: calc((100% - 2 * var(--grid-gutter) - 2 * var(--grid-margin)) / 3);
   display: flex;
   gap: 2px;
-  width: min(832px, 100%);
   height: 48px;
   background: var(--surface);
 }
@@ -239,25 +269,68 @@ a.lore__creator {
 /* recommendations button */
 .lore__recs {
   position: fixed;
-  right: 24px;
+  right: var(--grid-margin); /* columns 5-6 end at the grid's right margin */
   bottom: 0;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end; /* left aligned */
   align-items: flex-start;
-  min-width: 285px;
-  width: max-content;
-  padding: 8px 12px 24px;
-  background: #E3E6F7;
+  width: calc((100% - 2 * var(--grid-gutter) - 2 * var(--grid-margin)) / 3);
+  padding: 8px 0 24px; /* no side padding, so the text starts on the column's left edge */
+  background: none;
+  border: 0;
+  cursor: pointer;
   color: var(--blue);
-  text-decoration: none;
+  text-decoration: underline;
   text-transform: uppercase;
   white-space: nowrap;
   font: 500 13px/15px var(--font-mono);
   letter-spacing: -0.01em;
+  transition: color 0.2s ease;
+}
+
+@media (hover: hover) {
+  .lore__recs:hover { color: #0A2FB8; }
+}
+
+.lore__recs:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 4px;
 }
 
 html:has(.lore),
 html:has(.lore) body {
   height: 100%;
   overflow: hidden;
+}
+
+/* tablet: the 80px gutter is too wide here, so the intro takes a share of the width instead */
+@media (max-width: 1100px) {
+  .lore__intro { width: 60%; }
+  .player {
+    left: var(--grid-margin);
+    right: var(--grid-margin);
+    width: auto;
+  }
+  .lore__recs {
+    left: var(--grid-margin);
+    right: var(--grid-margin);
+    bottom: 50px; /* sits on top of the player bar, 2px gap */
+    width: auto;
+    padding: 8px 0; /* no background, so the extra bottom padding isn't needed */
+  }
+}
+
+/* mobile: 16px left and right margins */
+@media (max-width: 767px) {
+  .lore__intro {
+    width: 100%;
+    padding: 16px;
+  }
+  .lore__now { left: 16px; }
+  .player { left: 16px; right: 16px; }
+  .lore__recs {
+    left: 16px;
+    right: 16px;
+    justify-content: center;
+  }
 }

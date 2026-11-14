@@ -35,9 +35,10 @@
 .header__nav {
   display: flex;
   gap: 2px;
-  flex: 0 0 var(--panel-w); /* same width as the preview panel on the works page, set in index.css */
+  flex: 0 0 calc(66.667% - (var(--grid-margin) + var(--grid-gutter)) / 3); /* columns 3 to 6 plus the right margin, so the tabs reach the edge */
   min-width: 0;
-  margin-left: auto; /* pushes the tabs to the right edge, above the preview panel */
+  margin-left: auto; /* pushes the tabs to the right */
+  margin-right: 0;
 }
 
 .header__link {
@@ -146,7 +147,7 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: var(--bg); /* fills the 2px gaps between the links */
+    background: rgba(46, 29, 17, 0.41); /* frosted, fills the 2px gaps between the links */
     display: flex;
     flex-direction: column;
     gap: 2px;
@@ -167,8 +168,8 @@
     display: flex;
     align-items: center;
     padding: 0 12px;
-    background: #E3E6F7;
-    color: var(--blue);
+    background: rgba(227, 230, 247, 0.45);
+    color: #fff;
     font: 600 14px/1 var(--font-mono);
     text-transform: uppercase;
     letter-spacing: -0.01em;
@@ -180,16 +181,16 @@
     width: 48px;
     padding: 0;
     border: 0;
-    background: #E8E4E1;
-    color: var(--fg);
+    background: rgba(46, 29, 17, 0.15);
+    color: #fff;
     cursor: pointer;
   }
   .menu__link {
     display: flex;
     align-items: center;
     padding: 16px 12px 24px;
-    background: var(--bg);
-    color: var(--fg);
+    background: transparent;
+    color: #fff;
     text-decoration: none;
     text-transform: uppercase;
     font: 500 24px/1 var(--font-mono);
@@ -200,12 +201,16 @@
   }
   .menu__link.is-active {
     background: var(--blue);
-    color: var(--bg);
+    color: #fff;
   }
 }
 
 /* tablets and small laptops: the nav area gets narrow, so give it more room and tighten the tabs */
 @media (min-width: 768px) and (max-width: 1100px) {
+  .header__nav {
+    flex-basis: var(--panel-w); /* the tablet layout isn't on the 6-column grid */
+    margin-right: 0;
+  }
   .header__logo {
     padding: 10px 16px;
   }

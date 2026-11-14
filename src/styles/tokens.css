@@ -22,20 +22,25 @@
 
   --max-width: 1200px;
 
-  --panel-w: 66.38%; /* the works page's right panel and the nav tabs above it (Figma: 1147 / 1728) */
+  /* site grid: 6 columns, 80px gutters, 24px side margins */
+  --grid-margin: 24px;
+  --grid-gutter: 80px;
+
+  --panel-n: 66.38; /* the same number without a unit, so the Information page can use it with cqw */
+  --panel-w: calc(var(--panel-n) * 1%); /* the works page's right panel and the nav tabs above it (Figma: 1147 / 1728) */
 }
 
 /* narrower laptops and large tablets: a wider left column gives the project rows room */
 @media (max-width: 1280px) {
   :root {
-    --panel-w: 50%;
+    --panel-n: 50;
   }
 }
 
 /* single column (no panel on the works page): only the nav uses this, so the tabs get more room */
 @media (max-width: 900px) {
   :root {
-    --panel-w: 70%;
+    --panel-n: 70;
   }
 }
 
@@ -55,4 +60,26 @@ html,
 body,
 #root {
   min-height: 100%;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  column-gap: var(--grid-gutter);
+  padding-inline: var(--grid-margin);
+}
+
+/* debug: type document.documentElement.classList.toggle("show-grid") in the console to see the columns */
+html.show-grid::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  margin-inline: var(--grid-margin);
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    to right,
+    rgba(255, 0, 80, 0.12) 0 calc((100% - 5 * var(--grid-gutter)) / 6),
+    transparent calc((100% - 5 * var(--grid-gutter)) / 6) calc((100% - 5 * var(--grid-gutter)) / 6 + var(--grid-gutter))
+  );
 }

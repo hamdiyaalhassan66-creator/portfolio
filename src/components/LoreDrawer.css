@@ -1,6 +1,6 @@
 .drawer-overlay {
   position: fixed;
-  z-index: 20;
+  z-index: 110;
   inset: 0;
   background: rgba(46, 29, 17, 0.2);
   backdrop-filter: blur(14.85px);
@@ -8,14 +8,19 @@
 
 .drawer {
   position: fixed;
-  z-index: 21;
+  z-index: 111;
   top: 2px;
   right: 2px;
   bottom: 2px;
   display: flex;
   flex-direction: column;
   width: min(570px, calc(100% - 4px));
-  background: var(--bg);
+  background: rgba(46, 29, 17, 0.41); /* frosted: the overlay already blurs the page behind it */
+  color: #fff;
+  --fg: #fff;
+  --fg-60: rgba(255, 255, 255, 0.6);
+  --fg-30: rgba(255, 255, 255, 0.4);
+  --blue: #fff; /* link, playing row, progress fill and focus rings all go white */
 }
 
 /* top bar */
@@ -31,11 +36,11 @@
   flex: 1;
   height: 100%;
   padding: 10px;
-  background: #E3E6F7;
+  background: rgba(227, 230, 247, 0.45);
   text-transform: uppercase;
   font: 500 12px/14px var(--font-mono);
   letter-spacing: -0.01em;
-  color: var(--blue);
+  color: #fff;
 }
 
 .drawer__close {
@@ -46,10 +51,15 @@
   width: 40px;
   height: 40px;
   padding: 0;
-  background: rgba(46, 29, 17, 0.08);
+  background: rgba(46, 29, 17, 0.15);
   border: 0;
   cursor: pointer;
-  color: #000;
+  color: #fff;
+  transition: background 0.2s ease;
+}
+
+@media (hover: hover) {
+  .drawer__close:hover { background: rgba(46, 29, 17, 0.25); }
 }
 
 .drawer__close:focus-visible,
@@ -164,8 +174,8 @@
 .drawer__row--head {
   height: 26px;
   cursor: default;
-  border-bottom: 1px solid rgba(46, 29, 17, 0.1);
-  color: rgba(46, 29, 17, 0.4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .drawer__lead {
@@ -175,7 +185,7 @@
   flex: none;
   width: 32px;
   height: 32px;
-  color: rgba(46, 29, 17, 0.15);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .drawer__row.is-playing .drawer__lead {
@@ -187,7 +197,7 @@
   flex: none;
   margin-right: 40px;
   font-size: 12px;
-  color: rgba(46, 29, 17, 0.6);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .drawer__row--head .drawer__num {
@@ -202,7 +212,7 @@
   margin-left: auto;
   text-align: right;
   font-size: 12px;
-  color: rgba(46, 29, 17, 0.6);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .drawer__row--head .drawer__time {
@@ -228,7 +238,7 @@
   gap: 16px;
   height: 48px;
   padding-right: 22px;
-  background: #E3E6F7;
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .drawer__pause {
@@ -241,8 +251,8 @@
   padding: 0;
   border: 0;
   cursor: pointer;
-  background: var(--blue);
-  color: var(--bg);
+  background: transparent;
+  color: #fff;
 }
 
 .drawer__now {
@@ -270,7 +280,7 @@
 .drawer__progress {
   position: relative;
   height: 4px;
-  background: rgba(46, 29, 17, 0.15);
+  background: rgba(255, 255, 255, 0.3);
   cursor: pointer;
   touch-action: none;
 }
@@ -297,7 +307,7 @@
   left: calc((100% - 4px) * var(--p));
   width: 4px;
   height: 8px;
-  background: #2e1d11;
+  background: #fff;
 }
 
 .drawer__progress:focus-visible {
@@ -331,4 +341,288 @@
   .wave.is-active .wave__bar {
     animation: none;
   }
+}
+
+/* phones: bottom sheet, same look as the header menu */
+@media (max-width: 767px) {
+  .drawer-overlay {
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+  .drawer {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: auto; /* fits its content */
+    max-height: calc(100dvh - 40px); /* once the content is taller than this, .drawer__body scrolls */
+    gap: 2px;
+  }
+  .drawer__bar { height: 48px; }
+  .drawer__bar-title {
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    font: 600 14px/1 var(--font-mono);
+  }
+  .drawer__close {
+    width: 48px;
+    height: 48px;
+    background: rgba(46, 29, 17, 0.15);
+    color: #fff;
+  }
+  .drawer__body { padding: 16px 16px calc(72px + env(safe-area-inset-bottom, 0px)); }
+  .drawer__hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .drawer__model { align-self: center; }
+  .drawer__player {
+    left: 0;
+    right: 0;
+    bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .drawer::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: 12px; /* covers the spring overshoot so no page shows under the sheet */
+    background: rgba(46, 29, 17, 0.41);
+  }
+}
+
+/* recommendations form */
+.recs {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.recs__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recs__label {
+  text-transform: uppercase;
+  font: 500 12px/14px var(--font-mono);
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+
+.recs__kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.recs__kind {
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-transform: uppercase;
+  font: 500 13px/15px var(--font-mono);
+  letter-spacing: -0.01em;
+  color: var(--fg-30);
+}
+
+.recs__kind.is-active {
+  color: var(--blue);
+}
+
+.recs__input {
+  width: 100%;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 0;
+  border-radius: 0;
+  font: 550 14px/17px var(--font-sans);
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+
+.recs__input--area {
+  resize: none;
+}
+
+.recs__input::placeholder {
+  color: var(--fg-30);
+}
+
+.recs__input:focus-visible,
+.recs__kind:focus-visible,
+.recs__submit:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: -2px;
+}
+
+.recs__submit {
+  height: 48px;
+  border: 0;
+  cursor: pointer;
+  background: #fff;
+  color: #2e1d11;
+  text-transform: uppercase;
+  font: 500 13px/15px var(--font-mono);
+  letter-spacing: -0.01em;
+}
+
+.recs__submit:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.recs__thanks {
+  font: 600 15px/20px var(--font-sans);
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+
+/* 16px inputs stop iOS from zooming the page on focus */
+@media (max-width: 767px) {
+  .recs__input { font-size: 16px; }
+}
+
+.recs__error {
+  font: 550 13px/17px var(--font-sans);
+  letter-spacing: -0.01em;
+  color: #FFD0CC;
+}
+
+.recs__error a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.recs__tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.recs__list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recs__item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.recs__item:first-child {
+  padding-top: 0;
+}
+
+.recs__item-kind {
+  text-transform: uppercase;
+  font: 500 12px/14px var(--font-mono);
+  letter-spacing: -0.01em;
+  color: var(--blue);
+}
+
+.recs__item-title {
+  font: 600 15px/19px var(--font-sans);
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+
+.recs__item-title a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.recs__item-artist,
+.recs__item-note {
+  font: 550 13px/17px var(--font-sans);
+  letter-spacing: -0.01em;
+  color: var(--fg-60);
+}
+
+.recs__item-by {
+  font: 550 12px/15px var(--font-sans);
+  letter-spacing: -0.01em;
+  color: var(--fg-30);
+}
+
+.recs__empty {
+  font: 550 14px/17px var(--font-sans);
+  letter-spacing: -0.01em;
+  color: var(--fg-60);
+}
+
+/* drag to close: the top bar is the grip */
+.drawer__bar {
+  touch-action: none; /* stops the browser claiming the touch for scrolling */
+  user-select: none;
+  cursor: grab;
+}
+
+.drawer[data-grabbed] .drawer__bar {
+  cursor: grabbing;
+}
+
+.drawer[data-grabbed] {
+  box-shadow: 0 -12px 40px rgba(46, 29, 17, 0.18); /* lifts off the page while you hold it */
+}
+
+.drawer__close {
+  cursor: pointer;
+}
+
+/* paper: wrinkles and tension creases while the sheet is held */
+.drawer__paper {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  opacity: calc(var(--wrinkle, 0) * 0.9); /* the 0.9 is the maximum strength */
+  mix-blend-mode: multiply;
+  transition: opacity 0.6s ease;
+}
+
+.drawer[data-grabbed] .drawer__paper {
+  transition: none; /* follows your finger exactly while held */
+}
+
+/* soft shading that follows the pull: a big diffuse shadow and a tighter core */
+.drawer__paper::before,
+.drawer__paper::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 50%;
+  will-change: transform;
+}
+
+.drawer__paper::before {
+  width: 420px;
+  height: 260px;
+  margin: -130px 0 0 -210px;
+  background: radial-gradient(closest-side, rgba(46, 29, 17, 0.38), rgba(46, 29, 17, 0.12) 60%, transparent);
+  filter: blur(16px);
+  transform: translate(var(--bx, 50%), var(--by, 20px)) rotate(var(--ang, 0rad)) scaleX(var(--str, 1));
+}
+
+.drawer__paper::after {
+  width: 200px;
+  height: 120px;
+  margin: -60px 0 0 -100px;
+  background: radial-gradient(closest-side, rgba(46, 29, 17, 0.3), transparent);
+  filter: blur(10px);
+  transform: translate(calc(var(--bx, 50%) + 28px), calc(var(--by, 20px) + 18px)) rotate(var(--ang, 0rad)) scaleX(var(--str, 1));
 }

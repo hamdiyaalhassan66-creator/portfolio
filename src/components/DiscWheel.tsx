@@ -700,9 +700,10 @@ function Scene({ items, pos, invalidateRef, flip, turn, hover, pickRef, intro, o
     const W = state.size.width;
     const H = state.size.height;
     const n = items.length;
-    const m = motionOn() ? 1 : 0;
+    const compact = W < 768; // phones: one sleeve in focus, neighbours peek in from the sides
+    const m = motionOn() && !compact ? 1 : 0; // phones: no tilt, sleeves face the camera
     const ease = 1 - Math.exp(-Math.min(dt, 0.05) * 10);
-    const side0 = Math.min(BASE * W, 0.66 * H);
+    const side0 = compact ? Math.min(0.66 * W, 0.42 * H) : Math.min(BASE * W, 0.66 * H);
     let busy = false;
 
     for (let i = 0; i < n; i++) {
@@ -712,7 +713,7 @@ function Scene({ items, pos, invalidateRef, flip, turn, hover, pickRef, intro, o
       // entry animation: left sleeves go first, each eased with EASE
       const delay = (Math.min(Math.max(o + 2, 0), 3) / 3) * INTRO_STAGGER;
       const p = EASE_IN(Math.min(Math.max((intro.current.value - delay) / (1 - INTRO_STAGGER), 0), 1));
-      const a = smooth(-3, -2.1, o) * (1 - smooth(1.1, 1.9, o)) * p; // at rest: two on the left, centre, one on the right
+      const a = (compact ? 1 - smooth(1.15, 1.7, Math.abs(o)) : smooth(-3, -2.1, o) * (1 - smooth(1.1, 1.9, o))) * p; // phones: centre + one each side, fading past that
       g.visible = a > 0.01;
       if (!g.visible) continue;
 
@@ -732,9 +733,10 @@ function Scene({ items, pos, invalidateRef, flip, turn, hover, pickRef, intro, o
       const z = -Math.min(Math.abs(o), 3) * Z_STEP + (lifted ? Z_LIFT : 0);
       const k = (state.camera.position.z - z) / state.camera.position.z;
       const s = -o; // steps to the left of centre
-      const x = o >= 0 ? XA * f * W : -(side0 * (s - (GROW_L * s * s) / 2) + GAP_L * W * s);
-      g.position.set((x + (1 - p) * INTRO_X * W) * k, (H / 2 - (Y0 - (o >= 0 ? YP : YN) * f) * H) * k, z);
-      g.scale.setScalar((k * side0 * Math.max(0.2, 1 + (o >= 0 ? GROW : GROW_L) * o)) / 2);
+      const x = compact ? o * (side0 + 0.06 * W) : o >= 0 ? XA * f * W : -(side0 * (s - (GROW_L * s * s) / 2) + GAP_L * W * s);
+      const y = compact ? H / 2 - 0.6 * H : H / 2 - (Y0 - (o >= 0 ? YP : YN) * f) * H; // 0.6 keeps it clear of the title block
+      g.position.set((x + (1 - p) * INTRO_X * W) * k, y * k, z);
+      g.scale.setScalar((k * side0 * (compact ? 1 : Math.max(0.2, 1 + (o >= 0 ? GROW : GROW_L) * o))) / 2);
 
       // lean toward the cursor while it's over this sleeve
       const l = (lean.current[i] ??= { x: 0, y: 0 });
@@ -909,6 +911,7 @@ export default function DiscWheel({ items, activeIndex, onChange }: DiscWheelPro
     if (!root || !stage) return;
 
     const scale = () => (root.clientWidth || 1920) / 1920;
+    const stepPx = () => (root.clientWidth < 768 ? root.clientWidth * 0.72 : STEP_PX * scale()); // phones: matches the sleeve spacing, so it follows the finger 1:1
 
     let timer = 0;
     let dragging = false;
@@ -994,7 +997,7 @@ export default function DiscWheel({ items, activeIndex, onChange }: DiscWheelPro
 
       // empty-space drag: scroll the row
       const now = performance.now();
-      const next = startPos - dx / (STEP_PX * scale());
+      const next = startPos - dx / stepPx();
       const dt = now - lastT;
       if (dt > 0) vel = vel * 0.7 + ((next - pos.current.value) / dt) * 0.3;
       pos.current.value = next;
@@ -1073,7 +1076,7 @@ export default function DiscWheel({ items, activeIndex, onChange }: DiscWheelPro
       <Canvas
         frameloop="demand"
         flat
-        dpr={[1, 2]}
+        dpr={[1, window.innerWidth < 768 ? 1.5 : 2]}
         gl={{ alpha: true, antialias: true }}
         camera={{ fov: 30, near: 10, far: 20000 }}
       >

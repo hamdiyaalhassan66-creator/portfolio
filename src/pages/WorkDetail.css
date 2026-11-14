@@ -2,20 +2,23 @@
   position: relative;
   background: #F9F7F6;
   color: var(--fg);
-  padding: 2px 0 24px; /* Figma: 2px under the nav */
+  padding: 40px 0 2px; /* 40px under the nav */
   overflow-x: clip;
 }
 
 /* header: back link, logo, title and description on the left, the two accordions on the right */
 .detail__head {
   position: relative;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 24px;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr)); /* site grid */
+  column-gap: var(--grid-gutter);
+  padding-inline: var(--grid-margin);
+  align-items: end; /* the accordions sit on the same bottom line as the thumbnail stack */
   margin-bottom: 8px;
 }
 .detail__headmain {
+  grid-column: 1 / span 2;
+  margin-left: calc(var(--grid-margin) * -1); /* the back link's hover still reaches the left edge */
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -26,20 +29,23 @@
   align-items: center;
   gap: 10px;
   align-self: flex-start;
-  padding: 8px 24px;
+  padding: 8px 24px; /* keeps the text lined up with the logo and the tap target size */
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-transform: uppercase;
+  text-decoration: underline;
   font: 500 13px/15px var(--font-mono);
   letter-spacing: -0.01em;
-  text-transform: uppercase;
-  text-decoration: none;
   color: #1046F9;
-  transition: background 0.2s ease;
+  transition: color 0.2s ease;
 }
-.detail__back:hover {
-  background: #E6EAF7;
+@media (hover: hover) {
+  .detail__back:hover { color: #0A2FB8; }
 }
 .detail__back:focus-visible {
   outline: 2px solid #1046F9;
-  outline-offset: -2px;
+  outline-offset: 4px;
 }
 .detail__intro {
   display: flex;
@@ -86,8 +92,9 @@
 }
 .detail__desc {
   margin: 0;
-  font: 600 15px/20px var(--font-sans);
-  letter-spacing: -0.03em;
+  font: 500 13px/15px var(--font-sans);
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
   color: #2E1D11;
 }
 
@@ -96,7 +103,8 @@
   --bar: 40px;
   position: relative;
   z-index: 30; /* above the overlay */
-  flex: 0 0 413px;
+  grid-column: 5 / span 2; /* the last two columns */
+  margin-right: calc(var(--grid-margin) * -1); /* run to the right edge of the page */
   height: calc(var(--bar) * 2 + 2px); /* two closed bars + the 2px gap; an open panel grows past this */
 }
 .acc__stack {
@@ -194,6 +202,7 @@
   gap: 8px;
   font: 500 13px/15px var(--font-sans);
   letter-spacing: -0.01em;
+  text-transform: uppercase;
 }
 .row__line {
   flex: 1;
@@ -235,26 +244,32 @@
   background: #E3E3E3;
 }
 
-/* previous / next / all projects, centred under the images (Figma: 832px wide) */
+/* previous / all projects / next: 3 blocks of 2 columns on the site grid */
 .pager {
-  display: flex;
-  flex-direction: column;
-  gap: 2px; /* space between the Previous/Next row and the All projects button */
-  width: min(832px, 100% - 32px);
-  margin: 2px auto 0;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  column-gap: var(--grid-gutter);
+  row-gap: 2px;
+  padding-inline: var(--grid-margin);
+  margin: 8px 0 0;
 }
 .pager__row {
-  display: flex;
-  gap: 2px;
+  display: contents; /* the items become direct grid children */
 }
 .pager__item {
+  grid-column: 1 / span 2; /* previous: columns 1-2 */
+  grid-row: 1;
+  margin-left: calc(var(--grid-margin) * -1); /* run to the left edge, like Next does on the right */
   display: flex;
   flex-direction: column;
-  flex: 1 1 0;
   min-width: 0;
   gap: 2px;
   color: inherit;
   text-decoration: none;
+}
+.pager__item:nth-child(2) {
+  grid-column: 5 / span 2; /* next: columns 5-6, lines up with the accordions above */
+  margin-right: calc(var(--grid-margin) * -1); /* run to the right edge, like the accordions */
 }
 .pager__item:focus-visible {
   outline: 2px solid #1046F9;
@@ -329,56 +344,79 @@
   pointer-events: none;
 }
 .pager__all {
+  grid-column: 3 / span 2; /* middle: columns 3-4 */
+  grid-row: 1;
   display: flex;
-  justify-content: center; /* Figma: label sits in the middle */
+  align-items: center;
+  justify-content: center;
   padding: 8px 24px;
-  background: transparent;
-  color: #1046F9;
-  text-decoration: none;
+  background: none;
+  text-transform: uppercase;
+  text-decoration: underline;
   font: 500 13px/15px var(--font-mono);
   letter-spacing: -0.01em;
-  text-transform: uppercase;
-  transition: background 0.2s ease;
+  color: #1046F9;
+  touch-action: manipulation;
+  transition: color 0.2s ease;
 }
-.pager__all:hover {
-  background: #E6EAF7;
+@media (hover: hover) {
+  .pager__all:hover { color: #0A2FB8; }
 }
 .pager__all:focus-visible {
   outline: 2px solid #1046F9;
-  outline-offset: -4px;
+  outline-offset: 4px;
 }
 
 /* skip layout and paint for the pager until it's near the viewport */
 .pager {
   content-visibility: auto;
-  contain-intrinsic-size: auto 180px;
+  contain-intrinsic-size: auto 106px; /* 40 label + 2 gap + 64 card */
+}
+.detail__gallery picture {
+  content-visibility: auto; /* offscreen images skip layout and paint until scrolled near */
+  contain-intrinsic-size: auto 820px;
+}
+.acc__bar,
+.pager__all {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation; /* removes the 300ms tap delay on touch */
 }
 
 /* touch: bigger tap targets on the accordion bars */
 @media (pointer: coarse) {
   .detail__panels { --bar: 48px; }
+  .pager__all { min-height: 48px; }
 }
 
 /* tablet: the header stacks and the accordions go full width */
 @media (max-width: 1100px) {
-  .detail { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+  .detail { padding: 24px 0 calc(24px + env(safe-area-inset-bottom)); }
   .detail__head {
+    display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: 16px;
     padding: 0;
   }
+  .detail__headmain { margin-left: 0; }
   .detail__back { padding: 8px 16px; }
   .detail__intro { padding: 0 16px; }
   .detail__text { max-width: none; }
-  .detail__panels { flex: none; width: 100%; }
-  .pager { width: 100%; margin: 2px 0 0; }
+  .detail__panels { flex: none; width: 100%; margin-right: 0; }
+  .pager {
+    column-gap: 2px; /* the 80px gutter is too wide here, so the three blocks sit tight */
+    padding-inline: 0;
+    margin: 8px 0 0;
+  }
+  .pager__item { margin-left: 0; } /* no side padding here, so nothing to cancel */
+  .pager__item:nth-child(2) { margin-right: 0; }
   .pager__label,
   .pager__card { padding-left: 16px; }
 }
 
 /* phone: one column of images, tighter type, lighter blur */
 @media (max-width: 700px) {
+  .detail { padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
   .detail__gallery { grid-template-columns: minmax(0, 1fr); }
   .detail__mark { width: 72px; height: 72px; }
   .detail__intro { align-items: flex-start; gap: 12px; }
@@ -394,6 +432,15 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+    /* previous | next side by side, all projects below */
+  .pager { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pager__item { grid-column: 1; }
+  .pager__item:nth-child(2) { grid-column: 2; }
+  .pager__all {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    min-height: 48px;
+  }
   .detail__overlay {
     -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
@@ -402,8 +449,11 @@
 
 /* small phones: Previous and Next stack so each card gets the full width */
 @media (max-width: 480px) {
-  .pager__row { flex-direction: column; }
-  .pager__item { flex: none; }
+  .pager { grid-template-columns: minmax(0, 1fr); } /* previous, next, all projects: one column */
+  .pager__item,
+  .pager__item:nth-child(2) { grid-column: 1; }
+  .pager__item:nth-child(2) { grid-row: 2; }
+  .pager__all { grid-row: 3; }
   .row { flex-wrap: wrap; } /* long values drop below their label instead of squeezing */
   .row__line { min-width: 0; }
 }

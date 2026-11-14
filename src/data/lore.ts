@@ -52,7 +52,7 @@ const lore: Record<LoreCategory, LoreItem[]> = {
     { id: "good-goodbye", title: "Good Goodbye", creator: "Hwasa", kind: "Single", genre: "K-pop", songs: 2, image: "/lore/music/good-goodbye.png" },
     { id: "fly-me-to-the-moon", title: "Fly Me to the Moon (In Other Words)", creator: "Frank Sinatra & Count Basie", kind: "Single", genre: "Jazz", year: 1964, songs: 1, image: "/lore/music/fly-me-to-the-moon.png" },
     { id: "my-way", title: "My Way", creator: "Frank Sinatra", kind: "Single", genre: "Pop", year: 1969, songs: 1, image: "/lore/music/my-way.png" },
-    { id: "easy", title: "Easy", creator: "Anna Wise & Xavier Omar", kind: "Single", genre: "R&B", songs: 1, image: "/lore/music/easy.png" },
+    { id: "easy", title: "Easy", creator: "Anna Wise & Xavier Omär", kind: "Single", genre: "R&B", songs: 1, image: "/lore/music/easy.png" },
     { id: "nothing-without-you", title: "Nothing Without You", creator: "Tanerélle", kind: "Single", genre: "R&B", songs: 1, image: "/lore/music/nothing-without-you.png" },
 
     // albums
