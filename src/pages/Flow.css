@@ -1,0 +1,105 @@
+/* Flow: photos stream along a diagonal, far and faint at the top right, big and sharp at the bottom left */
+.flow {
+  position: sticky; /* pinned under the nav while the page scrolls and drives the stream */
+  top: var(--bar-h, 26px);
+  width: 100%;
+  height: var(--ph, 100vh);
+  overflow: hidden;
+  background: #141111;
+  color: #FCF8F5;
+  cursor: grab;
+  touch-action: pan-y; /* touch scrolls the page, the page scroll moves the stream */
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  contain: layout paint; /* keeps the moving tiles from repainting the rest of the page */
+}
+.flow.is-drag { cursor: grabbing; }
+.flow:focus-visible {
+  outline: 2px solid #1046F9;
+  outline-offset: -2px;
+}
+
+/* the script only writes transform and opacity, so the browser can move tiles on the GPU without layout */
+.flow__tile {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #2A2424; /* shows while a photo loads */
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+.flow__link,
+.flow__tile picture,
+.flow__tile img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.flow__tile img {
+  object-fit: cover;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+.flow__link:focus-visible {
+  outline: 2px solid #908DFF;
+  outline-offset: 2px;
+}
+
+/* tiny faint project names beside some tiles, they scale with the tile so they are specks far away */
+.flow__tag {
+  position: absolute;
+  right: calc(100% + 8px);
+  bottom: 0;
+  font: 500 14px/1 var(--font-sans);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  color: rgba(252, 248, 245, 0.4);
+  pointer-events: none;
+}
+
+/* the stream darkens toward the bottom, under the label and above every tile */
+.flow::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 14%;
+  z-index: 150;
+  background: linear-gradient(to top, #141111, rgba(20, 17, 17, 0));
+  pointer-events: none;
+}
+
+/* label of the tile in front, bottom left (the style tabs sit bottom right) */
+.flow__label {
+  position: absolute;
+  left: env(safe-area-inset-left, 0px);
+  bottom: 0;
+  z-index: 200; /* above every tile */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: calc(100% - 96px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  pointer-events: none;
+}
+.flow__label a { pointer-events: auto; }
+.flow__label .work__cat,
+.flow__label .work__name,
+.flow__label .work__chip { color: #1F1313; } /* these sit on light or red bars, not on the dark stage */
+
+/* tablets */
+@media (max-width: 1100px) {
+  .flow__label { max-width: calc(100% - 80px); }
+}
+
+/* phones */
+@media (max-width: 700px) {
+  .flow__label { max-width: calc(100% - 72px); }
+  .flow__tag { display: none; } /* too small to read, and fewer layers to paint */
+  .flow::after { height: 18%; }
+}
+
+/* short landscape phones: keep the label from covering the stream */
+@media (max-height: 480px) and (orientation: landscape) {
+  .flow__label .work__cat { display: none; }
+}

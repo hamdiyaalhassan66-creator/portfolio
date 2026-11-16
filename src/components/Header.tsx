@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import "./Header.css";
 
-import type { ReactNode } from "react";
+import type { PointerEvent, ReactNode } from "react";
 
 const icons: Record<string, ReactNode> = {
   folder: <path d="M1.33 2h5.34L8 3.33h6.67V14H1.33z" />,
@@ -20,15 +20,65 @@ const icons: Record<string, ReactNode> = {
 };
 
 const links = [
-  { to: "/", label: "Works", icon: "folder" },
-  { to: "/lab", label: "Lab", icon: "flask" },
+  { to: "/", label: "Work", icon: "folder" },
+  { to: "/lab", label: "Side Quests", icon: "flask" },
   { to: "/information", label: "Info", icon: "user" },
   { to: "/archive", label: "Archive", icon: "star" },
   { to: "/contact", label: "Contact", icon: "contacts" },
 ];
 
+const GROW = 23; // px added to the hovered tab (26 → 49, same as the active tab)
+const REACH = 2; // how many tab widths the effect travels along the nav
+const STIFFNESS = 0.14; // higher = snappier
+const DAMPING = 0.74; // lower = bouncier, 0.8+ settles with no overshoot
+
 export default function Header() {
   const [open, setOpen] = useState(false);
+    const navRef = useRef<HTMLElement>(null);
+
+  // dock effect: each tab grows by how close the pointer is to its centre.
+  // one rAF loop keeps a value + velocity per tab and springs it toward its target, so nothing restarts mid-move
+  const anim = useRef({ target: [] as number[], value: [] as number[], vel: [] as number[], raf: 0, last: 0 });
+  const getTabs = () => Array.from(navRef.current?.querySelectorAll<HTMLElement>(".header__link") ?? []);
+
+  const tick = (now: number) => {
+    const s = anim.current;
+    const k = Math.min((now - s.last) / 16.67, 3); // frame-rate independent
+    s.last = now;
+    let moving = false;
+    getTabs().forEach((tab, i) => {
+      const target = s.target[i] ?? 0;
+      const v = s.value[i] ?? 0;
+      const vel = ((s.vel[i] ?? 0) + (target - v) * STIFFNESS * k) * Math.pow(DAMPING, k);
+      const next = v + vel * k;
+      s.vel[i] = vel;
+      s.value[i] = next;
+      tab.style.setProperty("--grow", `${Math.max(next, 0)}px`);
+      if (Math.abs(vel) > 0.01 || Math.abs(target - next) > 0.05) moving = true;
+    });
+    s.raf = moving ? requestAnimationFrame(tick) : 0;
+  };
+  const run = () => {
+    if (anim.current.raf) return;
+    anim.current.last = performance.now();
+    anim.current.raf = requestAnimationFrame(tick);
+  };
+
+  const handleMove = (e: PointerEvent<HTMLElement>) => {
+    if (e.pointerType !== "mouse" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    getTabs().forEach((tab, i) => {
+      const r = tab.getBoundingClientRect();
+      const d = Math.abs(e.clientX - (r.left + r.width / 2)) / r.width;
+      const f = d < REACH ? (Math.cos((Math.PI * d) / REACH) + 1) / 2 : 0;
+      anim.current.target[i] = f * GROW;
+    });
+    run();
+  };
+  const handleLeave = () => {
+    anim.current.target = [];
+    run();
+  };
+  useEffect(() => () => cancelAnimationFrame(anim.current.raf), []); // stop the loop on unmount
   const { pathname } = useLocation();
   const onLore = pathname.startsWith("/lore"); // the lore page is reached from Information, so that tab stays lit
   const onWork = pathname.startsWith("/works/"); // a project page is reached from Works, so that tab stays lit
@@ -52,13 +102,11 @@ export default function Header() {
 
   return (
     <>
+    <Link to="/" className="header__logo" aria-label="Dee-Space home">
+      <span className="header__logo-name">dee-space07</span>
+    </Link>
     <header className="header">
-      <Link to="/" className="header__logo" aria-label="Dee-Space home">
-        <span className="header__logo-mark" aria-hidden="true" />
-        <span className="header__logo-name">dee-space07</span>
-      </Link>
-
-      <nav className="header__nav">
+      <nav className="header__nav" ref={navRef} onPointerMove={handleMove} onPointerLeave={handleLeave}>
         {links.map(({ to, label, icon }) => (
           <NavLink
             key={to}

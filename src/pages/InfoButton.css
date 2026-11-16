@@ -1,0 +1,36 @@
+.ibtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0;
+  border: 0;
+  background: #E6E2DF;
+  color: #1F1313;
+  font: inherit; /* the size comes from the page it sits in */
+  letter-spacing: inherit;
+  line-height: 1.06;
+  text-transform: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.ibtn {
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+@media (hover: hover) {
+  .ibtn:hover { background: #DAD5D1; }
+}
+@media (pointer: coarse) {
+  .ibtn::after { content: ""; position: absolute; inset: -6px -10px; } /* larger tap area, same look */
+}
+.ibtn span { text-decoration: underline; }
+.ibtn svg {
+  width: 0.8em;
+  height: 0.8em;
+  flex: none;
+}
+.ibtn:focus-visible {
+  outline: 2px solid #1046F9;
+  outline-offset: 2px;
+}

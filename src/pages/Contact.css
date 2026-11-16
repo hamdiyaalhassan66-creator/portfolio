@@ -1,0 +1,319 @@
+.contact {
+  --u: calc(100vw / 1728); /* 1 Figma px at the current screen width */
+  --ink: #1F1313;
+  --body: clamp(15px, calc(var(--u) * 17), 24px); /* same body size as the Information page */
+  --face-w: calc(var(--u) * 350);
+
+  position: relative;
+  height: 100vh;
+  height: 100dvh; /* exactly one screen, no scrolling */
+  margin-top: -40px; /* cancels the sticky header's 40px, like the Information page */
+  background: #FCF8F5;
+  color: var(--ink);
+  font: 500 var(--body)/18px var(--font-sans);
+  letter-spacing: -0.03em;
+  overflow: clip;
+}
+
+/* frosted overlay: a flat tint instead of backdrop-filter, which is very costly on a full screen */
+.contact::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(252, 248, 245, 0.6);
+  pointer-events: none;
+}
+
+/* the blurred faces */
+.contact__faces {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  height: calc(var(--face-w) * 1.037);
+  transform: translateY(calc(-50% - var(--u) * 167)); /* Figma: 167px above the middle */
+  opacity: 0.6;
+  pointer-events: none;
+  user-select: none;
+}
+.contact__track {
+  display: flex;
+  align-items: center;
+  flex: none;
+  width: max-content;
+  will-change: transform;
+  animation: contact-scroll 45s linear infinite; /* same speed as the Information page */
+}
+@keyframes contact-scroll {
+  to { transform: translateX(-33.3333%); } /* a third of the track = one full set of faces */
+}
+@media (prefers-reduced-motion: reduce) {
+  .contact__track { animation: none; }
+}
+.contact__face {
+  position: relative;
+  flex: none;
+  width: var(--face-w);
+  margin-right: calc(var(--face-w) * 0.229); /* the gap sits on each face so the loop has no jump */
+  filter: blur(clamp(12px, calc(var(--u) * 25), 30px)); /* blurred per face, so it is rasterised once and only the layer moves */
+}
+.contact__face img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.contact .contact__sticker {
+  position: absolute;
+  left: calc(var(--face-w) * 0.134);
+  top: calc(var(--face-w) * 0.252);
+  width: calc(var(--face-w) * 0.783);
+  filter: drop-shadow(0 2px 7px rgba(0, 0, 0, 0.6));
+}
+
+/* the text block */
+.contact__content {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + var(--u) * 90.5); /* Figma: block centre 211.5px below the middle */
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 80);
+  width: calc(var(--u) * 1094);
+  transform: translateX(-50%);
+}
+
+.contact__close,
+.contact__copy {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+.contact__close {
+  text-decoration: underline;
+}
+
+.contact__cols {
+  display: flex;
+  gap: calc(var(--u) * 40);
+  width: 100%;
+}
+.contact__col {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.contact__label {
+  margin: 0;
+  font: 600 var(--body)/20px var(--font-sans);
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  color: rgba(31, 19, 19, 0.2);
+}
+.contact__copy {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.contact__copy svg {
+  flex: none;
+}
+.contact__copied {
+  position: absolute;
+  left: 100%;
+  margin-left: 8px;
+  font-size: 13px;
+  white-space: nowrap;
+  color: rgba(31, 19, 19, 0.5);
+}
+.contact__socials {
+  display: flex;
+  gap: 8px;
+}
+.contact a {
+  color: inherit;
+  text-decoration: none;
+}
+.contact__socials a:hover,
+.contact__copy:hover span:first-child,
+.contact__close:hover {
+  text-decoration: underline;
+}
+
+.contact .contact__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content; /* hugs the text */
+  height: 26px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: #FFE300;
+  color: inherit;
+  cursor: pointer;
+  font: 500 clamp(26px, calc(var(--u) * 40), 44px)/26px var(--font-sans);
+  letter-spacing: -0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.contact__close:focus-visible,
+.contact__copy:focus-visible,
+.contact a:focus-visible {
+  outline: 2px solid var(--blue, #908DFF);
+  outline-offset: 3px;
+}
+
+/* tablets and phones: normal flow, faces sit above the text, text sits at the bottom */
+@media (max-width: 1100px) {
+  .contact {
+    --face-w: clamp(150px, 34vw, 300px);
+    --body: 17px;
+    display: flex;
+    flex-direction: column;
+    margin-top: 0; /* the header is not pulled over the page on small screens */
+    height: calc(100dvh - 40px);
+  }
+  .contact__faces {
+    top: clamp(24px, 8dvh, 120px);
+    transform: none;
+  }
+  .contact__content {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+    gap: 40px;
+    width: min(860px, 100%);
+    margin: auto auto 0;
+    padding: 32px 16px calc(32px + env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
+  }
+  .contact__cols {
+    gap: 24px;
+  }
+  .contact .contact__cta {
+    max-width: 100%;
+  }
+}
+
+/* phones: one column */
+@media (max-width: 700px) {
+  .contact__cols {
+    flex-direction: column;
+    gap: 24px;
+  }
+  .contact__content {
+    gap: 32px;
+  }
+}
+
+/* mail popup */
+.mail {
+  position: fixed;
+  inset: 0;
+  z-index: 200; /* above the sticky header */
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+.mail__backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: rgba(31, 19, 19, 0.25);
+  cursor: pointer;
+}
+.mail__box {
+  position: relative;
+  width: fit-content; /* the popup fits its content */
+  min-width: min(420px, 100%);
+  max-width: min(520px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 20px;
+  background: #FCF8F5;
+  color: var(--ink);
+  font: 500 var(--body)/18px var(--font-sans);
+  letter-spacing: -0.03em;
+}
+.mail__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+.mail__x {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.mail__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.mail__form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mail__form input:not([type="hidden"]),
+.mail__form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 0;
+  background: rgba(31, 19, 19, 0.06);
+  color: inherit;
+  font: inherit;
+  font-size: 16px; /* 16px stops iOS zooming into the field */
+  letter-spacing: inherit;
+  resize: vertical;
+}
+.mail__form input:focus-visible,
+.mail__form textarea:focus-visible {
+  outline: 2px solid var(--blue, #908DFF);
+  outline-offset: 0;
+}
+.mail__trap {
+  position: absolute;
+  left: -9999px;
+  opacity: 0;
+}
+.mail__send {
+  align-self: flex-start;
+  padding: 0 4px;
+}
+.mail__send:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.mail__done,
+.mail__error {
+  margin: 0;
+}

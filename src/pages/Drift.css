@@ -1,0 +1,145 @@
+/* Drift: an endless collage of touching tiles that drifts by itself. Drag, scroll or use the arrows to steer.
+   It lives inside .works, so it uses the same --bar-h, --u and --font-sans. */
+.drift {
+  --drift-bg: #FCF8F5; /* the gaps between tiles. Try #1F1313 for the dark look of the reference */
+  position: fixed;
+  inset: var(--bar-h) 0 0 0; /* starts right under the nav links, like the strip */
+  z-index: 1;
+  overflow: hidden;
+  background: var(--drift-bg);
+  cursor: grab;
+  touch-action: none; /* dragging pans the collage instead of scrolling the page */
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  animation: drift-in 0.4s ease;
+}
+.drift.is-drag { cursor: grabbing; }
+.drift:focus-visible { outline: 2px solid #1046F9; outline-offset: -2px; }
+@keyframes drift-in {
+  from { opacity: 0; }
+}
+
+.drift__tile {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  overflow: hidden;
+  background: #D9D9D9; /* shows while a photo loads */
+  contain: layout paint; /* moving one tile never repaints the others */
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-user-drag: none;
+}
+.drift__link {
+  position: absolute;
+  inset: 0;
+  display: block;
+  -webkit-user-drag: none;
+}
+.drift__tile picture,
+.drift__grow picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.drift__tile img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+/* every tile is dimmed by how far back it sits, the one in the middle lights up fully */
+.drift__tile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: #1F1313;
+  opacity: var(--dim, 0.3); /* set per tile from its depth: far = darker, close = lighter */
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+.drift__tile.is-center::before { opacity: 0; }
+.drift__link:focus-visible { outline: 2px solid #1046F9; outline-offset: -2px; }
+/* the card in front rises above the others and lets its details hang over its edges */
+.drift__tile.is-center {
+  z-index: 2;
+  overflow: visible;
+  contain: layout;
+}
+
+/* the project name sits on the tile in the middle, with the small + marker under it */
+.drift .drift__label {
+  position: absolute; /* beats .work__label, which is position: relative */
+  left: 0;
+  bottom: 0;
+  z-index: 3;
+  width: max-content;
+  max-width: min(78vw, 420px); /* never wider than the screen on phones and tablets */
+  color: #1F1313;
+  text-align: left;
+  animation: drift-name 0.35s ease; /* plays each time a card takes the front */
+}
+@keyframes drift-name {
+  from { opacity: 0; }
+}
+
+/* a clicked tile grows from its own spot to the full screen, then the project page opens */
+.drift__grow {
+  position: fixed;
+  z-index: 60; /* above the nav too */
+  left: var(--gl);
+  top: var(--gt);
+  width: var(--gw);
+  height: var(--gh);
+  overflow: hidden;
+  background: #1F1313;
+  pointer-events: none;
+  transition:
+    left 0.65s cubic-bezier(0.65, 0, 0.2, 1),
+    top 0.65s cubic-bezier(0.65, 0, 0.2, 1),
+    width 0.65s cubic-bezier(0.65, 0, 0.2, 1),
+    height 0.65s cubic-bezier(0.65, 0, 0.2, 1);
+}
+.drift__grow.is-go {
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+}
+@supports (height: 100dvh) {
+  .drift__grow.is-go { height: 100dvh; }
+}
+.drift__grow img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* tablets and phones */
+@media (max-width: 1100px) {
+  .drift__tile::before { transition-duration: 0.3s; } /* lighter on touch devices */
+}
+@media (max-width: 700px) {
+  .drift .drift__label { max-width: 72vw; }
+  .drift__grow { transition-duration: 0.5s; } /* quicker open on phones */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drift,
+  .drift__label { animation: none; }
+  .drift__tile::before,
+  .drift__grow { transition: none; }
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  .drift .drift__label .work__cat { display: none; }
+}

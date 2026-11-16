@@ -3,62 +3,65 @@
   top: 0;
   z-index: 100;
   display: flex;
-  gap: 2px;
+  align-items: flex-start; /* the active tab grows downward past the bar */
+  gap: 0;
   height: 40px;
-  background: var(--bg); /* the tabs are see-through, so the page would show through them while scrolling */
+  background: transparent; /* the bar no longer covers the logo; the nav gets the background below */
+  pointer-events: none; /* the empty part of the bar no longer blocks clicks on the logo */
 }
 
 .header__logo {
+  position: fixed;
+  top: 0;
+  left: env(safe-area-inset-left, 0px);
+  z-index: 101; /* above the portraits, the nav is the only thing beside it */
   display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: none;
-  padding: 10px 24px;
-  color: var(--fg);
+  align-items: flex-end; /* sits on the same baseline as the nav tab text */
+  height: 26px;
+  max-width: 18.35%; /* stays inside the first column, the nav starts after it */
+  padding: 0;
+  color: #1F1313;
   text-decoration: none;
-}
-
-.header__logo-mark {
-  flex: none;
-  width: 20px;
-  height: 20px;
-  background: var(--fg);
-  border-radius: 0 10px 10px 0; /* flat left edge, fully rounded right side = the D */
+  white-space: nowrap;
 }
 
 .header__logo-name {
-  font: 800 17px/17px var(--font-sans);
+  font: 800 clamp(14px, 1.7vw, 30px)/26px var(--font-sans); /* scales with the screen width, same line height as the tabs */
   letter-spacing: -0.02em;
-  white-space: nowrap;
 }
 
 .header__nav {
   display: flex;
-  gap: 2px;
-  flex: 0 0 calc(66.667% - (var(--grid-margin) + var(--grid-gutter)) / 3); /* columns 3 to 6 plus the right margin, so the tabs reach the edge */
-  min-width: 0;
+  flex: 0 0 81.65%; /* Figma: 1411px of 1728 = the last 5 of 6 columns */
   margin-left: auto; /* pushes the tabs to the right */
-  margin-right: 0;
+  min-width: 0;
+  align-self: stretch; /* fills the 40px bar */
+  pointer-events: auto;
 }
 
 .header__link {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  align-items: flex-end; /* text stays put, the bar grows downward */
   flex: 1 1 0;
   min-width: 0;
-  padding: 10px;
-  background: #E6E2E0;
-  color: var(--fg);
+  --grow: 0px; /* animated from Header.tsx while hovering */
+  height: calc(26px + var(--grow));
+  padding: 0;
+  color: #1F1313;
   text-decoration: none;
   text-transform: uppercase;
-  font: 500 13px/15px var(--font-mono);
-  letter-spacing: -0.01em;
+  white-space: nowrap;
+  font: 500 clamp(18px, 2.315vw, 40px)/26px var(--font-sans); /* 40px at the 1728 frame, text is bigger than the bar on purpose */
+  letter-spacing: -0.06em;
 }
+.header__link:nth-child(1) { background: #FF001D; }
+.header__link:nth-child(2) { background: #FF83BE; }
+.header__link:nth-child(3) { background: #908DFF; }
+.header__link:nth-child(4) { background: #00C4A9; }
+.header__link:nth-child(5) { background: #FFE300; }
 
 .header__link.is-active {
-  background: var(--blue);
-  color: var(--bg);
+  height: max(49px, calc(26px + var(--grow, 0px))); /* stays tall, and can still grow past 49 */
 }
 
 .header__link:focus-visible,
@@ -82,20 +85,25 @@
 
 @media (max-width: 767px) {
   .header__logo {
-    width: auto;
-    padding: 10px 16px;
+    max-width: calc(100% - 56px); /* leaves room for the menu button */
+  }
+  .header__logo-name {
+    font-size: 18px;
   }
   .header__nav {
     display: none; /* the tabs live in the menu on small screens */
   }
 
   .header__menu {
+    pointer-events: auto; /* the header itself ignores clicks now */
     display: flex;
     align-items: center;
     justify-content: center;
     flex: none;
-    width: 40px;
+    align-self: stretch;
+    width: 44px;
     margin-left: auto;
+    margin-right: env(safe-area-inset-right, 0px);
     padding: 0;
     border: 0;
     background: var(--blue);
@@ -151,7 +159,10 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    max-height: 100%;
+    overflow-y: auto; /* landscape phones: the links scroll instead of running off screen */
+    overscroll-behavior: contain;
+    padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
     transform: translateY(100%);
     transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
@@ -170,7 +181,7 @@
     padding: 0 12px;
     background: rgba(227, 230, 247, 0.45);
     color: #fff;
-    font: 600 14px/1 var(--font-mono);
+    font: 600 14px/1 var(--font-sans);
     text-transform: uppercase;
     letter-spacing: -0.01em;
   }
@@ -193,7 +204,7 @@
     color: #fff;
     text-decoration: none;
     text-transform: uppercase;
-    font: 500 24px/1 var(--font-mono);
+    font: 500 24px/1 var(--font-sans);
     letter-spacing: -0.01em;
   }
   .menu .menu__link svg {
@@ -202,20 +213,5 @@
   .menu__link.is-active {
     background: var(--blue);
     color: #fff;
-  }
-}
-
-/* tablets and small laptops: the nav area gets narrow, so give it more room and tighten the tabs */
-@media (min-width: 768px) and (max-width: 1100px) {
-  .header__nav {
-    flex-basis: var(--panel-w); /* the tablet layout isn't on the 6-column grid */
-    margin-right: 0;
-  }
-  .header__logo {
-    padding: 10px 16px;
-  }
-  .header__link {
-    padding: 10px 8px;
-    font-size: 12px;
   }
 }

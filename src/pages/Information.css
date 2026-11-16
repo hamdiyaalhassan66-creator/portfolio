@@ -1,307 +1,252 @@
 .information {
+  --u: calc(100vw / 1728); /* 1 Figma px at the current screen width */
+  --ink: #1F1313;
+  --body: clamp(15px, calc(var(--u) * 17), 24px); /* 17px at the 1728 design width, scales with the screen. Use a plain 17px to lock it */
+  --face-w: calc(var(--u) * 350);
+
   position: relative;
-  background: #F9F7F6;
-  color: var(--fg);
-  font: 500 14px/1.35 var(--font-sans);
-  letter-spacing: -0.01em;
-  overflow-x: clip;
-  overflow-y: clip;
+  margin-top: -40px; /* the Figma frame starts at the very top, the sticky nav sits on top of it */
+  min-height: calc(var(--u) * 2361);
+  background: #FCF8F5;
+  color: var(--ink);
+  font: 500 var(--body)/18px var(--font-sans);
+  letter-spacing: -0.03em;
+  overflow: clip;
 }
-
 .information p { margin: 0; }
-.information em { font-style: normal; color: inherit; }
 
-/* the page is a 3-column grid that scales with the screen (Figma: 1728px frame) */
-.information__top {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  column-gap: var(--grid-gutter);
-  grid-template-rows: auto auto 1fr; /* the last row holds the bobblehead and stretches to fill the first screen */
-  align-items: start;
-  row-gap: clamp(48px, 6.65vw, 115px); /* Figma: 115px between the rows */
-  min-height: calc(100vh - 40px); /* the bobblehead sits at the bottom of the first screen */
-  padding: 42px var(--grid-margin) 0; /* Figma: 82px from the frame top, minus the 40px nav */
+/* big faded DEE-07 at the bottom */
+.information::after {
+  content: "DEE-07";
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--u) * -170);
+  width: calc(var(--u) * 2022);
+  transform: translateX(-50%);
+  font: 800 calc(var(--u) * 572)/0.685 var(--font-sans);
+  letter-spacing: -0.1em;
+  text-align: center;
+  white-space: nowrap;
+  color: rgba(31, 19, 19, 0.03);
+  pointer-events: none;
 }
 
 .information__intro {
-  grid-column: 1 / span 2;
-  grid-row: 1;
-  display: flow-root; /* contains the floated bobblehead */
-  box-sizing: border-box;
-  width: auto;
-  padding-left: 0;
-}
-.information__hello {
-  margin: 0;
-  padding-left: 0;
-  font: 600 20px/20px var(--font-sans);
-  letter-spacing: -0.01em;
-  color: var(--fg);
+  position: absolute;
+  left: 50%;
+  top: calc(var(--u) * 134);
+  width: calc(var(--u) * 531);
+  transform: translateX(-50%);
+  text-align: center;
+  font-size: clamp(18px, calc(var(--u) * 28), 36px);
+  font-weight: 600;
+  text-transform: uppercase;
+  line-height: 0.93;
+  letter-spacing: -0.04em;
 }
 
-/* grey frame: it stays put, the portrait leaves it when you scroll */
-.information__frame {
-  position: relative;
-  grid-column: 3 / span 2;
-  grid-row: 1;
-  width: 100%;
-  aspect-ratio: 1;
-  background: rgba(46, 29, 17, 0.1);
-}
-.information__head {
+/* infinite strip of faces */
+.information__faces {
   position: absolute;
-  left: 5.4%; /* Figma: 307.74px wide, centred in the 345px frame */
-  top: 3.8%;
-  width: 89.2%;
-  z-index: 5;
-  pointer-events: none;
-  will-change: transform;
+  left: 0;
+  right: 0;
+  top: calc(var(--u) * 312);
+  height: calc(var(--face-w) * 1.037);
+  display: flex;
+  align-items: center; /* the purple-star images are taller, they grow evenly up and down */
+  overflow-x: clip; /* the moving track is cut at the sides only... */
+  overflow-y: visible; /* ...so taller images (glow, star) are never cut at the top or bottom */
+  contain: layout; /* keeps the strip's layout isolated, without clipping its paint */
+  z-index: 5; /* above the logo (4), below the nav (100) */
 }
-.information__head img {
+.information__track {
+  display: flex;
+  align-items: center;
+  flex: none;
+  width: max-content;
+  will-change: transform;
+  animation: faces-scroll 45s linear infinite; /* change 45s to speed up or slow down */
+}
+.face {
+  position: relative;
+  flex: none;
+  width: var(--face-w);
+  margin-right: calc(var(--face-w) * 0.229); /* the gap sits on each face so the loop has no jump */
+}
+.face img {
   display: block;
   width: 100%;
   height: auto;
-  -webkit-user-drag: none;
-  pointer-events: auto;
-}
-
-/* text blocks */
-.information__block {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font: 500 13px/15px var(--font-sans);
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
-  color: var(--fg);
-}
-.information__label {
-  margin: 0;
-  font: 500 13px/15px var(--font-mono);
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
-  color: var(--blue);
-}
-.information__copy {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.information__about {
-  grid-column: 5 / span 2;
-  grid-row: 1;
-  width: 100%; /* fills its column, from the left of ARCHIVE to the right of CONTACT */
-  margin-left: 0;
-}
-/* bottom stack: same 3 columns as the row above, so capabilities lines up with About me */
-.information__bottom {
-  grid-column: 1 / -1;
-  grid-row: 2;
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr)); /* fallback */
-  column-gap: var(--grid-gutter);
-  grid-template-columns: subgrid; /* reuse the page grid's tracks so column 2 is the portrait's column */
-  align-items: start;
-  min-width: 0;
-}
-.information__education {
-  grid-column: 1 / span 2;
-  min-width: 0;
-}
-/* work experience with capabilities stacked below it, starting at the nav's left edge */
-.information__col {
-  grid-column: 3 / span 2;
-  display: flex;
-  flex-direction: column;
-  gap: clamp(32px, 3vw, 48px);
-  min-width: 0;
-}
-.information__work {
-  min-width: 0;
-}
-.information__skills {
-  min-width: 0;
-}
-
-/* work experience: dates on the left, role and company on the right */
-.information__jobs {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.information__job {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-.information__job-main {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 2px;
-  flex: 1 1 0;
-  min-width: 0;
-}
-.information__years {
-  flex: none;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  height: 15px;
-  background: rgba(46, 29, 17, 0.1);
-  font: 500 13px/15px var(--font-mono);
-  letter-spacing: -0.01em;
-  white-space: nowrap;
-}
-
-/* capabilities and selected clients: two columns */
-.information__caplist {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px 24px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.information__caplist li {
-  min-width: 0;
-  overflow-wrap: anywhere; /* long names wrap inside their column instead of overflowing */
-}
-.information__clients {
-  grid-column: 5 / span 2; /* under About me, level with Education and Work experience */
-  min-width: 0;
-}
-.information {
-  --bobble-w: clamp(70px, 5.2vw, 90px); /* width of the whole image, including its transparent sides */
-  container-type: inline-size; /* lets cqw units mean "1% of the page width" for the blocks inside */
-  --span2: calc((100cqw - 2 * var(--grid-margin) - 5 * var(--grid-gutter)) / 3 + var(--grid-gutter)); /* two grid columns plus the gutter between them */
-}
-.information .bobble__fig {
-  width: var(--bobble-w);
-}
-
-/* small laptops, tablets: two columns, everything flows in order */
-@media (max-width: 1100px) {
-  .information__top {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: none;
-    column-gap: 24px;
-    row-gap: 40px;
-    min-height: 0;
-    padding: 24px 16px 48px; /* 16px left and right */
-  }
-  .information__hello,
-  .information__frame,
-  .information__about {
-    grid-column: auto;
-    grid-row: auto;
-    width: auto;
-    margin: 0;
-    padding: 0;
-  }
-  .information__intro {
-    grid-column: 1 / -1;
-    grid-row: auto;
-    width: auto;
-    max-width: 420px;
-    padding-left: 0; /* the page already has 16px side padding here */
-  }
-  .information__bottom {
-    grid-column: 1 / -1;
-    grid-row: auto;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 24px;
-    row-gap: 40px;
-    padding: 0;
-  }
-  .information__education {
-    grid-column: 1 / -1;
-    width: auto;
-    max-width: 549px;
-    padding-left: 0;
-  }
-  .information__col,
-  .information__clients {
-    grid-column: 1 / -1;
-  }
-  .information__work,
-  .information__skills {
-    padding: 0;
-    margin: 0;
-  }
-  .information {
-    --bobble-w: 120px;
-  }
-}
-
-/* phones: one column */
-@media (max-width: 600px) {
-  .information__top {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .information__bottom {
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: 32px;
-  }
-  .information__frame {
-    max-width: none;
-  }
-  .information .information__head {
-    width: 89.2%;
-    max-width: none;
-    margin: 3.8% 0 0 5.4%; /* same proportions as the desktop frame */
-  }
-    .information .bobble__fig {
-    width: 100px;
-  }
-}
-
-/* bobblehead: bottom left of the text column on desktop, above the text on tablet and mobile */
-.information__bobble {
-  box-sizing: border-box;
-  width: fit-content;
-  padding: 24px 0 0 24px;
-}
-.bobble__fig {
-  position: relative;
-  width: 170px; /* size of the whole figure */
-  aspect-ratio: 1233 / 1275;
-}
-.bobble__fig img {
-  position: absolute;
-  inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
   user-select: none;
   -webkit-user-drag: none;
 }
-/* body: everything from the middle of the spring down, never moves */
-.bobble__body {
-  clip-path: inset(60.5% 0 0 0);
-  pointer-events: none;
+
+@keyframes faces-scroll {
+  to { transform: translateX(-33.3333%); } /* a third of the track = one full set of faces */
 }
-/* head: everything down to just under the spring's middle; swings from there */
-.bobble__head {
-  clip-path: inset(0 0 38.2% 0);
-  transform-origin: 48.7% 61.2%;
-  cursor: grab;
-  touch-action: none;
+@media (prefers-reduced-motion: reduce) {
+  .information__track { animation: none; }
 }
-.bobble__head:active {
-  cursor: grabbing;
+.face .face__sticker {
+  position: absolute;
+  z-index: 2;
+  left: calc(var(--face-w) * 0.134);
+  top: calc(var(--face-w) * 0.252);
+  width: calc(var(--face-w) * 0.783);
+  height: auto;
+  filter: drop-shadow(0 2px 7px rgba(0, 0, 0, 0.6));
 }
 
-@media (max-width: 900px) {
-  /* the portrait drops into the flow above the text; the scroll animation is desktop only */
-  .information__head {
-    position: static;
-    width: calc(100% - 32px);
-    max-width: 320px;
-    margin: 24px 16px 0;
-    transform: none !important;
+/* split: on scroll the faces leave the strip and form two stacks */
+.information__stacks {
+  position: fixed; /* the faces ride the screen, so they never need to cancel the page's scroll */
+  z-index: 8; /* same level the top face (b) had before, under the bottom-corner text (9) and the nav (100) */
+  inset: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+.stack-face {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  will-change: transform;
+  z-index: 5;
+}
+
+.stack-face.face--c { z-index: 6; }
+.stack-face.face--d { z-index: 7; }
+.stack-face.face--b { z-index: 8; } /* the red portrait ends on top of the pile */
+
+.is-split .information__stacks { visibility: visible; }
+.is-split .information__track { animation-play-state: paused; } /* the strip freezes while the stacks are out */
+.is-split .information__track .face { transition: opacity 0.15s; }
+.is-split.is-spare-hidden .information__track .face { opacity: 0; visibility: hidden; } /* spare faces, toggled from Information.tsx */
+.is-split .information__track .face.is-picked { visibility: hidden; } /* these four are replaced by the stack faces */
+
+@media (max-width: 1100px) {
+  .information__stacks { display: none; }
+}
+
+/* one centred column of sections */
+.information__sections {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--u) * 738);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 40);
+  text-align: center;
+}
+.information__block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(calc(var(--u) * 506), 100%);
+}
+
+.information__label {
+  margin: 0;
+  font: 600 20px/20px var(--font-sans);
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  color: rgba(31, 19, 19, 0.2);
+}
+.information__copy { display: flex; flex-direction: column; gap: 16px; }
+
+.information__jobs { display: flex; flex-direction: column; gap: 8px; }
+.information__job { display: flex; flex-direction: column; align-items: center; }
+.information__years {
+  font: 500 var(--body)/18px var(--font-sans);
+  letter-spacing: -0.03em;
+  color: #908DFF;
+}
+
+.information__list { margin: 0; padding: 0; list-style: none; }
+
+/* tablets and phones: normal flow, faces and type sized for the screen */
+@media (max-width: 1100px) {
+  .information {
+    --face-w: clamp(150px, 34vw, 300px);
+    --body: 17px;
+    min-height: 0;
+    margin-top: 0;
+    padding-block: 24px 0;
   }
+  .information__intro {
+    position: static;
+    transform: none;
+    width: auto;
+    max-width: min(460px, 100%);
+    margin-inline: auto;
+    padding-inline: 0;
+    font-size: clamp(20px, 3.4vw, 28px);
+    line-height: 1;
+  }
+  .information .information__intro { margin-inline: auto; } /* `.information p { margin: 0 }` was beating the centring above */
+  .information__faces { position: relative; top: auto; margin-block: 32px; }
+  .information__sections { position: static; gap: 40px; }
+  .information__block { width: min(520px, 100%); }
+  .information__copy p { line-height: 14px; }
+}
+
+/* centre of the pile: invisible marker, 14% of the screen height above the page bottom */
+.information__hub {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100vh * 0.14);
+  width: calc(var(--u) * 350);
+  height: calc(var(--u) * 363);
+  transform: translate(-50%, 50%);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* the 3D models' section sits over the bottom screen of the page */
+@media (min-width: 1101px) {
+  .information .threads {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none; /* the models turn their own pointer events on */
+  }
+}
+
+/* the two small lines in the bottom corners, at the very end of the page */
+.information .information__outside {
+  position: absolute;
+  bottom: 0; /* no bottom gap */
+  z-index: 9;
+  margin: 0;
+  font: 500 var(--body)/18px var(--font-sans); /* same as the body copy above */
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  pointer-events: none;
+}
+.information__outside--left {
+  left: 0; /* no side margin */
+  width: var(--span2, 380px);
+}
+.information__outside--right {
+  right: 0; /* no side margin */
+  max-width: 260px;
+  text-align: right;
+}
+
+/* tablets and phones: they follow the carousel, centred */
+@media (max-width: 1100px) {
+  .information .information__outside {
+    position: static;
+    width: auto;
+    max-width: 420px;
+    margin: 24px auto 0;
+    padding-inline: 0;
+    text-align: center;
+    font-size: var(--body);
+    line-height: 14px; /* matches .information__copy p on small screens */
+  }
+  .information .information__outside--right { margin-top: 12px; }
 }

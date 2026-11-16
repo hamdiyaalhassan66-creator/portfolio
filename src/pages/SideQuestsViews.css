@@ -1,0 +1,209 @@
+/* list page: intro text, then the rows. Keeps clear of the labels at the bottom */
+.sqv {
+  min-height: 100svh;
+  padding: calc(var(--top) + var(--u) * 53) 0 calc(140px + env(safe-area-inset-bottom, 0px)); /* intro sits at 143px in the 1728 design */
+  overflow-x: clip;
+  animation: sq-in 0.4s ease;
+}
+.sqv__intro {
+  max-width: max(calc(var(--u) * 506), 320px);
+  margin: 0 0 clamp(16px, calc(var(--u) * 26), 40px);
+}
+
+/* ---- carousel ---- */
+.sqv-c {
+  position: relative;
+  height: calc(100svh - 40px);
+  overflow: hidden;
+  perspective: 1300px;
+  cursor: grab;
+  touch-action: pan-y; /* vertical swipes still scroll on touch screens */
+  user-select: none;
+  -webkit-user-select: none;
+  outline: none;
+  animation: sq-in 0.4s ease;
+}
+.sqv-c:active { cursor: grabbing; }
+.sqv-c:focus-visible { outline: 2px solid var(--blue, #908DFF); outline-offset: -2px; }
+.sqv-c__ring {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.sqv-c__item {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--cw, 160px);
+  aspect-ratio: var(--ar, 0.8);
+  margin: 0;
+  translate: -50% -50%;
+  transform: rotateY(calc(var(--i) * var(--step))) translateZ(var(--r, 600px));
+  backface-visibility: hidden;
+  background: #DDD3CC;
+}
+.sqv-c__item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* ---- zoom: a tall scroll track with a pinned stage ---- */
+.sqv-z {
+  position: relative; /* its height is set in the script */
+  animation: sq-in 0.4s ease;
+}
+.sqv-z__stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  contain: layout paint;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.sqv-z__title {
+  position: absolute;
+  inset: 0;
+  z-index: 0; /* behind the cards */
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  animation: sq-in 0.35s ease; /* replays when the project changes */
+}
+.sqv-z__name {
+  margin: 0;
+  max-width: 92vw;
+  font-size: clamp(26px, calc(var(--tile) * 0.4), 76px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  text-align: center;
+}
+.sqv-z__cat {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(50% + var(--tile) / 2 + clamp(12px, 2.2vh, 24px)); /* just under the card in focus */
+  margin: 0;
+  text-align: center;
+}
+.sqv-z__tile {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  width: var(--tile);
+  height: var(--tile);
+  margin: 0;
+  border-radius: 22%;
+  overflow: hidden;
+  background: #DDD3CC;
+  pointer-events: none;
+  will-change: transform; /* drawn once at focus size, then only scaled down, so it stays sharp */
+  backface-visibility: hidden;
+}
+.sqv-z__tile img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.sq--zoom .sq__name { display: none; } /* the title now sits in the middle */
+.sq--archive .sqv-z__title { display: none; } /* Archive has no project names */
+
+/* ---- list ---- */
+.sqv-l { margin: 0; padding: 0; list-style: none; }
+.sqv-l__row {
+  position: relative;
+  padding: 2px 0; /* 2px + 2px = the 4px gap between rows, and it still counts as hover so the thumbnails don't flicker */
+}
+.sqv-l__head {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: clamp(22px, calc(var(--u) * 32), 44px);
+  font-weight: 600;
+  line-height: 0.94;
+  letter-spacing: -0.04em;
+  text-align: left;
+  text-transform: inherit;
+  cursor: pointer;
+}
+.sqv-l__row.is-open .sqv-l__head { background: #FF83BE; } /* the open row turns pink, full width */
+.sqv-l__head:focus-visible { outline: 2px solid var(--blue, #908DFF); outline-offset: -2px; }
+.sqv-l__no {
+  color: #000;
+  font-size: clamp(15px, calc(var(--u) * 20), 24px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.06em;
+}
+.sqv-l__cat { color: rgba(31, 19, 19, 0.5); }
+
+/* the 5 thumbnails sit on the right, centred on the row. The pink shows through the 4px gaps */
+.sqv-l__peek {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  z-index: 3;
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  width: 64.64%; /* 1117 / 1728 */
+  height: clamp(72px, calc(var(--u) * 158), 240px);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.sqv-l__peek img {
+  display: block;
+  flex: 0 0 calc((100% - 16px) / 5);
+  height: 100%;
+  object-fit: cover;
+  background: #DDD3CC;
+  animation: sq-in 0.25s ease backwards;
+  animation-delay: calc(var(--j, 0) * 40ms);
+}
+
+/* touch screens and narrow windows: the thumbnails open under the row, in a swipeable strip */
+@media (hover: none), (max-width: 900px) {
+  .sqv-l__peek {
+    position: static;
+    width: auto;
+    height: auto;
+    transform: none;
+    justify-content: flex-start;
+    padding: 4px 0 6px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    pointer-events: auto;
+    scrollbar-width: none;
+  }
+  .sqv-l__peek::-webkit-scrollbar { display: none; }
+  .sqv-l__peek img {
+    flex: none;
+    width: clamp(120px, 30vw, 260px);
+    height: auto;
+    aspect-ratio: 220 / 158;
+  }
+}
+
+@media (max-width: 700px) {
+  .sqv { padding-bottom: calc(170px + env(safe-area-inset-bottom, 0px)); } /* the label strip is taller on phones */
+  .sqv__intro { max-width: 92%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sqv, .sqv-c, .sqv-z, .sqv-z__title, .sqv-l__peek img { animation: none; }
+}

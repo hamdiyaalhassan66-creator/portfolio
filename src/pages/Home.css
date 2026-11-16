@@ -1,272 +1,317 @@
 .works {
+  --u: calc(100vw / 1728); /* the Figma frame is 1728 wide */
   --nav-h: 40px; /* must match the .header height in Header.css */
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr)); /* site grid: rows take columns 1-2, the preview takes 3-6 */
-  column-gap: var(--grid-gutter);
-  padding-inline: var(--grid-margin);
-  min-height: calc(100vh - var(--nav-h));
-  padding-top: 2px; /* Figma: content starts 2px under the nav */
-  background: #F9F7F6;
+  --bar-h: 26px; /* the coloured nav links, the panels start right under them */
+  --ph: calc(100vh - var(--bar-h)); /* panel height, the panel widths follow from it */
+  --accent: #FF001D; /* title bars, same red as the Work tab */
+  --t: clamp(28px, calc(var(--u) * 40), 60px); /* title size */
+  --b: clamp(15px, calc(var(--u) * 17), 24px); /* label size, same as the body text on the Information page */
+  position: relative;
+  height: calc(var(--travel, 0px) + var(--ph)); /* tall enough for the strip to slide through while you scroll */
+  margin-top: calc(var(--bar-h) - var(--nav-h)); /* pulls the panels up under the nav links */
+  background: #FCF8F5;
+  color: #1F1313;
+  font: 500 var(--b)/1.06 var(--font-sans);
+  letter-spacing: -0.03em;
+}
+@supports (height: 100svh) {
+  .works { --ph: calc(100svh - var(--bar-h)); }
+}
+/* Drift fills the screen and has its own motion, so the page itself never scrolls */
+.works[data-view="Drift"] { height: var(--ph); }
+.works[data-view="Flow"] { height: auto; } /* Flow makes the page tall itself, so scrolling drives it */
+
+/* the panels sit in a stage that stays pinned under the nav while the strip slides */
+.works__stage {
+  position: sticky;
+  top: var(--bar-h);
+  height: var(--ph);
+  overflow: hidden;
+  animation: works-in 0.4s ease; /* the strip fades in when you switch back to it */
+}
+@keyframes works-in {
+  from { opacity: 0; }
 }
 
-.works__main {
-  grid-column: 1 / span 2;
-  margin-left: calc(var(--grid-margin) * -1); /* rows still bleed to the left edge */
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
+/* this page: the header lets the panels show through the band under the links and stays on top of them */
+body:has(.works) .header {
+  background: transparent;
+  z-index: 50;
 }
 
-.works__intro {
-  margin: 0;
-  padding: 24px;
-  font: 500 13px/15px var(--font-sans);
-  letter-spacing: -0.01em;
+/* the big faint DEE-07 behind the panels, shows under the shorter ones */
+.works__mark {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--u) * -170);
+  z-index: 0;
+  width: calc(var(--u) * 2022);
+  height: calc(var(--u) * 392);
+  translate: -50% 0;
+  font: 800 calc(var(--u) * 572)/calc(var(--u) * 392) var(--font-sans);
+  letter-spacing: -0.1em;
+  text-align: center;
   text-transform: uppercase;
-  color: #2E1D11;
+  white-space: nowrap;
+  color: rgba(31, 19, 19, 0.03);
+  pointer-events: none;
+  user-select: none;
 }
 
-.works__tab {
+/* the row of panels, moved sideways by the page scroll */
+.works__strip {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: flex-start;
-  justify-content: flex-start;
-  gap: 10px;
-  height: 32px;
-  padding: 8px 12px 8px 24px; /* Figma */
-  margin: 0;
-  background: none;
-  color: var(--blue);
-  font: 500 14px/16px var(--font-mono);
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
+  width: max-content;
+  height: 100%;
+  will-change: transform;
 }
 
-.works__list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px; /* Figma: 8px between rows */
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-/* one project row */
+/* one project panel. The three sizes from the Figma (595 x 1117, 1113 x 789, 747 x 1117) repeat */
 .work {
-  position: relative; /* the row's link stretches over the whole row */
-  display: flex;
-  align-items: center;
-  min-height: 100px;
-  padding-left: 24px;
-  background: #EDEAE9; /* Figma: the row colour includes the 24px left gutter */
-  transition: background 0.2s ease;
-}
-.work:hover {
-  background: #E2DDDA;
-}
-
-/* project preview under each row: only shown where the side panel is hidden (900px and below) */
-.work__preview {
-  display: none;
-}
-
-.work__logo {
+  --w: calc(var(--ph) * 0.5327);
+  --h: var(--ph);
   position: relative;
-  display: grid;
-  place-items: center;
   flex: none;
-  width: 100px;
-  height: 100px;
-  overflow: hidden;
-}
-.work__logo span {
-  padding: 0 8px;
-  font: 800 16px/1 var(--font-sans);
-  letter-spacing: -0.02em;
-  color: #1F1313;
-  text-align: center;
-  overflow-wrap: anywhere;
-}
-.work__logo img {
-  display: block;
-  height: auto; /* width comes from logoSize in Home.tsx */
-  max-height: 85%;
-  object-fit: contain;
-}
-
-.work__body {
-  flex: 1;
-  align-self: stretch;
-  min-width: 0;
-  padding: 13px 12px;
-  background: transparent; /* shows the row colour, so the whole row changes on hover */
-}
-
-.work__text {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  justify-content: flex-end;
+  align-items: flex-start;
+  width: var(--w);
+  height: var(--h);
+  overflow: hidden;
+  background: #D9D9D9; /* shows while a photo loads */
+  contain: layout paint;
 }
-.work__name {
-  margin: 0;
-  font: 550 14px/16px var(--font-sans);
-  letter-spacing: -0.01em;
-  color: #2E1D11;
+.work:nth-child(3n + 2) {
+  --w: calc(var(--ph) * 0.9964);
+  --h: calc(var(--ph) * 0.7064);
 }
-.work__name a {
-  color: inherit;
-  text-decoration: none;
+.work:nth-child(3n) {
+  --w: calc(var(--ph) * 0.6687);
 }
-.work__name a::after {
-  content: "";
-  position: absolute;
-  inset: 0; /* the link covers the whole row */
-}
-.work:has(a:focus-visible) {
+.work:has(.work__name a:focus-visible) {
   outline: 2px solid #1046F9;
   outline-offset: -2px;
 }
-.work__blurb {
-  margin: 0;
-  font: 500 13px/15px var(--font-sans);
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
-  color: rgba(46, 29, 17, 0.5);
-}
 
-/* chips, pinned to the bottom right of the row */
-.work__tags {
-  pointer-events: none;
+.work__media {
   position: absolute;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  gap: 2px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  inset: 0;
+  z-index: 0;
 }
-.work__tags li {
-  padding: 4px 8px;
-  background: var(--bg); /* Figma: #F9F7F6 */
-  color: #2E1D11;
-  font: 500 12px/14px var(--font-mono);
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-/* big grey panel on the right */
-.works__preview {
-  position: sticky;
-  top: calc(var(--nav-h) + 2px); /* 2px under the sticky nav */
-  align-self: start;
-  height: calc(100vh - var(--nav-h) - 4px); /* 2px gap above and below */
-  grid-column: 3 / span 4;
-  margin: 0;
-  background: #E3E3E3;
-  overflow: hidden;
-}
-.works__shot {
+.work__shot {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transform: scale(1.05);
+  transform: scale(1.04);
   transition:
     opacity 0.7s cubic-bezier(0.65, 0, 0.35, 1), /* ease-in-out fade */
     transform 1.6s cubic-bezier(0.22, 1, 0.36, 1); /* slow ease-out zoom */
-  will-change: opacity, transform;
+  user-select: none;
+  -webkit-user-drag: none;
 }
-.works__shot.is-on {
+.work__shot.is-on {
   opacity: 1;
   transform: scale(1);
 }
 
-/* narrow desktop, tablet and mobile: same look as desktop (tags bottom right), but the tags sit in the row's flow so they never overlap the text */
-@media (max-width: 1440px) {
-  .work__body {
-    display: flex;
-    flex-direction: column;
-    padding: 13px 0 0 12px; /* no right/bottom padding, so the tags sit flush with the row edge like on desktop */
-  }
-  .work__text {
-    padding-right: 12px;
-    padding-bottom: 12px; /* keeps the tags clear of the text */
-  }
-  .work__tags {
-    position: static;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    margin: auto 0 0 auto; /* auto top margin pushes the tags to the bottom, auto left to the right */
+/* the whole panel is a link; the label sits above it so its buttons still work */
+.work__cover {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* label, bottom left: category, title bar, then Info and the site link */
+.work__label {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 100%;
+}
+.work__cat {
+  margin: 0;
+  background: #FCF8F5;
+}
+.work__name {
+  display: flex;
+  align-items: flex-end;
+  min-width: calc(var(--t) * 6.125); /* 245 / 40 in the Figma */
+  height: calc(var(--t) * 1.225); /* 49 / 40 */
+  margin: 0;
+  padding-right: calc(var(--t) * 0.65);
+  background: var(--accent);
+  font: 500 var(--t)/0.65 var(--font-sans);
+  letter-spacing: -0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.work__name a {
+  color: inherit;
+  text-decoration: none;
+}
+.work__links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.work__chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0;
+  border: 0;
+  background: #E6E2DF;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: 1.06;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.work__chip:hover { background: #DAD5D1; }
+.work__chip span { text-decoration: underline; }
+.work__arrow { width: 1.1em; height: 1.1em; flex: none; }
+
+.work__media picture { display: contents; } /* keeps .work__shot sized against .work__media */
+.work__chip { position: relative; }
+@media (pointer: coarse) {
+  .work__chip::after { content: ""; position: absolute; inset: -4px -6px; }
+}
+
+/* Info panel, opens above the category */
+.work__info {
+  min-width: calc(var(--t) * 6.125);
+  max-width: min(max(calc(var(--u) * 360), 260px), 100%);
+  margin-bottom: 2px;
+  padding: 8px 10px;
+  background: #FCF8F5;
+}
+.work__info p { margin: 0; }
+.work__info ul {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  color: rgba(31, 19, 19, 0.5);
+}
+
+/* ---- showcase style tabs, bottom right, same as the Side Quests page ---- */
+.works__ui,
+.works__solid {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  z-index: 8;
+  pointer-events: none; /* only the buttons take clicks */
+}
+.works__ui {
+  color: #fff;
+  mix-blend-mode: difference; /* white text turns dark on the cream page and light on dark photos */
+}
+.works__solid { z-index: 9; }
+.works__views {
+  margin: 0;
+  padding: 0 0 env(safe-area-inset-bottom, 0px);
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* every item sits flush right */
+  text-align: right;
+}
+.works__view {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: rgba(255, 255, 255, 0.3); /* white too, so the blend can invert it */
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: none;
+  text-align: right;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.works__view.is-on { color: #fff; }
+@media (hover: hover) {
+  .works__view:hover { color: #fff; }
+}
+.works__view:focus-visible {
+  outline: 2px solid var(--blue, #908DFF);
+  outline-offset: 2px;
+}
+/* plain layer above the blended labels: only the active item shows, as the purple chip */
+.works__solid .works__view:not(.is-on) { visibility: hidden; }
+.works__solid .works__view.is-on {
+  padding: 0 0 0 12px; /* right-aligned list: the chip grows to the left */
+  background: #908DFF;
+  color: #1F1313;
+  pointer-events: none; /* clicks fall through to the real button underneath */
+}
+/* touch screens: bigger tap areas without changing the look */
+@media (pointer: coarse) {
+  .works__view { position: relative; }
+  .works__view::after {
+    content: "";
+    position: absolute;
+    inset: -5px -8px;
   }
 }
 
-/* tablet: one column, no hover panel */
+@media (prefers-reduced-motion: reduce) {
+  .work__shot,
+  .work__chip { transition: none; }
+  .works__stage { animation: none; }
+}
+
+/* tablets and phones: the same 17px as the Information page */
 @media (max-width: 1100px) {
-  .works {
-    grid-template-columns: minmax(0, 1fr);
-    column-gap: 0;
-    padding-inline: 0;
-    min-height: 0;
-  }
-  .works__main {
-    grid-column: 1;
-    margin-left: 0;
-  }
-  .works__intro {
-    max-width: 573px;
-    padding: 20px 16px;
-  }
-  .works__preview {
-    display: none;
-  }
-  .works__tab {
-    padding-left: 16px;
-  }
-  .work {
-    padding: 0 16px; /* the row's background fills the screen; the logo and text sit 16px in from each edge */
-  }
-  .work__logo {
-    width: 88px;
-    height: 88px;
-  }
-  .work__logo span {
-    font-size: 13px;
-  }
-  .work__tags li:not(:first-child) {
-    display: none; /* tablet and mobile: only the deliverable tag */
-  }
-  .work__preview {
-    display: block;
-    margin-top: 2px; /* 2px between the row and its preview */
-  }
-  .work__preview img {
-    display: block;
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-    background: #E3E3E3;
-  }
+  .works { --b: 17px; }
 }
 
-/* mobile */
-@media (max-width: 480px) {
-  .works__intro {
-    padding: 16px;
+/* tablets (portrait) and phones: panels stack. Keep 900px in sync with STACK in Home.tsx */
+@media (max-width: 900px) {
+  .works { height: auto; }
+  .works[data-view="Drift"] { height: var(--ph); }
+  .works__stage {
+    position: static;
+    height: auto;
+    overflow: visible;
   }
-  .work {
-    align-items: stretch;
-    padding: 0 16px;
+  .works__strip {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-flow: dense;
+    width: auto;
+    height: auto;
+    gap: 2px;
+    will-change: auto;
   }
-  .work__logo {
-    width: 64px;
-    height: auto; /* matches the row height when text wraps */
-    min-height: 64px;
+  .work:nth-child(n) {
+    --w: 100%;
+    --h: auto;
+    aspect-ratio: 4 / 5;
   }
-  .work__logo span {
-    font-size: 11px;
+  .work:nth-child(3n + 1) { /* one wide panel, then a pair */
+    grid-column: 1 / -1;
+    aspect-ratio: 3 / 2;
   }
+  .works__mark { display: none; }
+}
+
+/* phones: one column */
+@media (max-width: 700px) {
+  .works { --t: min(28px, 7.6vw); }
+  .works__strip { grid-template-columns: 1fr; }
+  .work:nth-child(n) { aspect-ratio: 4 / 5; }
+  .work:nth-child(3n + 1) { grid-column: auto; }
+  .work:nth-child(3n + 2) { aspect-ratio: 3 / 2; }
 }

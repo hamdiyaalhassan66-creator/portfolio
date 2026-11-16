@@ -11,26 +11,35 @@ import type { Group } from "three";
 import type { LoreItem } from "../data/lore";
 import { VinylDisc } from "./DiscWheel";
 import "./ThreadIndex.css";
-import wordmark from "../assets/dee-space-wordmark.svg"; // the same file the nav uses; match the import path in Header.tsx
 
 type Props = {
-  headRef: RefObject<HTMLDivElement | null>; // the page's one portrait, owned by Information
+  headRef: RefObject<HTMLDivElement | null>; // marks the pile of faces the models come out of
+  landRef: RefObject<number>; // 0..1, written by Information: how far the faces have converged into the pile
 };
 
 // what hangs on each thread; `item` is the lore item whose 3D model is shown (none yet = placeholder)
 type Entry = { id: string; label: string; item?: LoreItem; model?: string; front?: number; swing?: number; pitch?: number; roll?: number; decor?: boolean; over?: boolean; tag?: string };
 
-// each item: offset from the head's centre (fraction of width, fraction of height), size in px, depth (bigger = closer, leans more)
-const SLOTS: [number, number, number, number][] = [
-  [-0.24, 0.29, 360, 1.5], // cd player / turntable, front (moved right and down)
-  [-0.12, -0.16, 230, 0.7], // vhs, back (moved down)
-  [0.364, 0.253, 350, 1.4], // books, front (bottom-right)
-  [0.06, 0.37, 470, 1.5], // camera, front (bigger)
-  [0.1, -0.19, 195, 0.6], // headphones, furthest back
-  [0.34, -0.10, 300, 0.95], // dumbbell, middle (moved down and right)
-  [-0.31, -0.05, 260, 1.0], // game, middle (moved down, a bit smaller)
+// each item: angle on the wheel in degrees (0 = straight above the hub, negative = left), size in px, depth (bigger = closer, leans more)
+const SLOTS: [number, number, number][] = [
+  [-24, 360, 1.5], // cd player / turntable
+  [-48, 340, 0.7], // vhs
+  [24, 350, 1.4], // books
+  [0, 470, 1.5], // camera, top of the wheel
+  [48, 300, 0.6], // headphones
+  [72, 440, 0.95], // dumbbell
+  [-72, 400, 1.0], // game
 ];
-const SIZE = 0.75; // scales every model together, keeping their relative sizes (1 = the old size)
+const HUB_Y = 1.35; // pushed down so the top model stays at the same height (HUB_Y - WHEEL_RY = 0.4)
+const WHEEL_RX = 0.58; // wider wheel, models spread further apart
+const WHEEL_RY = 0.95; // taller wheel
+const COMPACT = 1100; // at or below this width (phones + tablets) the floating wheel is off and the CSS carousel takes over
+const DRAG_GAIN = 1; // 1 = the model at the top of the wheel follows your cursor exactly, lower = a heavier wheel
+const WHEEL_GLIDE = 0.965; // how the wheel slows after you let go, closer to 1 = keeps turning longer
+const SPAN = 168; // degrees one lap of the wheel covers (7 models x 24 degrees apart); change it if you add models or move slots
+const DRAG_TAP = 6; // px, a press that moves less than this is still a click
+const WHEEL_SPIN = 0; // degrees per second the wheel turns (0 = still)
+const SIZE = 0.5; // scales every model together, keeping their relative sizes (1 = the old size)
 const REF_W = 1920; // the screen size the model sizes were tuned at; sizes are unchanged at exactly this size
 const REF_H = 1080;
 const SCALE_MIN = 0.45; // never smaller than this fraction of the tuned size
@@ -50,41 +59,14 @@ const REST_DAMP = 0.9; // how fast that return settles (lower = snappier, higher
 const DRIFT = 14; // px, how far an item bobs around its spot
 const DRIFT_SPEED = 0.0007; // bob speed
 const PARALLAX = 200; // px the field leans with the cursor (near items move most)
-const LAND_AT = 0.9; // the models start once the head's trip is this far along (1 = fully landed)
+const LAND_AT = 0.45; // the models start once the head's trip is this far along (1 = fully landed)
 const REVEAL_AT = 0.02; // the first model starts coming out straight away
-const STAGGER = 0.05; // each following model waits a little longer
-const REVEAL_SPEED = 0.1; // how fast each one comes out (higher = faster)
-const ARRIVE_EASE = 0.08; // how fast the reveal clock runs (higher = models come out sooner)
-const TRIP_EASE = 0.12; // how closely the head follows the scroll (higher = tighter, lower = floatier)
-const HEAD_END = 0.85; // size of the portrait once it has landed (1 = no shrink)
+const STAGGER = 0.03; // each following model waits a little longer
+const REVEAL_SPEED = 0.16; // how fast each one comes out (higher = faster)
+const ARRIVE_EASE = 0.16; // how fast the reveal clock runs (higher = models come out sooner)
 // ----------------------------
 
 const clamp = (v: number, a: number, b: number) => Math.min(Math.max(v, a), b);
-
-// the portrait's route, read off the path you drew: [how far through the scroll (0..1), sideways shift as a fraction of the screen width]
-// it swings out to the right, then curves back to the middle, where it lands (the final point is added in the loop below)
-const ROUTE: [number, number][] = [
-  [0, 0],
-  [0.24, 0.164],
-  [0.44, 0.312],
-  [0.61, 0.387],
-  [0.75, 0.417], // the furthest point on the right
-  [0.84, 0.364],
-  [0.89, 0.237],
-  [0.97, 0.09],
-];
-
-// smooth curve through the route points (Catmull-Rom)
-function along(pts: [number, number][], t: number) {
-  let i = 0;
-  while (i < pts.length - 2 && t > pts[i + 1][0]) i++;
-  const [t0, y1] = pts[i];
-  const [t1, y2] = pts[i + 1];
-  const y0 = (pts[i - 1] ?? pts[i])[1];
-  const y3 = (pts[i + 2] ?? pts[i + 1])[1];
-  const u = clamp((t - t0) / (t1 - t0), 0, 1);
-  return 0.5 * (2 * y1 + (y2 - y0) * u + (2 * y0 - 5 * y1 + 4 * y2 - y3) * u * u + (3 * y1 - y0 - 3 * y2 + y3) * u * u * u);
-}
 
 const DEMO = false; // true = fake play/idle cycle with no Spotify
 // where the song is engraved, in the body's own space. x/y are fractions of the body's size from its centre
@@ -126,8 +108,11 @@ function Engraving({ box, body, now, st }: { box: Box3; body: Mesh; now?: NowPla
     return hit ? body.worldToLocal(hit.point.clone()).z : box.max.z;
   }, [body, box]); // eslint-disable-line react-hooks/exhaustive-deps
   const cut = (s = "", n = 17) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
+  const lastO = useRef(-1);
   useFrame(() => {
     const o = st.current.disc;
+    if (Math.abs(o - lastO.current) < 0.002) return; // nothing changed, skip the text re-layout
+    lastO.current = o;
     for (const r of [a, b, c2]) {
       if (!r.current) continue;
       r.current.fillOpacity = o;
@@ -253,23 +238,37 @@ useFrame(({ clock }, dt) => {
   );
 }
 
-function ThreadIndex({ headRef }: Props) {
+function ThreadIndex({ headRef, landRef }: Props) {
   const rootRef = useRef<HTMLElement>(null);
 const now = useNowPlaying();
   const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
   const tagRef = useRef<HTMLParagraphElement>(null);
   const rotRef = useRef<number[]>([]); // per item: yaw, pitch
-    const [live, setLive] = useState(false);
+  const [live, setLive] = useState(false);
+  const liveRef = useRef(false); // read by the animation loop so it can sleep off-screen
+  const drag = useRef({ on: false, moved: 0, sx: 0, sy: 0, lx: 0 });
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    const io = new IntersectionObserver(([e]) => setLive(e.isIntersecting), { rootMargin: "300px 0px" });
+    const io = new IntersectionObserver(
+      ([e]) => {
+        liveRef.current = e.isIntersecting;
+        setLive(e.isIntersecting);
+      },
+      { rootMargin: "600px 0px" }
+    );
     io.observe(root);
     return () => io.disconnect();
   }, []);
 
-  // phones: lighter rendering, and a WebGL context only for cards that are near the screen
-  const small = useMemo(() => window.matchMedia("(max-width: 900px)").matches, []);
+  // phones + tablets: lighter rendering, tracked live so rotating or resizing switches modes without a reload
+  const [small, setSmall] = useState(() => window.matchMedia(`(max-width: ${COMPACT}px)`).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${COMPACT}px)`);
+    const on = () => setSmall(mq.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
   const [near, setNear] = useState<Set<number>>(() => new Set());
   useEffect(() => {
     const els = itemRefs.current;
@@ -285,7 +284,7 @@ const now = useNowPlaying();
           }
           return next;
         }),
-      { rootMargin: small ? "0px 150px" : "300px" }
+      { rootMargin: small ? "0px 150px" : "150% 0px 150% 0px" } // desktop: start building canvases about 1.5 screens early
     );
     els.forEach((el) => el && io.observe(el));
     return () => io.disconnect();
@@ -304,18 +303,25 @@ const now = useNowPlaying();
     ],
     []
   );
+    // fetch the .glb files in the background while you read, so they are ready when the canvases are built
+  useEffect(() => {
+    if (small) return;
+    const t = window.setTimeout(() => picked.forEach((p) => p.model && useGLTF.preload(p.model)), 800);
+    return () => window.clearTimeout(t);
+  }, [picked, small]);
 
 useEffect(() => {
   const root = rootRef.current;
   const head = headRef.current;
   if (!root || !head) return;
-  if (window.matchMedia("(max-width: 900px)").matches) return; // mobile: no floating/drag animation, the CSS carousel takes over
+  if (small) return; // phones + tablets: no floating/drag animation, the CSS carousel takes over
 
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const live = reduce ? 0 : 1;
   const count = picked.length;
   // per item: shove x, y, vx, vy, yaw, yaw speed, pitch, pitch speed
   const itm = picked.map(() => new Float32Array(8));
+  const szs: number[] = []; // last size written per item, so width/height only touch the DOM when they change
   const rvs = picked.map(() => 0); // how far out each model is (0 = hidden behind the head, 1 = in place)
 
   let W = root.clientWidth;
@@ -331,9 +337,26 @@ useEffect(() => {
   let pvx = 0;
   let pvy = 0;
   let inside = false;
-  let overHead = false; // cursor is inside the head's area
+  let overHead = false; // cursor is inside the head's area (worked out once per frame)
+
+  // the wheel: how far it has turned (degrees), and how fast it is turning (degrees per frame)
+  let wheel = 0;
+  let wheelV = 0;
 
   const onMove = (e: PointerEvent) => {
+    const d = drag.current;
+    if (d.on) {
+      // dragging the wheel: every model follows along the path
+      const dAng = (((e.clientX - d.lx) / (W * WHEEL_RX)) * 180 * DRAG_GAIN) / Math.PI;
+      d.lx = e.clientX;
+      d.moved = Math.max(d.moved, Math.hypot(e.clientX - d.sx, e.clientY - d.sy));
+      wheel += dAng;
+      wheelV = wheelV * 0.4 + dAng * 0.6;
+      cX = e.clientX;
+      cY = e.clientY;
+      inside = true;
+      return;
+    }
     if (e.pointerType === "touch") return;
     if (inside) {
       pvx = pvx * 0.4 + (e.clientX - cX) * 0.6;
@@ -342,19 +365,41 @@ useEffect(() => {
     cX = e.clientX;
     cY = e.clientY;
     inside = true;
-    const r = head.getBoundingClientRect();
-    overHead = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
   };
   const onLeave = () => {
     inside = false;
     overHead = false;
   };
-  window.addEventListener("pointermove", onMove);
+  const onUp = () => {
+    drag.current.on = false; // wheelV carries on as momentum
+    document.body.style.userSelect = "";
+  };
+  // start a drag from anywhere inside the section (mouse / pen; touch keeps using the models so vertical scroll still works)
+  const onDown = (e: PointerEvent) => {
+    if (e.button !== 0 || e.pointerType === "touch" || drag.current.on) return; // a model already started this drag
+    const rr = root.getBoundingClientRect();
+    if (e.clientX < rr.left || e.clientX > rr.right || e.clientY < rr.top || e.clientY > rr.bottom) return;
+    const hr = head.getBoundingClientRect();
+    if (e.clientX >= hr.left && e.clientX <= hr.right && e.clientY >= hr.top && e.clientY <= hr.bottom) return; // keep the portrait clear
+    drag.current = { on: true, moved: 0, sx: e.clientX, sy: e.clientY, lx: e.clientX };
+    document.body.style.userSelect = "none";
+  };
+  // touchpad: swipe left / right with two fingers to turn the wheel
+  const onWheel = (e: WheelEvent) => {
+    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return; // vertical scrolling stays normal
+    const rr = root.getBoundingClientRect();
+    if (e.clientX < rr.left || e.clientX > rr.right || e.clientY < rr.top || e.clientY > rr.bottom) return;
+    e.preventDefault(); // also stops the browser's swipe-back gesture
+    wheel += ((-e.deltaX / (W * WHEEL_RX)) * 180 * DRAG_GAIN) / Math.PI;
+    wheelV = 0; // the touchpad already sends its own inertia
+  };
+  window.addEventListener("pointerdown", onDown, { passive: true });
+  window.addEventListener("wheel", onWheel, { passive: false });
+  window.addEventListener("pointermove", onMove, { passive: true });
+  window.addEventListener("pointerup", onUp);
+  window.addEventListener("pointercancel", onUp);
   document.documentElement.addEventListener("mouseleave", onLeave);
 
-  let hx = 0;
-  let hy = 0;
-  let trip = 0; // 0..1 how far down the page the head has travelled (follows the scroll)
   let arrive = 0; // smoothed 0..1, starts once the head has landed, drives the models
   let parx = 0;
   let pary = 0;
@@ -367,50 +412,43 @@ useEffect(() => {
     raf = requestAnimationFrame(frame);
     const s = Math.min((now - last) / 16.67, 2);
     last = now;
-    if (!W) return;
+    if (!W || !liveRef.current) return; // asleep while the section is off-screen
 
-    // the head glides down the page and lands in the middle of this section
-    const hh = head.offsetHeight;
-    const hw = head.offsetWidth;
-    // 0 = the head sits top right, 1 = it has landed in the middle of this section at the bottom of the page
-    const maxY = document.documentElement.scrollHeight - window.innerHeight;
-    const goal = maxY > 0 ? clamp(window.scrollY / maxY, 0, 1) : 1;
-    trip += (goal - trip) * (started && !reduce ? Math.min(TRIP_EASE * s, 1) : 1);
-    if (Math.abs(goal - trip) < 0.0005) trip = goal;
-    // where the portrait rests (inside its frame) and where the middle of this section is, in screen coordinates
-    const fr = head.offsetParent!.getBoundingClientRect();
+    // the faces converge into a pile; the models come out of it, and fold back in when you scroll up
     const rr = root.getBoundingClientRect();
-    const restX = fr.left + head.offsetLeft;
-    const restY = fr.top + head.offsetTop;
-    const toX = rr.left + W / 2 - (restX + hw / 2);
-    const toY = rr.top + H / 2 - (restY + hh / 2);
-    // sideways: follows the drawn route, kept 24px inside the right edge; down: steadily with the scroll
-    const sc = 1 - (1 - HEAD_END) * trip;
-    hx = Math.min(along([...ROUTE, [1, toX / W]], trip) * W, window.innerWidth - 24 - (hw * sc) / 2 - (restX + hw / 2));
-    hy = toY * trip;
-    head.style.transform = `translate(${hx}px, ${hy}px) scale(${sc})`;
-    if (!shown && trip > LAND_AT) shown = true; // the models come out as the head lands; plays once
+    const hr = head.getBoundingClientRect();
+    const land = landRef.current ?? 0;
+    shown = land > LAND_AT;
     arrive += ((shown ? 1 : 0) - arrive) * (started && !reduce ? Math.min(ARRIVE_EASE * s, 1) : 1);
     started = true;
 
-    // cursor position inside this section, and how far the whole field leans because of it
-    const rect = root.getBoundingClientRect();
-    const mx = cX - rect.left;
-    const my = cY - rect.top;
+    overHead = inside && cX >= hr.left && cX <= hr.right && cY >= hr.top && cY <= hr.bottom;
+    const mx = cX - rr.left;
+    const my = cY - rr.top;
     parx += ((inside ? clamp(mx / W - 0.5, -0.5, 0.5) : 0) - parx) * 0.05 * s;
     pary += ((inside ? clamp(my / H - 0.5, -0.5, 0.5) : 0) - pary) * 0.05 * s;
     pvx *= 0.85;
     pvy *= 0.85;
     const speed = Math.hypot(pvx, pvy);
+    // the wheel turns with your drag and keeps going a little after you let go
+    if (drag.current.on) {
+      wheelV *= Math.pow(0.85, s); // holding still kills the speed, so only a flick throws it
+    } else {
+      wheel += wheelV * s;
+      wheelV *= Math.pow(WHEEL_GLIDE, s);
+      if (Math.abs(wheelV) < 0.002) wheelV = 0;
+    }
     // grows and shrinks with the window; the smaller of width and height wins so models never crowd each other
     const fit = clamp(Math.min(W / REF_W, H / REF_H), SCALE_MIN, SCALE_MAX);
+    const RX = W * WHEEL_RX; // the wheel is an ellipse now: wide, but no taller than before
+    const RY = H * WHEEL_RY;
 
     // where the head's centre is right now, in this section's space (items start here)
-    const ox = restX + hx + hw / 2 - rr.left;
-    const oy = restY + hy + hh / 2 - rr.top;
+    const ox = hr.left + hr.width / 2 - rr.left;
+    const oy = hr.top + hr.height / 2 - rr.top;
 
     for (let t = 0; t < count; t++) {
-      const [fx, fy, base, depth] = SLOTS[t];
+      const [angle, base, depth] = SLOTS[t];
       const sz = base * SIZE * fit;
       const m = itm[t];
 
@@ -421,13 +459,17 @@ useEffect(() => {
       const rv = rvs[t];
 
       // resting spot around the head, with a slow idle drift and the cursor lean
-      const rx = W / 2 + fx * W + Math.sin(now * DRIFT_SPEED + t * 2.1) * DRIFT * live * fit;
-      const ry = H / 2 + fy * H + Math.cos(now * DRIFT_SPEED * 0.8 + t * 1.7) * DRIFT * live * fit;
+      // where this model sits on the wheel; past one end it re-enters from the other
+      const a = ((((angle + wheel + (now / 1000) * WHEEL_SPIN + SPAN / 2) % SPAN) + SPAN) % SPAN) - SPAN / 2;
+      const ang = (a * Math.PI) / 180;
+      const edge = clamp((SPAN / 2 - Math.abs(a)) / 14, 0, 1); // fades over the last 14 degrees so the wrap never shows
+      const rx = W / 2 + RX * Math.sin(ang) + Math.sin(now * DRIFT_SPEED + t * 2.1) * DRIFT * live * fit;
+      const ry = H * HUB_Y - RY * Math.cos(ang) + Math.cos(now * DRIFT_SPEED * 0.8 + t * 1.7) * DRIFT * live * fit;
       const bx = ox + (rx - ox) * rv - parx * PARALLAX * depth * live * rv * fit;
       const by = oy + (ry - oy) * rv - pary * PARALLAX * depth * live * rv * fit;
 
       // a moving cursor shoves the item away and sets it spinning
-      if (inside && live && rv > 0.9) {
+      if (inside && live && rv > 0.9 && !drag.current.on) {
         const dx = bx + m[0] - mx;
         const dy = by + m[1] - my;
         const d = Math.hypot(dx, dy) || 1;
@@ -464,17 +506,22 @@ useEffect(() => {
 
       const el = itemRefs.current[t];
       if (el) {
-        el.style.width = `${sz}px`;
-        el.style.height = `${sz}px`;
-        el.style.left = `${bx + m[0] - sz / 2}px`;
-        el.style.top = `${by + m[1] - sz / 2}px`;
+        if (szs[t] !== sz) {
+          szs[t] = sz;
+          el.style.width = `${sz}px`;
+          el.style.height = `${sz}px`;
+        }
         const far = clamp(1 - depth / 1.2, 0, 1); // 0 = closest, 1 = furthest
-        el.style.opacity = String(Math.min(rv * 2, 1));
+        el.style.opacity = String(Math.min(rv * 2, 1) * edge);
         el.style.filter = far > 0.01 && !picked[t].model ? `blur(${far * 3}px)` : "";
         el.style.zIndex = rv < 0.95 || picked[t].decor ? "0" : picked[t].over ? "6" : String(clamp(Math.round(depth * 2), 1, 3)); // decor stays at the back, `over` items sit in front of the head (head is 5)
-        el.style.setProperty("--grow", String((0.45 + 0.55 * rv) * (0.85 + 0.15 * (1 - far))));
-        el.style.pointerEvents = picked[t].over ? "none" : rv > 0.9 ? "auto" : "none";
-        el.style.setProperty("--hit", rv > 0.9 && !overHead ? "auto" : "none");
+        const grow = (0.45 + 0.55 * rv) * (0.85 + 0.15 * (1 - far));
+        el.style.transform = `translate3d(${bx + m[0] - sz / 2}px, ${by + m[1] - sz / 2}px, 0) scale(${grow})`;
+        const hot = rv > 0.9 && edge > 0.5; // fully out, and not fading at the wrap point
+        el.style.pointerEvents = picked[t].over ? "none" : hot ? "auto" : "none";
+        el.style.setProperty("--hit", hot && !overHead ? "auto" : "none");
+        el.style.cursor = drag.current.on ? "grabbing" : "grab";
+        el.style.touchAction = "pan-y"; // on tablets, vertical swipes still scroll the page
       }
     }
   };
@@ -483,28 +530,28 @@ useEffect(() => {
   return () => {
     cancelAnimationFrame(raf);
     ro.disconnect();
+    window.removeEventListener("pointerdown", onDown);
+    window.removeEventListener("wheel", onWheel);
     window.removeEventListener("pointermove", onMove);
+    document.body.style.userSelect = "";
+    window.removeEventListener("pointerup", onUp);
+    window.removeEventListener("pointercancel", onUp);
     document.documentElement.removeEventListener("mouseleave", onLeave);
+    // switching to phone/tablet mode: hand positioning back to the CSS carousel
+    itemRefs.current.forEach((el) => {
+      if (!el) return;
+      for (const p of ["transform", "opacity", "filter", "zIndex", "pointerEvents", "cursor", "touchAction"]) (el.style as any)[p] = "";
+      el.style.removeProperty("--hit");
+    });
   };
-}, [picked, headRef]);
+}, [picked, headRef, landRef, small]);
 
   return (
     <section className="threads" ref={rootRef} aria-label="An index of Dee's mind">
-      <h2 className="threads__title">Dee Outside Of Design</h2>
-      <p className="threads__body">
-        Outside of design, I spend my free time listening to and finding new music, watching shows (animations and shows
-        especially), reading webtoons or playing tetris. I love working out at home too (not everyday though).
-      </p>
-      <p className="threads__tag" ref={tagRef} aria-hidden="true" />
-      <div
-        className="threads__brand"
-        aria-hidden="true"
-        style={{ WebkitMaskImage: `url(${wordmark})`, maskImage: `url(${wordmark})` }}
-      />
 
       <div className="threads__track">
       {picked.map((entry, i) => {
-        const size = SLOTS[i][2] * SIZE;
+        const size = SLOTS[i][1] * SIZE;
         const Item: any = entry.decor ? "div" : Link; // decorations are plain, not links
         return (
           <Fragment key={entry.id}>
@@ -513,7 +560,19 @@ useEffect(() => {
               itemRefs.current[i] = el;
             }}
             className={entry.decor ? "thread-item thread-item--decor" : "thread-item"}
+            onPointerDown={(e: React.PointerEvent) => {
+              drag.current.moved = 0;
+              if (small || e.button !== 0) return;
+              const r = headRef.current?.getBoundingClientRect();
+              if (entry.over && r && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) return;
+              drag.current = { on: true, moved: 0, sx: e.clientX, sy: e.clientY, lx: e.clientX };
+            }}
+            onDragStart={(e: React.DragEvent) => e.preventDefault()}
             onClick={(e: React.MouseEvent) => {
+              if (drag.current.moved > DRAG_TAP) {
+                e.preventDefault(); // it was a drag, not a click, so don't open the link
+                return;
+              }
               if (!entry.over) return;
               const r = headRef.current?.getBoundingClientRect();
               if (r && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) e.preventDefault();
