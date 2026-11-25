@@ -10,6 +10,7 @@
   font: inherit; /* the size comes from the page it sits in */
   letter-spacing: inherit;
   line-height: 1.06;
+  min-height: 28px; /* taller button, the text stays centred */
   text-transform: none;
   cursor: pointer;
   transition: background 0.2s ease;
@@ -17,12 +18,15 @@
 .ibtn {
   position: relative;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
 }
 @media (hover: hover) {
   .ibtn:hover { background: #DAD5D1; }
 }
 @media (pointer: coarse) {
-  .ibtn::after { content: ""; position: absolute; inset: -6px -10px; } /* larger tap area, same look */
+  .ibtn::after { content: ""; position: absolute; inset: -15px -12px; } /* 44px tap target, same look */
+  .ibtn:active { background: #DAD5D1; }
 }
 .ibtn span { text-decoration: underline; }
 .ibtn svg {

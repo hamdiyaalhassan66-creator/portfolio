@@ -717,14 +717,17 @@ function Scene({ items, pos, invalidateRef, flip, turn, hover, pickRef, intro, o
       g.visible = a > 0.01;
       if (!g.visible) continue;
 
-      g.traverse((obj) => {
-        const mat = (obj as THREE.Mesh).material as THREE.Material | undefined;
-        if (mat?.userData?.fade) {
-          const base = mat.userData.baseOpacity ?? 1;
-          mat.opacity = a * base;
-          mat.transparent = a * base < 0.999;
-        }
-      });
+      if (g.userData.alpha !== a) {
+        g.userData.alpha = a;
+        g.traverse((obj) => {
+          const mat = (obj as THREE.Mesh).material as THREE.Material | undefined;
+          if (mat?.userData?.fade) {
+            const base = mat.userData.baseOpacity ?? 1;
+            mat.opacity = a * base;
+            mat.transparent = a * base < 0.999;
+          }
+        });
+      }
 
       // position along the climbing path, size growing to the right
       const f = o >= 0 ? (Math.exp(KAPPA * o) - 1) / KAPPA : o * XA_L;
@@ -768,7 +771,7 @@ function Scene({ items, pos, invalidateRef, flip, turn, hover, pickRef, intro, o
     <>
       <ambientLight intensity={0.55} />
       <directionalLight position={[300, 400, 1000]} intensity={0.35} />
-      <Environment resolution={512}>
+      <Environment resolution={size.width < 768 ? 128 : 256}>
         <Lightformer form="rect" intensity={0.4} position={[0, 0, 8]} scale={[12, 12, 1]} />
         <Lightformer form="rect" intensity={4} position={[-6, 3, 6]} rotation-y={Math.PI / 4} scale={[3, 9, 1]} />
         <Lightformer form="rect" intensity={4} position={[6, -3, 6]} rotation-y={-Math.PI / 4} scale={[3, 9, 1]} />

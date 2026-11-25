@@ -79,7 +79,7 @@ export default function Lore() {
       </svg>
 
       <section className="lore__intro">
-        <Link to="/information" className="lore__back">
+        <Link to="/info" className="lore__back">
           Back to info
         </Link>
 

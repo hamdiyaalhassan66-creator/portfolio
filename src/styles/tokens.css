@@ -7,9 +7,8 @@
   --blue-10: rgba(16, 70, 249, 0.1);
   --surface: #efe9e7;
 
-  --font-sans: "Geist Variable", "Geist", system-ui, sans-serif;
-  --font-sans: "Archivo Variable", system-ui, sans-serif;
-  --grid-margin: 0px;
+  --font-sans: "Archivo Variable", "Archivo", "Helvetica Neue", Arial, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace; /* lore + threads already use var(--font-mono), but it was never defined */
 
   /* 1u = 1px at your 1728px Figma frame; scales with viewport width */
   --u: clamp(0.4px, min(calc(100vw / 1728), calc(100dvh / 1117)), 1.25px);
@@ -22,6 +21,25 @@
   --space-6: 96px;
 
   --max-width: 1200px;
+
+  /* body copy: one size for the whole site */
+  --body-size: 15px;
+  --body-lh: 17px;
+  --body-ls: -0.02em;
+
+  /* nav tabs: the big uppercase links in the header. 20px at the 1728 frame */
+  --nav-size: clamp(14px, 1.157vw, 24px);
+  --nav-lh: 18px;
+
+  /* title text: project names (work cards, info overlay). 26px at the 1728 frame */
+  --title-size: clamp(18px, calc(100vw * 26 / 1728), 34px);
+  --title-lh: 1;
+  --title-ls: -0.02em;
+
+  /* label text: small uppercase UI text (detail rows, tags, captions) */
+  --label-size: 13px;
+  --label-lh: 15px;
+  --label-ls: -0.01em;
 
   /* site grid: 6 columns, 80px gutters, 24px side margins */
   --grid-margin: 24px;
@@ -45,16 +63,55 @@
   }
 }
 
+/* tablets and phones: gutters that fit the screen */
+@media (max-width: 1100px) {
+  :root {
+    --grid-gutter: 40px;
+  }
+}
+@media (max-width: 700px) {
+  :root {
+    --grid-gutter: 12px;
+    --grid-margin: 16px;
+    --title-size: min(26px, 6.4vw);
+  }
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%; /* stops iOS enlarging text after a rotation */
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent; /* no grey flash when tapping cards and chips on phones */
+}
+img {
+  display: block;
+  max-width: 100%;
 }
 
 body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-sans);
+  font-size: var(--body-size);
+  line-height: var(--body-lh);
+  letter-spacing: var(--body-ls);
+  font-weight: 500;
   -webkit-font-smoothing: antialiased;
+}
+
+.label {
+  font: 500 var(--label-size)/var(--label-lh) var(--font-sans);
+  letter-spacing: var(--label-ls);
+  text-transform: uppercase;
+}
+
+.title {
+  font: 500 var(--title-size)/var(--title-lh) var(--font-sans);
+  letter-spacing: var(--title-ls);
 }
 
 html,

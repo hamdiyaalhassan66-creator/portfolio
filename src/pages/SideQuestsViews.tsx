@@ -1,166 +1,175 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties, KeyboardEvent as RKeyEvent, PointerEvent as RPointerEvent, WheelEvent as RWheelEvent } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import type { Project } from "./SideQuests";
 import "./SideQuestsViews.css";
+import InfoButton from "./InfoButton";
+import { warpState, bendTile, clearSlices } from "./useScrollWarp";
 
 type Props = { list: Project[]; ratios: Map<string, number>; onActive: (p: number) => void; intro?: string };
-type Img = { src: string; alt: string; p: number };
+type Img = { src: string; alt: string; p: number; k: number };
 
-const flat = (list: Project[]): Img[] => list.flatMap((pr, p) => pr.images.map((src) => ({ src, alt: pr.name, p })));
+const flat = (list: Project[]): Img[] => list.flatMap((pr, p) => pr.images.map((src, k) => ({ src, alt: pr.name, p, k })));
 const ratioOf = (ratios: Map<string, number>, src: string) => ratios.get(src) ?? 0.8;
 const clamp = (v: number, a: number, b: number) => Math.min(Math.max(v, a), b);
 
+/* ---------- view switch: thumbnails fly from their old spot to their new one ---------- */
+const flipStore: { from: Map<string, DOMRect> | null; ghosts: Map<string, HTMLElement> | null; ids: Set<string> | null } = { from: null, ghosts: null, ids: null };
+
+export const captureTiles = (root: HTMLElement | null, withGhosts = false) => {
+  const m = new Map<string, DOMRect>();
+  const g = new Map<string, HTMLElement>();
+  const all = new Set<string>(); // every tile in the old set, including the ones off screen
+  root?.querySelectorAll<HTMLElement>("[data-id]").forEach((el) => {
+    all.add(el.dataset.id!);
+    const r = el.getBoundingClientRect();
+    if (r.width > 0 && r.bottom > 0 && r.top < window.innerHeight && r.right > 0 && r.left < window.innerWidth) {
+      m.set(el.dataset.id!, r);
+      if (withGhosts) g.set(el.dataset.id!, el.cloneNode(true) as HTMLElement); // kept in case this tile is not in the next set
+    }
+  });
+  flipStore.from = m.size ? m : null;
+  flipStore.ghosts = withGhosts && g.size ? g : null;
+  flipStore.ids = withGhosts ? all : null;
+};
+
+export const playFlip = (root: HTMLElement, dropMode = false) => {
+  const from = flipStore.from;
+  const gone = flipStore.ghosts;
+  const before = flipStore.ids;
+  flipStore.from = null;
+  flipStore.ghosts = null;
+  flipStore.ids = null;
+  if (!from || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  root.style.animation = "none"; // the page's own fade would hide the flight
+  const H = window.innerHeight;
+  const EASE = "cubic-bezier(0.65, 0, 0.2, 1)";
+  const drop = dropMode && !!gone; // Snap on a category change: tiles drop out and drop in, instead of flying up or down
+  const kept = new Set<string>();
+  let entering = 0;
+  root.querySelectorAll<HTMLElement>("[data-id]").forEach((el) => {
+    kept.add(el.dataset.id!);
+    const a = from.get(el.dataset.id!);
+    const b = el.getBoundingClientRect();
+    if (!b.width || !el.offsetWidth) return;
+    el.style.animation = "none";
+    if (!a) {
+      const kk = b.width / el.offsetWidth;
+      const W = window.innerWidth;
+      if (b.bottom < 0 || b.top > H || b.right < 0 || b.left > W) return; // off screen, nothing to see
+      let start: string;
+      if (drop && before?.has(el.dataset.id!)) {
+        // it was already in the row, just off screen: it slides in from the side it belongs on
+        const dx = b.left + b.width / 2 > W / 2 ? W - b.left : -(b.left + b.width);
+        start = `translate(${dx / kk}px,0px)`;
+      } else if (drop) {
+        start = `translate(0px,${-(b.top + b.height + 40) / kk}px)`; // a project that wasn't there before drops in from above
+      } else {
+        start = `translate(0px,${(H - b.top) / kk}px)`; // Grid: flies up from below
+      }
+      el.animate([{ transform: start }, { transform: "translate(0px,0px)" }], {
+        duration: 800,
+        delay: Math.min(entering++ * 30, 240),
+        easing: EASE,
+        composite: "add",
+        fill: "backwards",
+      });
+      return;
+    }
+    const k = b.width / el.offsetWidth; // the tile's own scale (Snap draws its tiles scaled)
+    const dx = (a.left + a.width / 2 - (b.left + b.width / 2)) / k;
+    const dy = (a.top + a.height / 2 - (b.top + b.height / 2)) / k;
+    // one scale for both axes, so the image never stretches. The leftover on the other axis is cropped
+    const s = Math.max(a.width / b.width, a.height / b.height);
+    const ix = Math.max(0, (b.width - a.width / s) / (2 * k));
+    const iy = Math.max(0, (b.height - a.height / s) / (2 * k));
+    el.animate(
+      [
+        { transform: `translate(${dx}px,${dy}px) scale(${s})`, clipPath: `inset(${iy}px ${ix}px)` },
+        { transform: "translate(0px,0px) scale(1)", clipPath: "inset(0px 0px)" },
+      ],
+      { duration: 800, easing: "cubic-bezier(0.65, 0, 0.2, 1)", composite: "add" } // added on top of the tile's own position
+    );
+  });
+
+  // tiles that are not in the new set: a copy of each carries on off the screen, up or down, whichever is closer
+  gone?.forEach((node, id) => {
+    const a = from.get(id);
+    if (kept.has(id) || !a) return;
+    node.removeAttribute("data-id");
+    node.style.cssText = `position:fixed;left:${a.left}px;top:${a.top}px;width:${a.width}px;height:${a.height}px;margin:0;z-index:4;translate:none;transform:none;animation:none;pointer-events:none;`;
+    root.appendChild(node);
+    const dy = !drop && a.top + a.height / 2 < H / 2 ? -(a.top + a.height + 40) : H - a.top + 40;
+    const fly = node.animate(
+      [{ transform: "translate(0px,0px)" }, { transform: `translate(0px,${dy}px)` }],
+      { duration: drop ? 700 : 800, easing: drop ? "cubic-bezier(0.55, 0, 0.9, 0.45)" : EASE, fill: "forwards" } // dropping speeds up like it's falling
+    );
+    fly.onfinish = () => node.remove();
+  });
+};
+
 export function AltView({ view, ...rest }: Props & { view: string }) {
-  if (view === "Carousel") return <Carousel {...rest} />;
-  if (view === "Zoom") return <Zoom {...rest} />;
+  if (view === "Snap") return <Snap {...rest} />;
   return <ListView {...rest} />;
 }
 
-/* ---------- 3D carousel ---------- */
-function Carousel({ list, ratios, onActive }: Props) {
-  const imgs = useMemo(() => flat(list).slice(0, 24), [list]); // 24 max keeps the ring light
-  const m = Math.max(imgs.length, 6);
+/* ---------- list: one row per project. Name, category and description on the left, four thumbnails on the right ---------- */
+function ListView({ list, onActive }: Props) {
   const root = useRef<HTMLDivElement>(null);
-  const ring = useRef<HTMLDivElement>(null);
-  const s = useRef({ a: 0, v: 0, drag: false, lx: 0, hover: false });
+  const [open, setOpen] = useState<string | null>(null); // the project whose info is open
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    if (root.current) playFlip(root.current); // arriving from another view: the thumbnails fly to their place
+  }, []);
+
+  useLayoutEffect(() => {
     const el = root.current;
-    const rg = ring.current;
-    if (!el || !rg || !imgs.length) return;
-    const st = s.current;
-    const step = 360 / m;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let R = 600;
-    let raf = 0;
-    let shown = -1;
-    const size = () => {
-      const cw = clamp(el.clientWidth * 0.17, 96, 210); // card width follows the screen
-      R = (cw * 1.12) / 2 / Math.tan(Math.PI / m); // ring radius so neighbours almost touch
-      el.style.setProperty("--cw", `${cw}px`);
-      el.style.setProperty("--r", `${R}px`);
-    };
-    const frame = () => {
-      if (!st.drag) {
-        st.a += st.v;
-        st.v *= 0.95;
-        if (Math.abs(st.v) < 0.01) st.v = 0;
-        if (!reduce && !st.hover && st.v === 0) st.a += 0.05; // slow idle turn
-      }
-      rg.style.transform = `translateZ(${-R}px) rotateY(${st.a.toFixed(2)}deg)`;
-      const idx = ((Math.round(-st.a / step) % m) + m) % m; // the card facing you
-      if (idx !== shown && idx < imgs.length) {
-        shown = idx;
-        onActive(imgs[idx].p);
-      }
-      raf = requestAnimationFrame(frame);
-    };
-    size();
-    const ro = new ResizeObserver(size);
-    ro.observe(el);
-    raf = requestAnimationFrame(frame);
-    return () => {
-      cancelAnimationFrame(raf);
-      ro.disconnect();
-    };
-  }, [imgs, m, onActive]);
-
-  const down = (e: RPointerEvent<HTMLDivElement>) => {
-    const st = s.current;
-    st.drag = true;
-    st.lx = e.clientX;
-    st.v = 0;
-    e.currentTarget.setPointerCapture(e.pointerId);
-  };
-  const move = (e: RPointerEvent<HTMLDivElement>) => {
-    const st = s.current;
-    if (!st.drag) return;
-    const d = (e.clientX - st.lx) * 0.22;
-    st.lx = e.clientX;
-    st.a += d;
-    st.v = d; // keeps turning after you let go
-  };
-  const up = () => {
-    s.current.drag = false;
-  };
-  const wheel = (e: RWheelEvent<HTMLDivElement>) => {
-    s.current.v = clamp(s.current.v - (e.deltaX + e.deltaY) * 0.01, -6, 6);
-  };
-  const key = (e: RKeyEvent<HTMLDivElement>) => {
-    if (e.key === "ArrowRight") s.current.v -= 2;
-    else if (e.key === "ArrowLeft") s.current.v += 2;
-  };
+    if (!el || !("IntersectionObserver" in window)) return;
+    const io = new IntersectionObserver(
+      (es) => es.forEach((e) => e.isIntersecting && onActive(Number((e.target as HTMLElement).dataset.p))),
+      { rootMargin: "-50% 0px -50% 0px" } // the row on the middle line of the screen is the active one
+    );
+    el.querySelectorAll("[data-p]").forEach((r) => io.observe(r));
+    return () => io.disconnect();
+  }, [list, onActive]);
 
   return (
-    <div
-      className="sqv-c"
-      ref={root}
-      tabIndex={0}
-      role="group"
-      aria-label="3D carousel. Drag or use the arrow keys to turn it"
-      style={{ "--step": `${360 / m}deg` } as CSSProperties}
-      onPointerDown={down}
-      onPointerMove={move}
-      onPointerUp={up}
-      onPointerCancel={up}
-      onPointerEnter={(e) => {
-        if (e.pointerType === "mouse") s.current.hover = true;
-      }}
-      onPointerLeave={() => {
-        s.current.hover = false;
-      }}
-      onWheel={wheel}
-      onKeyDown={key}
-    >
-      <div className="sqv-c__ring" ref={ring}>
-        {imgs.map((im, i) => (
-          <figure className="sqv-c__item" key={i} style={{ "--i": i, "--ar": ratioOf(ratios, im.src) } as CSSProperties}>
-            <img src={im.src} alt={im.alt} draggable={false} decoding="async" />
-          </figure>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ---------- list: intro text, then one row per project. Hover shows the first 5 thumbnails ---------- */
-function ListView({ list, onActive, intro }: Props) {
-  const [open, setOpen] = useState<number | null>(null);
-  const coarse = () => window.matchMedia("(hover: none)").matches;
-  const set = (i: number | null) => {
-    setOpen(i);
-    if (i !== null) onActive(i);
-  };
-  return (
-    <div className="sqv">
-      {intro && <p className="sqv__intro">{intro}</p>}
+    <div className="sqv" ref={root}>
       <ul className="sqv-l">
         {list.map((pr, i) => (
-          <li
-            key={pr.id}
-            className={"sqv-l__row" + (open === i ? " is-open" : "")}
-            onPointerEnter={(e) => e.pointerType === "mouse" && set(i)}
-            onPointerLeave={(e) => e.pointerType === "mouse" && set(null)}
-          >
-            <button
-              type="button"
-              className="sqv-l__head"
-              aria-expanded={open === i}
-              onClick={() => coarse() && set(open === i ? null : i)} // touch: tap to open and close
-              onFocus={(e) => e.currentTarget.matches(":focus-visible") && set(i)} // keyboard: focus opens it
-              onBlur={() => !coarse() && set(null)}
-            >
-              <span className="sqv-l__no">{i + 1}</span>
-              <span className="sqv-l__name">{pr.name}</span>
-              <span className="sqv-l__cat">{pr.category}</span>
-            </button>
-            {open === i && (
-              <div className="sqv-l__peek" aria-hidden="true">
-                {pr.images.slice(0, 5).map((src, j) => (
-                  <img key={j} src={src} alt="" draggable={false} decoding="async" style={{ "--j": j } as CSSProperties} />
-                ))}
+          <li className="sqv-l__row" key={pr.id} data-p={i}>
+            <div className="sqv-l__info">
+              <div className="sqv-l__head">
+                <h2 className="sqv-l__name">{pr.name}</h2>
+                <span className="sqv-l__cat">{pr.category}</span>
+                <InfoButton
+                  open={open === pr.id}
+                  controls={`sqv-info-${pr.id}`}
+                  onClick={() => setOpen((v) => (v === pr.id ? null : pr.id))}
+                />
               </div>
-            )}
+              {open === pr.id && pr.tags.length > 0 && (
+                <ul className="sqv-l__tags" id={`sqv-info-${pr.id}`}>
+                  {pr.tags.map((t) => (
+                    <li key={t}>{t}</li>
+                  ))}
+                </ul>
+              )}
+              {pr.description && <p className="sqv-l__desc">{pr.description}</p>}
+            </div>
+            <div className="sqv-l__strip">
+              {pr.images.slice(0, 4).map((src, k) => (
+                <figure className={"sqv-l__img " + (k === 1 ? "is-p" : "is-l")} key={k} data-id={`${pr.id}:${k}`}>
+                  <img
+                    src={src}
+                    alt={k === 0 ? pr.name : ""}
+                    draggable={false}
+                    decoding="async"
+                    loading={i === 0 ? "eager" : "lazy"}
+                    fetchPriority={i === 0 ? "high" : "low"}
+                  />
+                </figure>
+              ))}
+            </div>
           </li>
         ))}
       </ul>
@@ -168,10 +177,7 @@ function ListView({ list, onActive, intro }: Props) {
   );
 }
 
-/* ---------- zoom: scroll drives a camera that zooms out, drifts over the grid and zooms back in. The view warps like a lens with the scroll speed ---------- */
-const PATH = { c: 2, r: 6 }; // columns and rows the camera travels in one pass (whole numbers, so it ends centred on a card)
-const WARP = 0.3; // lens strength at full scroll speed
-const wrap = (d: number, L: number) => d - Math.round(d / L) * L; // shortest way round, the grid repeats endlessly
+/* ---------- snap: scroll steps through the images on a dot grid. Between two images the camera pulls back to show the strip ---------- */
 const sstep = (a: number, b: number, x: number) => {
   const t = clamp((x - a) / (b - a), 0, 1);
   return t * t * (3 - 2 * t);
@@ -188,22 +194,15 @@ const damp = (cur: number, to: number, vel: { v: number }, time: number, dt: num
   return to + (d + t) * e;
 };
 
-function Zoom({ list, onActive }: Props) {
-  const imgs = useMemo(() => flat(list).slice(0, 24), [list]);
-  const track = useRef<HTMLDivElement>(null);
-  const stage = useRef<HTMLDivElement>(null);
-  const [dims, setDims] = useState({ W: 0, H: 0 });
-  const [cur, setCur] = useState(0); // project shown behind the cards
-
-  // the stage size drives the layout
-  useEffect(() => {
-    const el = stage.current;
+function useBox() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [d, setD] = useState({ W: 0, H: 0 });
+  useLayoutEffect(() => { // measured before the first paint, so the tiles exist the moment the view appears
+    const el = ref.current;
     if (!el) return;
     let raf = 0;
     const read = () =>
-      setDims((d) =>
-        d.W === el.clientWidth && Math.abs(d.H - el.clientHeight) < 60 ? d : { W: el.clientWidth, H: el.clientHeight },
-      ); // small height changes (mobile browser bars) don't rebuild the grid
+      setD((p) => (p.W === el.clientWidth && Math.abs(p.H - el.clientHeight) < 60 ? p : { W: el.clientWidth, H: el.clientHeight })); // mobile browser bars don't rebuild the layout
     read();
     const ro = new ResizeObserver(() => {
       cancelAnimationFrame(raf);
@@ -215,143 +214,213 @@ function Zoom({ list, onActive }: Props) {
       cancelAnimationFrame(raf);
     };
   }, []);
+  return [ref, d] as const;
+}
+
+const SLOTS = [[0, 0], [1, 1], [-1, -1], [1, -1], [-1, 1], [0, 1]]; // where each image would like to sit, in grid cells from the centre
+
+function Snap({ list, ratios, onActive }: Props) {
+  const imgs = useMemo(() => flat(list).slice(0, 24), [list]);
+  const track = useRef<HTMLDivElement>(null);
+  const [num, setNum] = useState(0); // the image in focus, shown in the counter
+  const [stage, { W, H }] = useBox();
+  const arriving = useRef(flipStore.from !== null); // true when we got here from another view
 
   const lay = useMemo(() => {
-    const { W, H } = dims;
     if (!W || !H || !imgs.length) return null;
     const bp = W <= 700 ? 0 : W <= 1100 ? 1 : 2; // phone / tablet / desktop
-    const tile = Math.round(Math.min(W * 0.36, H * 0.3, 340)); // card size in focus
-    const cell = tile * 1.95; // grid spacing
-    const so = Math.min(0.8, W / ([2.6, 3.6, 4.6][bp] * cell)); // zoomed-out scale: about 3 / 4 / 5 cards across
-    const cols = [4, 6, 7][bp]; // wider than the screen even after the lens pulls the edges in, so the repeat never shows
-    const rows = Math.max(PATH.r + 1, Math.ceil(imgs.length / cols), Math.ceil(H / (so * cell)) + 2);
-    const L = Math.round(Math.hypot(PATH.c, PATH.r) * cell * so * 1.1 + H * 1.2); // scroll distance of one pass, in px
-    return { W, H, tile, cell, so, cols, rows, n: cols * rows, L };
-  }, [dims, imgs]);
+    const cx = W / (bp === 0 ? 3 : 6); // same columns as the Grid view: 3 on phones, 6 elsewhere
+    const cy = H / 3.4; // rows of dots: with the half-row offset, 4 rows fit on screen
+    const mc = Math.max(1, Math.floor((W * [0.9, 0.8, 0.7][bp]) / cx)); // most columns a tile may cover
+    const mr = Math.max(2, Math.floor((H * 0.62) / cy)); // most rows a tile may cover
+    const gap = cx;
+    let x = 0;
+    let prev = 0;
+    const items = imgs.map((im, i) => {
+      const ar = ratioOf(ratios, im.src);
+      let bc = 1;
+      let br = 2;
+      let best = Infinity;
+      for (let r = 2; r <= mr; r += 2) // even row counts only, so a centred tile has its corners on dots
+        for (let c = 1; c <= mc; c++) {
+          const err = Math.abs(Math.log((c * cx) / (r * cy) / ar)) - 0.05 * Math.log(c * r); // close to the image's own shape, bigger wins ties
+          if (err < best) {
+            best = err;
+            bc = c;
+            br = r;
+          }
+        }
+      const w = bc * cx;
+      const h = br * cy;
+      x += i ? prev / 2 + gap + w / 2 : 0;
+      prev = w;
+      const [px, py] = SLOTS[i % SLOTS.length];
+      // spots where every corner lands on a dot: columns sit on the centre, rows sit half a row off it
+      const pick = (want: number, unit: number, half: boolean, room: number) => {
+        let out = 0;
+        let bd = Infinity;
+        for (let k = -6; k <= 6; k++) {
+          const v = (k + (half ? 0.5 : 0)) * unit;
+          const d = Math.abs(v - want) + (Math.abs(v) > room + 1 ? 1e6 : 0);
+          if (d < bd) {
+            bd = d;
+            out = v;
+          }
+        }
+        return out;
+      };
+      return {
+        w,
+        h,
+        x,
+        ox: pick(px * cx, cx, bc % 2 === 1, (W - w) / 2),
+        oy: pick(py * cy, cy, br % 2 === 1, (H - h) / 2),
+      };
+    });
+    const so = clamp(W / (3.4 * (3 * cx + gap)), 0.2, 0.55); // zoomed-out scale
+    const L = (imgs.length - 1) * clamp(H * 1.0, 420, 900); // scroll distance of the whole pass
+    return { cx, cy, items, so, L };
+  }, [W, H, imgs, ratios]);
 
-  // the motion loop. It only runs while the camera is catching up with the scroll
   useLayoutEffect(() => {
     const box = track.current;
     if (!box || !lay) return;
-    const { W, H, tile, cell, so, cols, rows, L } = lay;
-    const els = Array.from(box.querySelectorAll<HTMLElement>(".sqv-z__tile"));
+    const { items, so, L } = lay;
+    const n = items.length;
+    const els = Array.from(box.querySelectorAll<HTMLElement>(".sqv-g__item:not([data-slice])"));
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const GW = cols * cell;
-    const GH = rows * cell;
-    const R2 = (W * W + H * H) / 4; // squared half diagonal, the lens is centred on the screen
-    const px = els.map((_, i) => (i % cols) * cell);
-    const py = els.map((_, i) => Math.floor(i / cols) * cell);
     const shown = els.map(() => true);
-    const vp = { v: 0 };
-    const va = { v: 0 };
     const top = box.getBoundingClientRect().top + window.scrollY;
-    const goal = () => clamp((window.scrollY - top) / L, 0, 1); // scroll progress, 0 to 1
-    let P = goal(); // the camera's own progress, it follows the scroll with a lag
-    let a = 0; // current lens strength
-    let title = -1;
+    const goal = () => clamp((window.scrollY - top) / L, 0, 1);
+    const vp = { v: 0 };
+    const vo = { v: 0 };
+    let C = Math.round(goal() * (n - 1)); // the camera's own position, counted in images
+    let out = arriving.current ? 1 : 0; // 0 = an image in focus, 1 = pulled back to the strip. Arriving from another view starts pulled back
+    let act = -1;
     let raf = 0;
     let last = 0;
+    const REST = 160; // ms without scrolling before an image settles
+    const FLY = 800; // ms, the length of the flight in playFlip
+    // arriving: pretend the page scrolled in the future, so the camera stays pulled back until the tiles have landed, then settles
+    let moved = arriving.current ? performance.now() + FLY - REST : 0;
+    const landed = window.setTimeout(() => (arriving.current = false), FLY + 100);
 
     const draw = () => {
-      const w = sstep(0.08, 0.32, P) * (1 - sstep(0.78, 0.96, P)); // 0 = in focus, 1 = zoomed out
-      const k = 1 + (so - 1) * w;
-      const cx = P * PATH.c * cell;
-      const cy = P * PATH.r * cell;
-      const q = (2 * a) / R2;
-      for (let i = 0; i < els.length; i++) {
-        const dx = wrap(px[i] - cx, GW) * k;
-        const dy = wrap(py[i] - cy, GH) * k;
-        const g = Math.max(0.3, 1 - (a * (dx * dx + dy * dy)) / R2); // barrel lens: the further from the middle, the more it pulls in
-        const sx = W / 2 + dx * g;
-        const sy = H / 2 + dy * g;
-        const r = tile * k * 0.8;
-        const on = sx + r > 0 && sx - r < W && sy + r > 0 && sy - r < H;
-        if (on !== shown[i]) {
-          shown[i] = on;
-          els[i].style.display = on ? "" : "none"; // off screen cards cost nothing
+      const i = n > 1 ? Math.min(Math.floor(C), n - 2) : 0;
+      const j = n > 1 ? i + 1 : 0;
+      const f = n > 1 ? C - i : 0;
+      const e = sstep(0, 1, f);
+      const A = items[i];
+      const B = items[j];
+      const cam = A.x + (B.x - A.x) * f; // glides along the strip while you scroll
+      const ox = (A.ox + (B.ox - A.ox) * e) * (1 - out);
+      const oy = (A.oy + (B.oy - A.oy) * e) * (1 - out);
+      const k = 1 + (so - 1) * out;
+      const bend = warpState.cur > 0.004; // the scroll bend, shared with the other views
+      const pad = bend ? W * 0.4 : 0; // a bent tile can reach further than its flat box
+      for (let m = 0; m < n; m++) {
+        const it = items[m];
+        const cx = W / 2 + ox + (it.x - cam) * k;
+        const on = cx + (it.w * k) / 2 > -pad && cx - (it.w * k) / 2 < W + pad;
+        if (on !== shown[m]) {
+          shown[m] = on;
+          els[m].style.display = on ? "" : "none"; // off screen images cost nothing
         }
-        if (!on) continue;
-        let t = `translate3d(${(sx - tile / 2).toFixed(1)}px,${(sy - tile / 2).toFixed(1)}px,0) scale(${k.toFixed(3)})`;
-        if (a > 0.002) {
-          // the lens's local stretch at this card, which is what makes the cards lean and skew
-          const m = (-q * dx * dy).toFixed(4);
-          t += ` matrix(${(g - q * dx * dx).toFixed(4)},${m},${m},${(g - q * dy * dy).toFixed(4)},0,0)`;
+        if (!on) {
+          clearSlices(els[m]);
+          continue;
         }
-        els[i].style.transform = t;
+        const w = it.w * k;
+        const h = it.h * k;
+        if (bend) {
+          bendTile(els[m], cx - w / 2, H / 2 + oy - h / 2, w, h, it.w, it.h, 0, 0, warpState.cur, W, H, true);
+        } else {
+          clearSlices(els[m]);
+          els[m].style.transformOrigin = "";
+          els[m].style.transform = `translate3d(${(cx - it.w / 2).toFixed(1)}px,${(H / 2 + oy - it.h / 2).toFixed(1)}px,0) scale(${k.toFixed(3)})`;
+        }
       }
-      // the project name follows the card nearest the middle
-      const ci =
-        ((Math.round(cy / cell) % rows) + rows) % rows * cols + (((Math.round(cx / cell) % cols) + cols) % cols);
-      const p = imgs[ci % imgs.length].p;
-      if (p !== title) {
-        title = p;
-        setCur(p);
-        onActive(p);
+      const idx = clamp(Math.round(C), 0, n - 1);
+      if (idx !== act) {
+        act = idx;
+        onActive(imgs[idx].p);
+        setNum(idx);
       }
     };
 
     const frame = (now: number) => {
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
-      const g = goal();
+      const seg = goal() * (n - 1);
+      const busy = now - moved < REST; // still scrolling
+      const to = busy ? seg : Math.round(seg); // once it stops, the nearest image
       if (still) {
-        P = g;
-        a = 0;
+        C = Math.round(seg);
+        out = 0;
       } else {
-        P = damp(P, g, vp, 0.3, dt);
-        const speed = Math.abs(vp.v) * L; // scroll px per second the camera is covering
-        a = damp(a, Math.min(1, speed / 1600) * WARP, va, 0.2, dt);
+        C = damp(C, to, vp, 0.35, dt);
+        out = damp(out, busy ? 1 : 0, vo, 0.45, dt);
       }
-      const idle = Math.abs(P - g) < 1e-5 && Math.abs(vp.v) < 1e-4 && a < 1e-3;
-      if (idle) {
-        P = g;
-        a = 0;
-        vp.v = va.v = 0;
+      const calm = !busy && Math.abs(C - to) < 1e-3 && out < 1e-3;
+      if (calm) {
+        C = to;
+        out = 0;
+        vp.v = vo.v = 0;
       }
       draw();
-      raf = idle ? 0 : requestAnimationFrame(frame); // nothing runs while the page is at rest
+      raf = calm ? 0 : requestAnimationFrame(frame); // nothing runs while the page is at rest
     };
     const kick = () => {
+      moved = performance.now();
       if (raf) return;
-      last = performance.now();
+      last = moved;
       raf = requestAnimationFrame(frame);
     };
 
+    warpState.hook = draw;
     draw();
+    const entering = out > 0; // arriving from another view: tiles fly in, then the camera settles on an image
+    playFlip(box, true);
+    if (entering) {
+      last = performance.now(); // start the loop without touching `moved`, so the camera holds
+      raf = requestAnimationFrame(frame);
+    }
     window.addEventListener("scroll", kick, { passive: true });
     return () => {
+      window.clearTimeout(landed);
+      if (warpState.hook === draw) warpState.hook = null;
+      els.forEach(clearSlices);
       window.removeEventListener("scroll", kick);
       cancelAnimationFrame(raf);
     };
-  }, [lay, imgs, onActive]);
-
-  const pr = list[cur] ?? list[0];
+  }, [lay, imgs, onActive, W, H]);
 
   return (
-    <div className="sqv-z" ref={track} style={{ height: lay ? `calc(100svh + ${lay.L}px)` : "100svh" }}>
+    <div className="sqv-g" ref={track} style={{ height: lay ? `calc(100svh + ${lay.L}px)` : "100svh" }}>
       <div
-        className="sqv-z__stage"
+        className="sqv-g__stage"
         ref={stage}
         role="group"
-        aria-label="Zoom view. Scroll to move through the projects"
-        style={{ "--tile": `${lay?.tile ?? 140}px` } as CSSProperties}
+        aria-label="Snap view. Scroll to step through the images"
+        style={{ "--cx": `${lay?.cx ?? 64}px`, "--cy": `${lay?.cy ?? 80}px` } as CSSProperties}
       >
-        {pr && (
-          <div className="sqv-z__title" key={pr.id}>
-            <h2 className="sqv-z__name">{pr.name}</h2>
-            <p className="sqv-z__cat">{pr.category}</p>
-          </div>
-        )}
         {lay &&
-          Array.from({ length: lay.n }, (_, i) => {
-            const im = imgs[i % imgs.length];
-            return (
-              <figure className="sqv-z__tile" key={i}>
-                <img src={im.src} alt={im.alt} draggable={false} decoding="async" fetchPriority={i < 6 ? "high" : "low"} />
-              </figure>
-            );
-          })}
+          imgs.map((im, i) => (
+            <figure className="sqv-g__item" key={i} data-id={`${list[im.p].id}:${im.k}`} style={{ width: lay.items[i].w, height: lay.items[i].h }}>
+              <img
+                src={im.src}
+                alt={im.alt}
+                draggable={false}
+                decoding="async"
+                loading={i < 3 ? "eager" : "lazy"}
+                fetchPriority={i < 3 ? "high" : "low"}
+              />
+            </figure>
+          ))}
       </div>
+      <span className="sqv-g__count" aria-hidden="true">
+        {String(num + 1).padStart(2, "0")} / {String(imgs.length).padStart(2, "0")}
+      </span>
     </div>
   );
 }

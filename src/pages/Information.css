@@ -1,7 +1,6 @@
 .information {
   --u: calc(100vw / 1728); /* 1 Figma px at the current screen width */
   --ink: #1F1313;
-  --body: clamp(15px, calc(var(--u) * 17), 24px); /* 17px at the 1728 design width, scales with the screen. Use a plain 17px to lock it */
   --face-w: calc(var(--u) * 350);
 
   position: relative;
@@ -9,40 +8,21 @@
   min-height: calc(var(--u) * 2361);
   background: #FCF8F5;
   color: var(--ink);
-  font: 500 var(--body)/18px var(--font-sans);
-  letter-spacing: -0.03em;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
   overflow: clip;
 }
 .information p { margin: 0; }
 
-/* big faded DEE-07 at the bottom */
-.information::after {
-  content: "DEE-07";
-  position: absolute;
-  left: 50%;
-  bottom: calc(var(--u) * -170);
-  width: calc(var(--u) * 2022);
-  transform: translateX(-50%);
-  font: 800 calc(var(--u) * 572)/0.685 var(--font-sans);
-  letter-spacing: -0.1em;
-  text-align: center;
-  white-space: nowrap;
-  color: rgba(31, 19, 19, 0.03);
-  pointer-events: none;
-}
-
 .information__intro {
   position: absolute;
   left: 50%;
-  top: calc(var(--u) * 134);
-  width: calc(var(--u) * 531);
+  top: calc(var(--u) * 623);
+  width: calc(var(--u) * 666);
   transform: translateX(-50%);
-  text-align: center;
-  font-size: clamp(18px, calc(var(--u) * 28), 36px);
-  font-weight: 600;
-  text-transform: uppercase;
-  line-height: 0.93;
-  letter-spacing: -0.04em;
+  text-align: left;
+  font: 500 var(--title-size)/var(--title-lh) var(--font-sans);
+  letter-spacing: var(--title-ls);
 }
 
 /* infinite strip of faces */
@@ -50,7 +30,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: calc(var(--u) * 312);
+  top: calc(var(--u) * 160);
   height: calc(var(--face-w) * 1.037);
   display: flex;
   align-items: center; /* the purple-star images are taller, they grow evenly up and down */
@@ -87,6 +67,13 @@
 @media (prefers-reduced-motion: reduce) {
   .information__track { animation: none; }
 }
+/* the pixelated copy that appears on hover, scaled up with hard edges */
+.face .face__px {
+  position: absolute;
+  z-index: 3; /* above the glasses sticker (2) */
+  image-rendering: pixelated;
+  pointer-events: none;
+}
 .face .face__sticker {
   position: absolute;
   z-index: 2;
@@ -94,7 +81,7 @@
   top: calc(var(--face-w) * 0.252);
   width: calc(var(--face-w) * 0.783);
   height: auto;
-  filter: drop-shadow(0 2px 7px rgba(0, 0, 0, 0.6));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 }
 
 /* split: on scroll the faces leave the strip and form two stacks */
@@ -128,68 +115,101 @@
   .information__stacks { display: none; }
 }
 
-/* one centred column of sections */
+/* one centred 666px column (Figma), starts under the intro: 623 + 48 + 24 */
 .information__sections {
   position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(var(--u) * 738);
+  left: 50%;
+  top: calc(var(--u) * 695);
+  width: calc(var(--u) * 666);
+  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: calc(var(--u) * 40);
-  text-align: center;
+  gap: calc(var(--u) * 24);
 }
+
+/* each block: the grey label on the left (216px), the text on the right (450px) */
 .information__block {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: min(calc(var(--u) * 506), 100%);
+  align-items: flex-start;
+  width: 100%;
 }
-
 .information__label {
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 24px;
   margin: 0;
-  font: 600 20px/20px var(--font-sans);
-  letter-spacing: -0.04em;
+  padding: 0 0 8px;
+  background: #F1ECEA;
+  font: 500 var(--label-size)/var(--label-lh) var(--font-sans);
+  letter-spacing: var(--label-ls);
   text-transform: uppercase;
-  color: rgba(31, 19, 19, 0.2);
+  color: var(--ink);
 }
+.information__label--avail { gap: 0; }
+.information__dot {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  background: #5D9B1F;
+}
+
+.information__copy,
+.information__jobs,
+.information__list {
+  flex: none;
+  width: 67.57%; /* 450 / 666 */
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* paragraphs: 17px on 19px */
 .information__copy { display: flex; flex-direction: column; gap: 16px; }
-
-.information__jobs { display: flex; flex-direction: column; gap: 8px; }
-.information__job { display: flex; flex-direction: column; align-items: center; }
-.information__years {
-  font: 500 var(--body)/18px var(--font-sans);
-  letter-spacing: -0.03em;
-  color: #908DFF;
+.information__copy p {
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
 }
 
-.information__list { margin: 0; padding: 0; list-style: none; }
+/* jobs, skills, clients and availability: 17px on 15px, semibold */
+.information__jobs,
+.information__list {
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
+}
+.information__jobs { display: flex; flex-direction: column; gap: 16px; }
+.information__job { display: flex; flex-direction: column; gap: 8px; }
+.information__role { display: flex; flex-direction: column; gap: 2px; }
+.information__years { color: #908DFF; }
+.information__list { display: flex; flex-direction: column; gap: 2px; }
 
 /* tablets and phones: normal flow, faces and type sized for the screen */
 @media (max-width: 1100px) {
   .information {
     --face-w: clamp(150px, 34vw, 300px);
-    --body: 17px;
     min-height: 0;
     margin-top: 0;
     padding-block: 24px 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
   .information__intro {
     position: static;
     transform: none;
-    width: auto;
-    max-width: min(460px, 100%);
+    width: min(560px, calc(100% - 32px));
     margin-inline: auto;
-    padding-inline: 0;
-    font-size: clamp(20px, 3.4vw, 28px);
-    line-height: 1;
   }
   .information .information__intro { margin-inline: auto; } /* `.information p { margin: 0 }` was beating the centring above */
   .information__faces { position: relative; top: auto; margin-block: 32px; }
-  .information__sections { position: static; gap: 40px; }
-  .information__block { width: min(520px, 100%); }
-  .information__copy p { line-height: 14px; }
+  .information__sections {
+    position: static;
+    transform: none;
+    width: min(560px, calc(100% - 32px));
+    margin-inline: auto;
+    gap: 24px;
+  }
 }
 
 /* centre of the pile: invisible marker, 14% of the screen height above the page bottom */
@@ -221,8 +241,8 @@
   bottom: 0; /* no bottom gap */
   z-index: 9;
   margin: 0;
-  font: 500 var(--body)/18px var(--font-sans); /* same as the body copy above */
-  letter-spacing: -0.03em;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans); /* same as the body copy above */
+  letter-spacing: var(--body-ls);
   color: var(--ink);
   pointer-events: none;
 }
@@ -238,15 +258,33 @@
 
 /* tablets and phones: they follow the carousel, centred */
 @media (max-width: 1100px) {
+  .information { padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px)); } /* room for the two bottom lines */
   .information .information__outside {
-    position: static;
-    width: auto;
-    max-width: 420px;
-    margin: 24px auto 0;
-    padding-inline: 0;
-    text-align: center;
-    font-size: var(--body);
-    line-height: 14px; /* matches .information__copy p on small screens */
+    position: absolute;
+    bottom: env(safe-area-inset-bottom, 0px);
+    margin: 0;
   }
-  .information .information__outside--right { margin-top: 12px; }
+  .information .information__outside--left { left: 0; width: 56%; max-width: 380px; text-align: left; }
+  .information .information__outside--right { right: 0; width: 38%; max-width: 260px; text-align: right; }
+}
+
+@media (max-width: 600px) {
+  .information__block { flex-direction: column; gap: 0; } /* label on top, the text starts right under it */
+  .information__label { flex: none; width: min(216px, 100%); }
+  .information__copy,
+  .information__jobs,
+  .information__list { width: 100%; }
+}
+
+/* phones: no side margin anywhere, the content runs edge to edge like the rest of the site */
+@media (max-width: 700px) {
+  .information .information__intro {
+    width: 100%;
+    max-width: none;
+    margin-inline: 0;
+  }
+  .information__sections {
+    width: 100%;
+    margin-inline: 0;
+  }
 }

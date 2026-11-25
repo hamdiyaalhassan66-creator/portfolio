@@ -23,7 +23,6 @@ const SIZES = "(max-width: 700px) 68vw, (max-width: 1100px) 42vw, 30vw"; // the 
 
 const mod = (a: number, n: number) => ((a % n) + n) % n;
 const clamp = (v: number, a: number, b: number) => Math.min(Math.max(v, a), b);
-const plain = (t: string) => !/^\d{4}$/.test(t) && t.toLowerCase() !== "framer"; // drops the year and Framer tags
 const host = (u: string) => u.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "");
 const Arrow = () => (
   <svg className="work__arrow" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
@@ -309,7 +308,6 @@ export default function Drift() {
       {tiles.map((t, i) => {
         const pj = pool[t.p];
         const front = i === center; // only the card in front shows the details
-        const tags = front ? pj.tags.filter(plain) : [];
         return (
           <div
             key={i}
@@ -336,13 +334,6 @@ export default function Drift() {
                 {info && (
                   <div className="work__info" id="drift-info">
                     <p>{pj.blurb}</p>
-                    {tags.length > 1 && (
-                      <ul>
-                        {tags.slice(1).map((x) => (
-                          <li key={x}>{x}</li>
-                        ))}
-                      </ul>
-                    )}
                   </div>
                 )}
                 {pj.deliverables && <p className="work__cat">{pj.deliverables}</p>}

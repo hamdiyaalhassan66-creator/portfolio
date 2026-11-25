@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-const SRC = "/information/bobblehead.png";
+const SRC = "/info/bobblehead.png";
 const PIVOT_X = 0.487; // where the spring sits across the image (fraction of width)
 
 // outline of the figure traced from bobblehead.png, in % of the visible figure (the middle 52% of the image)

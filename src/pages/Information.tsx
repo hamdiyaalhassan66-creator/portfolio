@@ -35,16 +35,25 @@ const PILE: Record<string, { x: number; y: number; r: number }> = {
 };
 
 const WORK = [
-  { role: "Product Designer", place: "Refine Studio", years: "2024 - 2025" },
-  { role: "Web Designer & Framer Dev", place: "Oxegene", years: "2023 - Present" },
-  { role: "Product/Web Designer & Framer Dev", place: "Freelance", years: "2022 - Present" },
-  { role: "UI/UX Designer", place: "Pixeldesk Agency", years: "2022 - 2023" },
+  { role: "Product Designer", place: "Refine Studio", years: "2024-2025" },
+  { role: "Web Designer & Framer Dev", place: "Oxegene", years: "2023-Present" },
+  { role: "Product/Web Designer & Framer Dev", place: "Freelance", years: "2022-Present" },
+  { role: "UI/UX Designer", place: "Pixeldesk Agency", years: "2022-2023" },
 ];
 
-const CAPABILITIES = [
-  ["Web Design", "Framer Development", "Product Design", "E-commerce Design", "SEO"],
-  ["Animation / Prototyping", "User Experience & Interface", "Interaction Design", "Design Systems"],
+const SKILLS = [
+  "Web Design",
+  "Product Design",
+  "Framer Development",
+  "E-commerce Design",
+  "SEO",
+  "Animation / Prototyping",
+  "User Experience & Interface",
+  "Interaction Design",
+  "Design Systems",
 ];
+
+const AVAILABLE = ["Freelance / Contract jobs", "Fulltime positions", "Freelance projects", "Collaborations"];
 
 const CLIENTS = [
   "dEX Ghana",
@@ -65,10 +74,182 @@ export default function Information() {
   const stacksRef = useRef<HTMLDivElement>(null);
   const hubRef = useRef<HTMLDivElement>(null);
   const landRef = useRef(0);
+  const pileRef = useRef("b"); // the portrait currently shown at the bottom
+  const renderRef = useRef<() => void>(() => {}); // lets the hover code redraw the faces right away
 
   useEffect(() => {
+    // decode the stack portraits now, so the first scroll doesn't wait for them
+    stacksRef.current?.querySelectorAll("img").forEach((im) => void im.decode?.().catch(() => {}));
     const t = window.setTimeout(() => void import("../components/ThreadIndex"), 1200);
     return () => window.clearTimeout(t);
+  }, []);
+
+  // hovering a portrait in the strip pixelates it (mouse only, nothing runs until you hover)
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || window.matchMedia("(hover: none)").matches) return;
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const CELLS = 40; // blocks across a portrait when pixelated (lower = chunkier)
+    const FROM = 180; // blocks across at the start, so it begins almost sharp
+    const MS = 260;
+    type Fx = { raf: number; cur: number; cvs: { img: HTMLImageElement; c: HTMLCanvasElement }[] };
+    const live = new Map<HTMLElement, Fx>();
+    const ease = (t: number) => 1 - Math.pow(1 - t, 3);
+
+    // the canvas is only as big as the block grid; CSS scales it up with image-rendering: pixelated
+    const draw = (face: HTMLElement, f: Fx, cells: number) => {
+      f.cur = cells;
+      for (const { img, c } of f.cvs) {
+        const w = Math.max(4, Math.round((cells * img.offsetWidth) / face.offsetWidth));
+        const h = Math.max(4, Math.round((w * img.naturalHeight) / img.naturalWidth));
+        c.width = w;
+        c.height = h;
+        const ctx = c.getContext("2d")!;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, 0, 0, w, h);
+      }
+    };
+    const run = (face: HTMLElement, f: Fx, to: number, done?: () => void) => {
+      cancelAnimationFrame(f.raf);
+      const from = f.cur;
+      const t0 = performance.now();
+      const step = (now: number) => {
+        const t = still ? 1 : Math.min((now - t0) / MS, 1);
+        draw(face, f, from + (to - from) * ease(t));
+        if (t < 1) f.raf = requestAnimationFrame(step);
+        else done?.();
+      };
+      f.raf = requestAnimationFrame(step);
+    };
+    const faceOf = (e: PointerEvent) =>
+      (e.target as HTMLElement).closest<HTMLElement>(".information__track .face");
+
+    // build the canvases and pixelate a face, used by both the strip and the bottom portrait
+    const enter = (face: HTMLElement) => {
+      let f = live.get(face);
+      if (!f) {
+        const cvs: Fx["cvs"] = [];
+        face.querySelectorAll("img").forEach((img) => {
+          if (!img.complete || !img.naturalWidth) return;
+          const c = document.createElement("canvas");
+          c.className = "face__px";
+          c.style.cssText = `left:${img.offsetLeft}px;top:${img.offsetTop}px;width:${img.offsetWidth}px;height:${img.offsetHeight}px;filter:${getComputedStyle(img).filter}`;
+          face.appendChild(c);
+          cvs.push({ img, c });
+        });
+        if (!cvs.length) return;
+        f = { raf: 0, cur: FROM, cvs };
+        live.set(face, f);
+        draw(face, f, FROM);
+        cvs.forEach(({ img }) => (img.style.opacity = "0")); // the canvas now shows the portrait
+      }
+      run(face, f, CELLS);
+    };
+    const leave = (face: HTMLElement) => {
+      const f = live.get(face);
+      if (!f) return;
+      run(face, f, FROM, () => {
+        f.cvs.forEach(({ img, c }) => {
+          c.remove();
+          img.style.opacity = "";
+        });
+        live.delete(face);
+      });
+    };
+
+    // the portraits in the strip
+    const over = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse" || root.classList.contains("is-split")) return;
+      const face = faceOf(e);
+      if (!face || face.contains(e.relatedTarget as Node)) return;
+      enter(face);
+    };
+    const out = (e: PointerEvent) => {
+      const face = faceOf(e);
+      if (!face || face.contains(e.relatedTarget as Node)) return;
+      leave(face);
+    };
+
+    // the portrait at the bottom: its layer ignores the pointer, so test the cursor against its box.
+    // moving the cursor over it switches to the next portrait
+    const SWAP_PX = 90; // cursor travel needed for each switch
+    const ORDER = FACES.map((f) => f.id);
+    const pileEl = () => stacksRef.current?.querySelector<HTMLElement>(`[data-id="${pileRef.current}"]`) ?? null;
+    const drop = (face: HTMLElement) => {
+      // remove the pixel copy straight away, used when a portrait is swapped out
+      const f = live.get(face);
+      if (!f) return;
+      cancelAnimationFrame(f.raf);
+      f.cvs.forEach(({ img, c }) => {
+        c.remove();
+        img.style.opacity = "";
+      });
+      live.delete(face);
+    };
+    let pileOn = false;
+    let travel = 0;
+    let lx = 0;
+    let ly = 0;
+    let lastSwap = 0;
+    const move = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return;
+      const pile = pileEl();
+      if (!pile) return;
+      const r = pile.getBoundingClientRect();
+      const hit =
+        root.classList.contains("is-split") &&
+        landRef.current > 0.98 && // only once it has settled at the bottom
+        e.clientX >= r.left && e.clientX <= r.right &&
+        e.clientY >= r.top && e.clientY <= r.bottom;
+      if (hit !== pileOn) {
+        pileOn = hit;
+        travel = 0;
+        lx = e.clientX;
+        ly = e.clientY;
+        if (hit) enter(pile);
+        else leave(pile);
+        return;
+      }
+      if (!hit) return;
+      travel += Math.hypot(e.clientX - lx, e.clientY - ly);
+      lx = e.clientX;
+      ly = e.clientY;
+      const now = performance.now();
+      if (travel < SWAP_PX || now - lastSwap < 300) return;
+      travel = 0;
+      lastSwap = now;
+      pileRef.current = ORDER[(ORDER.indexOf(pileRef.current) + 1) % ORDER.length];
+      renderRef.current(); // the new portrait takes the pile's place immediately
+      drop(pile);
+      const next = pileEl();
+      if (next) enter(next); // and it pixelates in, like the hover effect
+    };
+    // scrolling away from the bottom ends the effect even if the mouse is still
+    const away = () => {
+      if (!pileOn || landRef.current > 0.98) return;
+      pileOn = false;
+      const pile = pileEl();
+      if (pile) leave(pile);
+    };
+
+    root.addEventListener("pointerover", over, { passive: true });
+    root.addEventListener("pointerout", out, { passive: true });
+    window.addEventListener("pointermove", move, { passive: true });
+    window.addEventListener("scroll", away, { passive: true });
+    return () => {
+      root.removeEventListener("pointerover", over);
+      root.removeEventListener("pointerout", out);
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("scroll", away);
+      live.forEach((f) => {
+        cancelAnimationFrame(f.raf);
+        f.cvs.forEach(({ img, c }) => {
+          c.remove();
+          img.style.opacity = "";
+        });
+      });
+      live.clear();
+    };
   }, []);
 
   // on scroll the faces leave the strip and fly into two stacks that move in opposite directions
@@ -137,6 +318,7 @@ export default function Information() {
     // p runs 0..2: 0 to 1 = strip to the two stacks, 1 to 2 = stacks converge into one pile at the bottom
     const render = () => {
       landRef.current = Math.max(p - 1, 0);
+      if (landRef.current === 0) pileRef.current = "b"; // back at the stacks: the next trip down starts with the red one
       const e1 = ease(Math.min(p, 1));
       const e2 = ease(Math.max(p - 1, 0));
       // spare strip faces: gone as soon as you scroll down, back once the stacks are on their way home
@@ -150,7 +332,8 @@ export default function Information() {
         const id = el.dataset.id!;
         const s = start[id];
         const t = STACK[id];
-        const q = PILE[id];
+        const isPile = id === pileRef.current;
+        const q = isPile ? { x: 0, y: 0, r: 0 } : PILE[id]; // the chosen portrait sits dead centre in the pile
         if (!s || !t || !q) return;
         const x1 = s.x + (t.x * u - s.x) * e1;
         const x = x1 + (hx + q.x * u - x1) * e2;
@@ -159,12 +342,14 @@ export default function Information() {
         const sy = sy1 + (vh * PILE_VIEW_Y + q.y * u - sy1) * e2;
         const y = sy; // the layer is fixed to the screen, so screen height is the position
         const r = t.r * e1 + (q.r - t.r) * e2;
-        const g = id === "b" ? 1 + (PILE_SCALE - 1) * e2 : 1; // only the red portrait grows, and only while it settles into the pile
+        const g = isPile ? 1 + (PILE_SCALE - 1) * e2 : 1; // only the chosen portrait grows, and only while it settles into the pile
         el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) rotate(${r}deg) scale(${g})`;
-        el.style.opacity = id === "b" ? "1" : String(Math.max(1 - e2 * 1.4, 0)); // the others melt away, leaving only the red portrait
+        el.style.opacity = isPile ? "1" : String(Math.max(1 - e2 * 1.4, 0)); // the others melt away, leaving only the chosen portrait
+        el.style.zIndex = isPile ? "9" : ""; // the chosen one is always on top
       });
     };
 
+    renderRef.current = render;
     const reset = () => {
       last = 0;
       up = false;
@@ -205,7 +390,11 @@ export default function Information() {
       if (!raf) raf = requestAnimationFrame(frame);
     };
 
+    let lastW = window.innerWidth;
     const onResize = () => {
+      // phones and reduced motion don't use the measurements, and the address bar only changes the height
+      if ((small.matches || still.matches) && window.innerWidth === lastW) return;
+      lastW = window.innerWidth;
       measure();
       onScroll();
     };
@@ -227,14 +416,14 @@ export default function Information() {
   return (
     <main className="information" ref={rootRef}>
       <p className="information__intro">
-        Hello there, I'm Hamdiya or simply Diya / Dee. A product and UI/UX designer who also builds what she designs.
+        Hello there, I’m Hamdiya or simply Diya / Dee. A product and UI/UX designer who also builds what she designs.
       </p>
 
       <div className="information__faces">
         <div className="information__track">
           {[...FACES, ...FACES, ...FACES].map((f, i) => (
             <div className={`face face--${f.id}`} key={i} aria-hidden={i >= FACES.length}>
-              <img src={`/information/${f.src}`} alt={i === 0 ? "Portraits of Dee" : ""} draggable={false} decoding="async" loading={i < FACES.length ? "eager" : "lazy"} />
+              <img src={`/information/${f.src}`} alt={i === 0 ? "Portraits of Dee" : ""} draggable={false} decoding="async" loading="eager" />
               {f.sticker && <img className="face__sticker" src={`/information/${f.sticker}`} alt="" draggable={false} decoding="async" />}
             </div>
           ))}
@@ -285,8 +474,10 @@ export default function Information() {
             {WORK.map((w) => (
               <div className="information__job" key={`${w.place}-${w.years}`}>
                 <span className="information__years">{w.years}</span>
-                <div>{w.role}</div>
-                <div>{w.place}</div>
+                <div className="information__role">
+                  <div>{w.role}</div>
+                  <div>{w.place}</div>
+                </div>
               </div>
             ))}
           </div>
@@ -295,7 +486,7 @@ export default function Information() {
         <section className="information__block">
           <h2 className="information__label">Skills</h2>
           <ul className="information__list">
-            {CAPABILITIES.flat().map((c) => (
+            {SKILLS.map((c) => (
               <li key={c}>{c}</li>
             ))}
           </ul>
@@ -305,6 +496,18 @@ export default function Information() {
           <h2 className="information__label">Clients</h2>
           <ul className="information__list">
             {CLIENTS.map((c) => (
+              <li key={c}>{c}</li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="information__block">
+          <h2 className="information__label information__label--avail">
+            <span className="information__dot" aria-hidden="true" />
+            Available for
+          </h2>
+          <ul className="information__list">
+            {AVAILABLE.map((c) => (
               <li key={c}>{c}</li>
             ))}
           </ul>

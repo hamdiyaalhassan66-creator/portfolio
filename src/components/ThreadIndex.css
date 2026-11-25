@@ -2,6 +2,7 @@
   --nav-h: 48px; /* height of the pinned nav */
   position: relative;
   height: 100vh;
+  height: 100svh;
   overflow: clip; /* nothing inside the section can widen the page */
 }
 
@@ -14,8 +15,8 @@
   margin: 0;
   display: flex;
   align-items: center;
-  font: 500 13px/1 var(--font-mono, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
-  letter-spacing: 0.02em;
+  font: 500 var(--label-size)/1 var(--font-mono);
+  letter-spacing: var(--label-ls);
   color: var(--blue);
   z-index: 3;
   pointer-events: none;
@@ -68,7 +69,9 @@
   user-select: none;
   -webkit-user-select: none;
 }
-.thread-item:hover { scale: 1.07; }
+@media (hover: hover) {
+  .thread-item:hover { scale: 1.07; }
+}
 .thread-item__model {
   position: absolute !important;
   left: -50%;
@@ -107,8 +110,8 @@
   left: 24px;
   top: calc(var(--nav-h) + 24px);
   margin: 0;
-  font: 500 13px/15px var(--font-mono); /* Figma label */
-  letter-spacing: -0.01em;
+  font: 500 var(--label-size)/var(--label-lh) var(--font-mono);
+  letter-spacing: var(--label-ls);
   text-transform: uppercase;
   color: var(--blue);
   z-index: 3;
@@ -123,8 +126,8 @@
   max-width: calc(100% - 48px); /* never overflows on small screens */
   margin: 0;
   z-index: 1;
-  font: 500 13px/15px var(--font-sans);
-  letter-spacing: -0.04em;
+  font: 500 var(--label-size)/var(--label-lh) var(--font-sans);
+  letter-spacing: var(--label-ls);
   text-transform: uppercase;
 }
 
@@ -169,6 +172,7 @@
     padding: 36px 0; /* room so the scroll container doesn't clip the models top and bottom */
     margin: 0 -16px; /* cancels the section's 16px side padding so the models run edge to edge */
     overflow-x: auto;
+    overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
   }
@@ -209,7 +213,7 @@
   /* let a horizontal swipe still scroll the carousel instead of the canvas swallowing it */
   .threads__track .thread-item__model,
   .threads__track .thread-item__model canvas {
-    touch-action: pan-x !important;
+    touch-action: pan-x pan-y !important;
   }
   /* headphones (5th item) a bit smaller */
   .threads__track .thread-item:nth-child(5) .thread-item__model {

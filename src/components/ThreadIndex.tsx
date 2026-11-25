@@ -1,4 +1,4 @@
-import { Fragment, Suspense, memo, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, Suspense, lazy, memo, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode, RefObject } from "react";
 import { Link } from "react-router-dom";
 import { Canvas, createPortal, useFrame } from "@react-three/fiber";
@@ -9,8 +9,9 @@ import { useNowPlaying } from "../hooks/useNowPlaying";
 import type { NowPlaying } from "../hooks/useNowPlaying";
 import type { Group } from "three";
 import type { LoreItem } from "../data/lore";
-import { VinylDisc } from "./DiscWheel";
 import "./ThreadIndex.css";
+
+const VinylDisc = lazy(() => import("./DiscWheel").then((m) => ({ default: m.VinylDisc })));
 
 type Props = {
   headRef: RefObject<HTMLDivElement | null>; // marks the pile of faces the models come out of
@@ -592,7 +593,7 @@ useEffect(() => {
               <Canvas
                 className="thread-item__model"
                 resize={{ offsetSize: true, scroll: false }}
-                frameloop={live ? "always" : "never"}
+                frameloop={!live ? "never" : small && !now?.playing ? "demand" : "always"}
                 dpr={small ? 1 : [1, 1.5]}
                 flat
                 gl={{ alpha: true, antialias: !small, powerPreference: small ? "low-power" : "high-performance" }}

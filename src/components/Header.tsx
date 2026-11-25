@@ -21,13 +21,13 @@ const icons: Record<string, ReactNode> = {
 
 const links = [
   { to: "/", label: "Work", icon: "folder" },
-  { to: "/lab", label: "Side Quests", icon: "flask" },
-  { to: "/information", label: "Info", icon: "user" },
+  { to: "/side-quests", label: "Side Quests", icon: "flask" },
+  { to: "/info", label: "Info", icon: "user" },
   { to: "/archive", label: "Archive", icon: "star" },
   { to: "/contact", label: "Contact", icon: "contacts" },
 ];
 
-const GROW = 23; // px added to the hovered tab (26 → 49, same as the active tab)
+const GROW = 30; // px added to the hovered tab (30 → 60, same as the active tab)
 const REACH = 2; // how many tab widths the effect travels along the nav
 const STIFFNESS = 0.14; // higher = snappier
 const DAMPING = 0.74; // lower = bouncier, 0.8+ settles with no overshoot
@@ -64,11 +64,20 @@ export default function Header() {
     anim.current.raf = requestAnimationFrame(tick);
   };
 
+  const spans = useRef<{ c: number; w: number }[]>([]); // tab centres and widths, measured once per hover
+  const reduce = useRef(false);
+  const measureTabs = (e: PointerEvent<HTMLElement>) => {
+    if (e.pointerType !== "mouse") return;
+    reduce.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    spans.current = getTabs().map((t) => {
+      const r = t.getBoundingClientRect();
+      return { c: r.left + r.width / 2, w: r.width };
+    });
+  };
   const handleMove = (e: PointerEvent<HTMLElement>) => {
-    if (e.pointerType !== "mouse" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    getTabs().forEach((tab, i) => {
-      const r = tab.getBoundingClientRect();
-      const d = Math.abs(e.clientX - (r.left + r.width / 2)) / r.width;
+    if (e.pointerType !== "mouse" || reduce.current) return;
+    spans.current.forEach((s, i) => {
+      const d = Math.abs(e.clientX - s.c) / s.w;
       const f = d < REACH ? (Math.cos((Math.PI * d) / REACH) + 1) / 2 : 0;
       anim.current.target[i] = f * GROW;
     });
@@ -79,10 +88,36 @@ export default function Header() {
     run();
   };
   useEffect(() => () => cancelAnimationFrame(anim.current.raf), []); // stop the loop on unmount
+
+  // while the page scrolls (up or down) the tabs shrink to 12px, and spring back once scrolling stops
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let lastY = window.scrollY;
+    let stop = 0;
+    let settle = 0;
+    const onScroll = () => {
+      if (Math.abs(window.scrollY - lastY) < 1) return;
+      lastY = window.scrollY;
+      nav.classList.add("is-scrolling", "is-scroll-anim");
+      clearTimeout(stop);
+      clearTimeout(settle);
+      stop = window.setTimeout(() => {
+        nav.classList.remove("is-scrolling"); // scrolling stopped: back to the default height
+        settle = window.setTimeout(() => nav.classList.remove("is-scroll-anim"), 400); // drop the transition so the hover spring isn't slowed
+      }, 150);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      clearTimeout(stop);
+      clearTimeout(settle);
+    };
+  }, []);
   const { pathname } = useLocation();
   const onLore = pathname.startsWith("/lore"); // the lore page is reached from Information, so that tab stays lit
   const onWork = pathname.startsWith("/works/"); // a project page is reached from Works, so that tab stays lit
-  const isOn = (to: string, isActive: boolean) => isActive || (to === "/information" && onLore) || (to === "/" && onWork);
+  const isOn = (to: string, isActive: boolean) => isActive || (to === "/info" && onLore) || (to === "/" && onWork);
 
   // while the menu is open: lock page scroll, close on Escape, and close if the screen grows to desktop size
   useEffect(() => {
@@ -103,10 +138,11 @@ export default function Header() {
   return (
     <>
     <Link to="/" className="header__logo" aria-label="Dee-Space home">
-      <span className="header__logo-name">dee-space07</span>
+      <img className="header__logo-img header__logo-img--dark" src="/logo.svg" alt="" />
+      <img className="header__logo-img header__logo-img--light" src="/logo-light.svg" alt="" />
     </Link>
     <header className="header">
-      <nav className="header__nav" ref={navRef} onPointerMove={handleMove} onPointerLeave={handleLeave}>
+      <nav className="header__nav" ref={navRef} onPointerEnter={measureTabs} onPointerMove={handleMove} onPointerLeave={handleLeave}>
         {links.map(({ to, label, icon }) => (
           <NavLink
             key={to}

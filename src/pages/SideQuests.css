@@ -1,17 +1,18 @@
 .sq {
   --u: calc(100vw / 1728);
   --ink: #1F1313;
-  --body: clamp(15px, calc(var(--u) * 17), 24px); /* same body size as the Information page */
   --tw: clamp(110px, 12.5vw, 290px); /* tile width, kept for new styles */
 
   background: #FCF8F5;
   color: var(--ink);
   margin: 0;
   padding: 0; /* no bottom padding in any view */
-  font: 500 var(--body)/18px var(--font-sans);
-  letter-spacing: -0.03em;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
   text-transform: uppercase;
 }
+
+html { scrollbar-gutter: stable; } /* the scrollbar space is always reserved, so the columns never change width after load */
 
 .sq__field {
   position: relative;
@@ -20,6 +21,7 @@
   padding: 0;
   height: calc(var(--top) + var(--h) * var(--tw)); /* ends exactly at the last tile */
   overflow-x: clip; /* images at the edges never widen the page */
+  backface-visibility: hidden; /* keeps the scaled layer crisp on mobile */
   animation: sq-in 0.4s ease; /* the new set fades in when you change tab */
 }
 @keyframes sq-in {
@@ -37,9 +39,10 @@
   margin: 0;
   padding: 0;
   translate: -50% -50%; /* a separate property, so any script transform never overwrites it */
+  will-change: transform, translate, scale; /* keeps every thumbnail on its own layer, so the scroll warp doesn't repaint them */
   background: #DDD3CC; /* shows while a photo loads */
   contain: layout style paint; /* moving one tile never re-lays out or repaints the others */
-  pointer-events: none;
+  cursor: pointer; /* click to open the slideshow */
 }
 .sq__tile img {
   display: block;
@@ -50,24 +53,76 @@
   -webkit-user-drag: none;
 }
 
-/* the Archive page only keeps the style switcher */
-.sq--archive .sq__tabs,
-.sq--archive .sq__info,
-.sq--archive .sq__name,
-.sq--archive .sq__panel { display: none; }
+/* description above the thumbnails (Grid view): body text, left edge, 2px above the tiles */
+.sq__intro {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  max-width: min(450px, 100%);
+  margin: 0;
+  padding: var(--top) 0 2px; /* the text starts where the thumbnails used to start */
+  text-align: left;
+  text-transform: none;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
+}
+/* the field's own 90px top space is cancelled, so the tiles start 2px under the description */
+.sq__intro + .sq__field { margin-top: calc(var(--top) * -1); }
+
+.sq--archive .sq__tabs { display: none; } /* the Archive keeps the name, category and Info, but has no category filter */
 
 .sq__field[data-view="Grid"] {
-  --gap: 4px;
-  --gwv: calc((100vw - var(--gap) * (var(--cols) - 1)) / var(--cols)); /* column width, for the field's own height */
-  --gw: calc((100cqw - var(--gap) * (var(--cols) - 1)) / var(--cols)); /* column width, scrollbar-safe */
-  container-type: inline-size;
-  height: calc(var(--top) + var(--h) * var(--gwv) + var(--hn, 0) * var(--gap));
+  --cw: calc(100vw / var(--cols)); /* cell width, the script then sets the exact value */
+  --rh: calc(var(--cw) * 1.25); /* cell height */
+  --cap: clamp(12px, calc(var(--cw) * 0.09), 16px); /* label chip height */
+  height: calc(var(--top) + var(--h) * var(--rh));
+}
+/* square dots at every cell corner: vertical stripes cut by horizontal stripes, one element, no images */
+.sq__field[data-view="Grid"]::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--top) - 2px) 0 0 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent calc(50% - 1.5px), #1F1313 calc(50% - 1.5px) calc(50% + 1.5px), transparent calc(50% + 1.5px))
+    calc(var(--cw) / -2) 0 / var(--cw) 100%;
+  -webkit-mask: linear-gradient(transparent calc(50% - 1.5px), #000 calc(50% - 1.5px) calc(50% + 1.5px), transparent calc(50% + 1.5px))
+    0 calc(var(--rh) / -2 + 2px) / 100% var(--rh);
+  mask: linear-gradient(transparent calc(50% - 1.5px), #000 calc(50% - 1.5px) calc(50% + 1.5px), transparent calc(50% + 1.5px))
+    0 calc(var(--rh) / -2 + 2px) / 100% var(--rh);
 }
 .sq__field[data-view="Grid"] .sq__tile {
-  left: calc((var(--x) + 0.5) * var(--gw) + var(--x) * var(--gap)); /* 0px side margin, 4px between columns */
-  top: calc(var(--top) + var(--y) * var(--gw) + var(--n, 0) * var(--gap));
-  width: var(--gw);
-  height: calc(var(--gw) / var(--ar, 0.8));
+  left: calc(var(--x) * var(--cw)); /* the tile's corner sits on a dot */
+  top: calc(var(--top) + (var(--y) - 0.5) * var(--rh));
+  width: calc(var(--s, 1) * var(--cw) - 2px);
+  height: calc(var(--rh) - 2px);
+  translate: none;
+  display: flex;
+  flex-direction: column;
+  background: none;
+}
+.sq__cap { display: none; }
+.sq__field[data-view="Grid"] .sq__tile img {
+  order: 0;
+  flex: 1 1 0;
+  align-self: stretch;
+  min-height: 0;
+  height: auto;
+  background: #DDD3CC; /* shows while a photo loads */
+}
+.sq__field[data-view="Grid"] .sq__cap {
+  order: 1; /* the chip sits under the image */
+  display: flex;
+  align-items: center;
+  align-self: flex-start;
+  flex: none;
+  height: var(--cap);
+  padding: 0 calc(var(--cap) * 0.375); /* 6px at full size, so "01" gives a 30px chip */
+  background: #F1ECEA;
+  color: #1F1313;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
+  text-transform: none;
+  white-space: nowrap;
 }
 
 /* New style: add a .sq__field[data-view="Name"] block here that sets left, top, width and height
@@ -75,6 +130,7 @@
 
 /* while the style changes, every tile glides from its old spot to the new one */
 .sq__field.is-morph .sq__tile {
+  will-change: left, top, width, height;
   transition:
     left 0.9s cubic-bezier(0.65, 0, 0.2, 1),
     top 0.9s cubic-bezier(0.65, 0, 0.2, 1),
@@ -85,178 +141,258 @@
     transform 0.9s cubic-bezier(0.65, 0, 0.2, 1);
 }
 
-/* labels pinned to the bottom of the screen */
-.sq__ui {
-  position: fixed;
-  inset: auto 0 0 0;
-  height: 220px; /* only the bottom strip, so the blend stays cheap */
-  z-index: 8;
-  pointer-events: none;
-  color: #fff;
-  --ink: #fff;
-  mix-blend-mode: difference; /* white text turns dark on the cream page and light on dark photos */
+/* the category list and the style switcher hang under the nav. The name and Info chip stay at the bottom */
+.sq {
+  --bo: env(safe-area-inset-bottom, 0px);
+  --ct: 60px; /* the bottom of the hanging nav tab */
+  --tl: 34.8%; /* Side Quests tab, left edge */
+  --tr: 50.9%; /* Side Quests tab, right edge */
+  --nl: 18.35%; /* name, column 2 */
+  --il: 36.4%;  /* Info chip */
 }
+
+.sq--archive { --tl: 67.1%; --tr: 86.5%; } /* Archive tab edges */
+.sq__ui { display: contents; } /* wrapper only, each label is fixed by itself */
+
 .sq__tabs,
 .sq__tags {
-  position: absolute;
-  bottom: 0;
+  position: fixed;
+  top: var(--ct);
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.sq__tabs { left: 0; }
-.sq__tags {
-  right: 0;
+.sq__tabs { left: var(--tl); align-items: flex-start; }
+.sq__tags { right: calc(100% - var(--tr)); align-items: flex-end; }
+.sq__tabs li,
+.sq__tags li { display: flex; }
+
+.sq__list {
   display: flex;
   flex-direction: column;
-  align-items: flex-end; /* every item sits flush right */
-  text-align: right;
-  color: rgba(31, 19, 19, 0.28);
-}
-.sq__tags .is-on { color: var(--ink); }
-
-.sq__name {
-  position: absolute;
-  left: 18.35%; /* column 2, level with the first nav tab */
-  bottom: 0;
+  align-items: inherit; /* left list stays left, right list stays right */
   margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sq__tabs .sq__list li { transform-origin: left center; }
+.sq__tags .sq__list li { transform-origin: right center; }
+
+.sq__tab {
+  display: flex;
+  align-items: flex-end;
+  height: var(--body-lh);
+  padding: 0; /* each item's box fits the text exactly */
+  border: 0;
+  background: #FFFFFF;
+  color: rgba(31, 19, 19, 0.3);
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans); /* same as the Info button on the work cards */
+  letter-spacing: var(--body-ls);
+  text-transform: none;
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.sq__tab.is-on {
+  background: #DDD8D4;
+  color: #1F1313;
+}
+@media (hover: hover) {
+  .sq__tab:hover { color: #1F1313; }
+}
+.sq__tab:focus-visible {
+  outline: 2px solid var(--blue, #BEFF00);
+  outline-offset: -2px;
+}
+
+/* bottom left: name + category on a grey strip, the Info chip right under it (Figma: Frame 1618870326) */
+.sq__id {
+  position: fixed;
+  left: env(safe-area-inset-left, 0px);
+  bottom: var(--bo);
+  z-index: 8;
+  display: flex;
+  flex-direction: column; /* the Info panel stacks above the name row */
+  align-items: flex-end; /* the panel's right edge lines up with the Info chip */
+  max-width: 100%;
+}
+.sq__line {
+  display: flex;
+  flex-direction: row; /* name strip and Info chip side by side */
+  align-items: flex-start; /* top-aligned */
+  max-width: 100%;
+}
+.sq__name {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.25em;
+  flex: 0 1 auto;
+  min-width: 0; /* a long name shrinks instead of pushing Info off screen */
+  margin: 0;
+  background: #908DFF;
+  text-transform: none;
   white-space: nowrap;
   animation: sq-name 0.3s ease; /* replays each time the name changes */
 }
 @keyframes sq-name {
   from { opacity: 0; transform: translateY(6px); }
 }
-.sq__muted { color: rgba(31, 19, 19, 0.28); }
-
-.sq__tags .sq__tab { text-align: right; }
-
-/* the Info chip is the shared InfoButton. It sits outside the blended labels, so it keeps its own colours */
-.sq__info {
-  position: fixed;
-  left: 36.4%;
-  bottom: 0;
-  z-index: 9;
+.sq__title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis; /* long names shrink instead of running off a phone */
+  padding-bottom: 0.2em; /* room for descenders inside the clip... */
+  margin-bottom: -0.2em; /* ...without changing the strip's height */
+  font: 500 var(--title-size)/var(--title-lh) var(--font-sans);
+  letter-spacing: var(--title-ls);
 }
+.sq__muted {
+  flex: none;
+  font: 500 var(--title-size)/var(--title-lh) var(--font-sans);
+  letter-spacing: var(--title-ls);
+  color: rgba(31, 19, 19, 0.5);
+}
+
+/* the reused Info chip: its own look from InfoButton.css, only the size is set here (Figma: 17px text, 16px icon) */
+.sq__id .ibtn {
+  flex: none;
+  align-self: flex-start;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
+}
+.sq__id .ibtn svg {
+  width: 16px;
+  height: 16px;
+}
+/* look only, matches the 20px white strips */
+.sq .sq__info,
+.sq .sq__toggle {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 21px;
+  padding: 0 8px 0 0;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+  color: #1F1313;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
+  text-transform: none;
+}
+.sq .sq__info svg,
+.sq .sq__toggle svg {
+  width: 18px;
+  height: 18px;
+  margin-bottom: 1px;
+}
+.sq .sq__info:hover { background: #fff; } /* beats .ibtn:hover regardless of import order */
+.sq .sq__toggle:hover { background: #E6E2DF; }
+.sq .sq__info:focus-visible,
+.sq .sq__toggle:focus-visible { outline-offset: -2px; } /* the chip sits on the screen edge, so the outline stays inside */
+.sq .sq__toggle {
+  height: var(--body-lh);
+  background: #E6E2DF;
+  padding: 0; /* no side padding, so the icon sits on the tab's edge */
+}
+.sq .sq__toggle svg {
+  width: 16px;
+  height: 16px;
+}
+/* zoom buttons, bottom right, flat chips like the Category and View toggles */
+.sq__zoom {
+  position: fixed;
+  right: env(safe-area-inset-right, 0px);
+  bottom: var(--bo);
+  z-index: 8;
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+}
+.sq__zoom button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--body-lh);
+  height: var(--body-lh);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: #E6E2DF;
+  color: #1F1313;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.sq__zoom button svg { width: 10px; height: 10px; }
+.sq__zoom button:disabled { color: rgba(31, 19, 19, 0.3); cursor: default; }
+@media (hover: hover) {
+  .sq__zoom button:not(:disabled):hover { background: #DDD8D4; }
+}
+.sq__zoom button:focus-visible { outline: 2px solid var(--blue, #BEFF00); outline-offset: -2px; }
+@media (pointer: coarse) {
+  .sq__zoom button::after { content: ""; position: absolute; inset: -6px; } /* bigger tap area, same look */
+}
+
 .sq__panel {
-  position: absolute;
-  left: 36.4%;
-  bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   margin: 0;
   padding: 0;
   list-style: none;
   animation: sq-name 0.3s ease;
 }
-
-.sq__tab {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: rgba(31, 19, 19, 0.28);
-  font: inherit;
-  letter-spacing: inherit;
+.sq__panel li {
+  background: #F1ECEA;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
   text-transform: none;
-  text-align: left;
-  cursor: pointer;
-  pointer-events: auto;
 }
-.sq__tab.is-on { color: var(--ink); }
-@media (hover: hover) {
-  .sq__tab:hover { color: var(--ink); }
-}
-.sq__tab:focus-visible {
-  outline: 2px solid var(--blue, #908DFF);
-  outline-offset: 2px;
-}
-
-/* the muted labels, in white too so the blend can invert them */
-.sq__ui .sq__tags,
-.sq__ui .sq__muted,
-.sq__ui .sq__tab { color: rgba(255, 255, 255, 0.3); }
-.sq__ui .sq__tab.is-on { color: #fff; }
-@media (hover: hover) {
-  .sq__ui .sq__tab:hover { color: #fff; }
-}
-
-/* plain layer above the blended labels: only the active item shows, as the purple chip */
-.sq__solid {
-  position: fixed;
-  inset: auto 0 0 0;
-  height: 220px; /* same box as .sq__ui, so both lists line up exactly */
-  z-index: 9;
-  pointer-events: none;
-}
-.sq__solid .sq__tab:not(.is-on) { visibility: hidden; }
-.sq__solid .sq__tab.is-on {
-  padding: 0 12px 0 0; /* the chip reaches 12px past the text, like the Figma */
-  background: #908DFF;
-  color: #1F1313;
-  pointer-events: none; /* clicks fall through to the real button underneath */
-}
-.sq__solid .sq__tags .sq__tab.is-on { padding: 0 0 0 12px; } /* right-aligned list: the chip grows to the left */
 
 @media (prefers-reduced-motion: reduce) {
   .sq__field, .sq__tile, .sq__name, .sq__panel { animation: none; }
-  .sq__field.is-morph .sq__tile { transition: none; }
-}
-
-/* tablets */
-@media (max-width: 1100px) {
-  .sq {
-    --tw: clamp(130px, 17vw, 230px);
-    --body: 17px; /* same as the Information page on tablets and phones */
-  }
-  .sq__name {
-    max-width: calc(46% - 18.35% - 12px); /* never runs into the Info chip */
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .sq__info,
-  .sq__panel { left: 46%; }
+  .sq__field.is-morph .sq__tile { transition: none; will-change: auto; }
 }
 
 /* touch screens: bigger tap areas without changing the look */
 @media (pointer: coarse) {
-  .sq__tab { position: relative; }
-  .sq__tab::after {
+  .sq__tab,
+  .sq .sq__toggle,
+  .sq .sq__info { touch-action: manipulation; } /* no double-tap-zoom delay on taps */
+  .sq__tab,
+  .sq .sq__toggle { position: relative; }
+  .sq__tab::after,
+  .sq .sq__toggle::after,
+  .sq .sq__info::after {
     content: "";
     position: absolute;
-    inset: -5px -8px;
+    inset: -4px -10px; /* wider hit area sideways, since rows can't grow taller without overlapping */
+  }
+  .sq .sq__info::after { inset: -12px -10px -4px; } /* the chip sits on the bottom edge, so it grows upward */
+}
+
+/* tablets and phones: the bottom row is the name on the left and Info on the right */
+@media (max-width: 1100px) {
+  .sq {
+    --tw: clamp(130px, 17vw, 230px);
   }
 }
 
-/* phones: the tabs become one row */
 @media (max-width: 700px) {
+  .sq { --tw: 29vw; }
+}
+
+/* same breakpoint as the header menu, where the nav tabs disappear */
+@media (max-width: 767px) {
   .sq {
-    --body: 17px;
-    --tw: 29vw;
+    --tl: env(safe-area-inset-left, 0px);
+    --tr: calc(100% - env(safe-area-inset-right, 0px));
   }
-  .sq__ui,
-  .sq__solid { height: 170px; } /* a smaller blended strip is cheaper to composite */
-  .sq__name {
-    max-width: none;
-    overflow: visible;
-    left: 0;
-    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
-  }
-  .sq__tabs {
-    left: 0;
-    right: 0;
-    display: flex;
-    gap: clamp(8px, 3.2vw, 14px); /* all five tabs fit down to 320px, so no scroll container is needed */
-    padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px));
-    white-space: nowrap;
-  }
-  .sq__info {
-    left: 0;
-    bottom: calc(46px + env(safe-area-inset-bottom, 0px));
-  }
-  .sq__panel {
-    left: 0;
-    bottom: calc(82px + env(safe-area-inset-bottom, 0px));
-  }
-  .sq__tags {
-    right: 0;
-    bottom: calc(46px + env(safe-area-inset-bottom, 0px));
-  }
-  .sq--archive .sq__tags { bottom: calc(12px + env(safe-area-inset-bottom, 0px)); } /* no tab row below it here */
 }

@@ -17,18 +17,31 @@
   z-index: 101; /* above the portraits, the nav is the only thing beside it */
   display: flex;
   align-items: flex-end; /* sits on the same baseline as the nav tab text */
-  height: 26px;
+  height: auto; /* grows with the logo instead of clipping it */
+  min-height: 30px;
   max-width: 18.35%; /* stays inside the first column, the nav starts after it */
+  overflow: visible;
   padding: 0;
   color: #1F1313;
   text-decoration: none;
   white-space: nowrap;
 }
 
-.header__logo-name {
-  font: 800 clamp(14px, 1.7vw, 30px)/26px var(--font-sans); /* scales with the screen width, same line height as the tabs */
-  letter-spacing: -0.02em;
+.header__logo-img {
+  display: block;
+  height: clamp(16px, 1.6vw, 28px);
+  width: auto;
+  max-width: none; /* never squeezed by the container */
 }
+.header__logo-img--light { display: none; }
+
+/* contact page and the work detail info overlay: swap to the light logo and lift it above the scrim */
+body:has(.info) .header__logo,
+body:has(.contact) .header__logo { z-index: 201; } /* .info is z-index 200 */
+body:has(.info) .header__logo-img--dark,
+body:has(.contact) .header__logo-img--dark { display: none; }
+body:has(.info) .header__logo-img--light,
+body:has(.contact) .header__logo-img--light { display: block; }
 
 .header__nav {
   display: flex;
@@ -41,27 +54,35 @@
 
 .header__link {
   display: flex;
-  align-items: flex-end; /* text stays put, the bar grows downward */
+  align-items: flex-end; /* the 18px text line sits at the bottom of the bar, 12px below the top */
   flex: 1 1 0;
   min-width: 0;
   --grow: 0px; /* animated from Header.tsx while hovering */
-  height: calc(26px + var(--grow));
+  height: calc(30px + var(--grow));
   padding: 0;
+  background: #E6E2DF;
   color: #1F1313;
   text-decoration: none;
   text-transform: uppercase;
   white-space: nowrap;
-  font: 500 clamp(18px, 2.315vw, 40px)/26px var(--font-sans); /* 40px at the 1728 frame, text is bigger than the bar on purpose */
-  letter-spacing: -0.06em;
+  font: 500 var(--nav-size)/var(--nav-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
 }
-.header__link:nth-child(1) { background: #FF001D; }
-.header__link:nth-child(2) { background: #FF83BE; }
-.header__link:nth-child(3) { background: #908DFF; }
-.header__link:nth-child(4) { background: #00C4A9; }
-.header__link:nth-child(5) { background: #FFE300; }
 
 .header__link.is-active {
-  height: max(49px, calc(26px + var(--grow, 0px))); /* stays tall, and can still grow past 49 */
+  height: max(60px, calc(30px + var(--grow, 0px))); /* stays tall, and can still grow past 60 */
+  background: #BEFF00;
+}
+
+/* scrolling in either direction: every tab (active one too) shrinks to 12px, the labels fade out */
+.header__link { overflow: hidden; }
+.header__nav.is-scroll-anim .header__link {
+  transition: height 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.2s ease;
+}
+.header__nav.is-scrolling .header__link,
+.header__nav.is-scrolling .header__link.is-active {
+  height: 12px;
+  color: transparent;
 }
 
 .header__link:focus-visible,
@@ -77,6 +98,15 @@
   flex: none;
 }
 
+/* touch screens: a bigger tap area on the logo, same look */
+@media (pointer: coarse) {
+  .header__logo::after {
+    content: "";
+    position: absolute;
+    inset: -10px -10px -10px 0;
+  }
+}
+
 /* the mobile menu is hidden on desktop */
 .header__menu,
 .menu {
@@ -87,8 +117,8 @@
   .header__logo {
     max-width: calc(100% - 56px); /* leaves room for the menu button */
   }
-  .header__logo-name {
-    font-size: 18px;
+  .header__logo-img {
+    height: 18px;
   }
   .header__nav {
     display: none; /* the tabs live in the menu on small screens */
@@ -181,9 +211,9 @@
     padding: 0 12px;
     background: rgba(227, 230, 247, 0.45);
     color: #fff;
-    font: 600 14px/1 var(--font-sans);
+    font: 500 var(--label-size)/var(--label-lh) var(--font-sans);
     text-transform: uppercase;
-    letter-spacing: -0.01em;
+    letter-spacing: var(--label-ls);
   }
   .menu__close {
     flex: none;
@@ -204,8 +234,8 @@
     color: #fff;
     text-decoration: none;
     text-transform: uppercase;
-    font: 500 24px/1 var(--font-sans);
-    letter-spacing: -0.01em;
+    font: 500 var(--title-size)/var(--title-lh) var(--font-sans);
+    letter-spacing: var(--title-ls);
   }
   .menu .menu__link svg {
     display: none !important;

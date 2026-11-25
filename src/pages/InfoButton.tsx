@@ -6,11 +6,13 @@ export default function InfoButton({
   onClick,
   controls,
   className = "",
+  label = "Info",
 }: {
   open: boolean;
   onClick: () => void;
   controls?: string;
   className?: string;
+  label?: string;
 }) {
   return (
     <button
@@ -20,7 +22,7 @@ export default function InfoButton({
       aria-controls={controls}
       onClick={onClick}
     >
-      <span>Info</span>
+      <span>{label}</span>
       <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
         <path d={open ? "M3.3 7.2h9.4v1.6H3.3z" : "M3.3 7.2h9.4v1.6H3.3zM7.2 3.3h1.6v9.4H7.2z"} />
       </svg>

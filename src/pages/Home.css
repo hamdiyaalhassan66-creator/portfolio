@@ -1,25 +1,23 @@
 .works {
   --u: calc(100vw / 1728); /* the Figma frame is 1728 wide */
   --nav-h: 40px; /* must match the .header height in Header.css */
-  --bar-h: 26px; /* the coloured nav links, the panels start right under them */
+  --bar-h: 30px; /* the nav links, the panels start right under them */
   --ph: calc(100vh - var(--bar-h)); /* panel height, the panel widths follow from it */
   --accent: #FF001D; /* title bars, same red as the Work tab */
-  --t: clamp(28px, calc(var(--u) * 40), 60px); /* title size */
-  --b: clamp(15px, calc(var(--u) * 17), 24px); /* label size, same as the body text on the Information page */
+  --t: var(--title-size); /* title size, shared token */
   position: relative;
   height: calc(var(--travel, 0px) + var(--ph)); /* tall enough for the strip to slide through while you scroll */
   margin-top: calc(var(--bar-h) - var(--nav-h)); /* pulls the panels up under the nav links */
   background: #FCF8F5;
   color: #1F1313;
-  font: 500 var(--b)/1.06 var(--font-sans);
-  letter-spacing: -0.03em;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
 }
 @supports (height: 100svh) {
   .works { --ph: calc(100svh - var(--bar-h)); }
 }
 /* Drift fills the screen and has its own motion, so the page itself never scrolls */
 .works[data-view="Drift"] { height: var(--ph); }
-.works[data-view="Flow"] { height: auto; } /* Flow makes the page tall itself, so scrolling drives it */
 
 /* the panels sit in a stage that stays pinned under the nav while the strip slides */
 .works__stage {
@@ -39,58 +37,36 @@ body:has(.works) .header {
   z-index: 50;
 }
 
-/* the big faint DEE-07 behind the panels, shows under the shorter ones */
-.works__mark {
-  position: absolute;
-  left: 50%;
-  bottom: calc(var(--u) * -170);
-  z-index: 0;
-  width: calc(var(--u) * 2022);
-  height: calc(var(--u) * 392);
-  translate: -50% 0;
-  font: 800 calc(var(--u) * 572)/calc(var(--u) * 392) var(--font-sans);
-  letter-spacing: -0.1em;
-  text-align: center;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: rgba(31, 19, 19, 0.03);
-  pointer-events: none;
-  user-select: none;
-}
-
 /* the row of panels, moved sideways by the page scroll */
 .works__strip {
   position: relative;
   z-index: 1;
   display: flex;
   align-items: flex-start;
+  gap: 4px;
   width: max-content;
   height: 100%;
   will-change: transform;
 }
 
-/* one project panel. The three sizes from the Figma (595 x 1117, 1113 x 789, 747 x 1117) repeat */
+/* ---- project cards. Two sizes, alternating (595 x 1117 portrait, 1113 x 1000 landscape in the 1728 Figma).
+   Photo on top, label underneath ---- */
 .work {
-  --w: calc(var(--ph) * 0.5327);
-  --h: var(--ph);
+  --w: calc(var(--ph) * 0.75); /* 3:4, the photo fills the panel height and the label sits on top of it */
+  --h: auto;
   position: relative;
   flex: none;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
   align-items: flex-start;
+  gap: 0; /* photo sits directly on the label */
   width: var(--w);
   height: var(--h);
   overflow: hidden;
-  background: #D9D9D9; /* shows while a photo loads */
+  background: #FCF8F5;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
   contain: layout paint;
-}
-.work:nth-child(3n + 2) {
-  --w: calc(var(--ph) * 0.9964);
-  --h: calc(var(--ph) * 0.7064);
-}
-.work:nth-child(3n) {
-  --w: calc(var(--ph) * 0.6687);
 }
 .work:has(.work__name a:focus-visible) {
   outline: 2px solid #1046F9;
@@ -98,10 +74,15 @@ body:has(.works) .header {
 }
 
 .work__media {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  flex: none;
+  align-self: stretch;
+  aspect-ratio: 3 / 4; /* portrait */
   z-index: 0;
+  overflow: hidden; /* the slow zoom stays inside the photo */
+  background: #D9D9D9; /* shows while a photo loads */
 }
+.work__media picture { display: contents; } /* keeps .work__shot sized against .work__media */
 .work__shot {
   position: absolute;
   inset: 0;
@@ -120,79 +101,119 @@ body:has(.works) .header {
   opacity: 1;
   transform: scale(1);
 }
+.work__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: work-video-in 0.4s ease both; /* fades in over the still */
+  user-select: none;
+  pointer-events: none;
+}
+@keyframes work-video-in {
+  from { opacity: 0; }
+}
 
-/* the whole panel is a link; the label sits above it so its buttons still work */
+/* the whole card is a link; the label sits above it so its buttons still work */
 .work__cover {
   position: absolute;
   inset: 0;
   z-index: 1;
 }
 
-/* label, bottom left: category, title bar, then Info and the site link */
+/* label (Figma): title top left, site link top right, Info chip under the title on its right edge */
 .work__label {
-  position: relative;
+  position: absolute; /* Figma: sits on the bottom of the photo */
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  max-width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "name link"
+    "info .";
+  align-items: start; /* title on top, Info chip under it, site link top right */
 }
-.work__cat {
-  margin: 0;
-  background: #FCF8F5;
-}
+.work__cat { display: none; } /* not in the Figma */
 .work__name {
+  grid-area: name;
   display: flex;
   align-items: flex-end;
-  min-width: calc(var(--t) * 6.125); /* 245 / 40 in the Figma */
-  height: calc(var(--t) * 1.225); /* 49 / 40 */
+  height: calc(var(--title-size) * var(--title-lh));
   margin: 0;
-  padding-right: calc(var(--t) * 0.65);
-  background: var(--accent);
-  font: 500 var(--t)/0.65 var(--font-sans);
-  letter-spacing: -0.06em;
-  text-transform: uppercase;
+  background: #FFFFFF;
+  font: 500 var(--title-size)/var(--title-lh) var(--font-sans);
+  letter-spacing: var(--title-ls);
   white-space: nowrap;
 }
 .work__name a {
   color: inherit;
   text-decoration: none;
 }
-.work__links {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+.work__links { display: contents; } /* the chips become grid items of the label */
+.work__links .ibtn {
+  grid-area: info;
+  justify-self: end; /* right edge of the title */
+  align-self: start;
 }
 .work__chip {
+  grid-area: link;
+  justify-self: end;
+  align-self: start;
+  min-width: 0;
+  max-width: 100%;
+}
+.work__chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.work__chip {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 2px;
+  min-height: 28px;
   padding: 0;
   border: 0;
   background: #E6E2DF;
   color: inherit;
-  font: inherit;
-  letter-spacing: inherit;
-  line-height: 1.06;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans); /* same as the body text */
+  letter-spacing: var(--body-ls);
   text-decoration: none;
   cursor: pointer;
   transition: background 0.2s ease;
 }
+.work__links .ibtn {
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans); /* same as the body text */
+  letter-spacing: var(--body-ls);
+}
 .work__chip:hover { background: #DAD5D1; }
 .work__chip span { text-decoration: underline; }
-.work__arrow { width: 1.1em; height: 1.1em; flex: none; }
-
-.work__media picture { display: contents; } /* keeps .work__shot sized against .work__media */
-.work__chip { position: relative; }
+.work__arrow { width: 18px; height: 18px; flex: none; }
 @media (pointer: coarse) {
-  .work__chip::after { content: ""; position: absolute; inset: -4px -6px; }
+  .work__chip::after,
+  .work__links .ibtn::after,
+  .works__views .works__toggle::after { content: ""; position: absolute; inset: -4px -6px; }
+  .work__links .ibtn,
+  .works__views .works__toggle { position: relative; }
+  .work__chip,
+  .work__links .ibtn,
+  .works__views .works__toggle,
+  .works__view { touch-action: manipulation; } /* no double-tap-zoom delay */
 }
 
-/* Info panel, opens above the category */
+/* Info panel: floats over the bottom of the photo, above the category */
 .work__info {
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  width: max-content;
   min-width: calc(var(--t) * 6.125);
-  max-width: min(max(calc(var(--u) * 360), 260px), 100%);
+  max-width: min(max(calc(var(--u) * 360), 260px), 90vw);
   margin-bottom: 2px;
   padding: 8px 10px;
   background: #FCF8F5;
@@ -205,64 +226,88 @@ body:has(.works) .header {
   color: rgba(31, 19, 19, 0.5);
 }
 
-/* ---- showcase style tabs, bottom right, same as the Side Quests page ---- */
-.works__ui,
-.works__solid {
+/* ---- showcase style tabs: top right, under the nav, same boxes as the Side Quests page ---- */
+.works__ui {
   position: fixed;
-  right: 0;
-  bottom: 0;
+  top: 60px; /* the bottom of the hanging nav tab */
+  right: 65.32%; /* the Work tab's right edge: the nav starts at 18.35% and each tab is 16.33% wide */
   z-index: 8;
   pointer-events: none; /* only the buttons take clicks */
 }
-.works__ui {
-  color: #fff;
-  mix-blend-mode: difference; /* white text turns dark on the cream page and light on dark photos */
-}
-.works__solid { z-index: 9; }
 .works__views {
-  margin: 0;
-  padding: 0 0 env(safe-area-inset-bottom, 0px);
-  list-style: none;
   display: flex;
   flex-direction: column;
-  align-items: flex-end; /* every item sits flush right */
-  text-align: right;
-}
-.works__view {
+  align-items: flex-end;
+  margin: 0;
   padding: 0;
+  list-style: none;
+}
+.works__views li { display: flex; }
+.works__view {
+  display: flex;
+  align-items: flex-end;
+  height: var(--body-lh);
+  padding: 0; /* each item's box fits the text exactly */
   border: 0;
-  background: none;
-  color: rgba(255, 255, 255, 0.3); /* white too, so the blend can invert it */
-  font: inherit;
-  letter-spacing: inherit;
+  background: #FFFFFF;
+  color: rgba(31, 19, 19, 0.3);
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
   text-transform: none;
-  text-align: right;
+  white-space: nowrap;
   cursor: pointer;
   pointer-events: auto;
 }
-.works__view.is-on { color: #fff; }
+.works__list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.works__list li { transform-origin: right center; }
+.works__views .works__toggle {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: #E6E2DF;
+  color: #1F1313;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
+  text-transform: none;
+  pointer-events: auto; /* .works__ui itself ignores clicks */
+}
+.works__views .works__toggle svg {
+  width: 16px;
+  height: 16px;
+  margin-bottom: 1px;
+}
 @media (hover: hover) {
-  .works__view:hover { color: #fff; }
+  .works__views .works__toggle:hover { background: #fff; }
+}
+.works__views .works__toggle:focus-visible { outline-offset: -2px; }
+.works__view.is-on {
+  background: #DDD8D4;
+  color: #1F1313;
+}
+@media (hover: hover) {
+  .works__view:hover { color: #1F1313; }
 }
 .works__view:focus-visible {
-  outline: 2px solid var(--blue, #908DFF);
-  outline-offset: 2px;
+  outline: 2px solid var(--blue, #BEFF00);
+  outline-offset: -2px;
 }
-/* plain layer above the blended labels: only the active item shows, as the purple chip */
-.works__solid .works__view:not(.is-on) { visibility: hidden; }
-.works__solid .works__view.is-on {
-  padding: 0 0 0 12px; /* right-aligned list: the chip grows to the left */
-  background: #908DFF;
-  color: #1F1313;
-  pointer-events: none; /* clicks fall through to the real button underneath */
-}
-/* touch screens: bigger tap areas without changing the look */
 @media (pointer: coarse) {
   .works__view { position: relative; }
   .works__view::after {
     content: "";
     position: absolute;
-    inset: -5px -8px;
+    inset: -4px 0; /* 18px rows + 4px each side = 26px tap height */
   }
 }
 
@@ -272,9 +317,8 @@ body:has(.works) .header {
   .works__stage { animation: none; }
 }
 
-/* tablets and phones: the same 17px as the Information page */
-@media (max-width: 1100px) {
-  .works { --b: 17px; }
+@media (hover: none) {
+  .work__shot { transform: none; transition: opacity 0.3s ease; }
 }
 
 /* tablets (portrait) and phones: panels stack. Keep 900px in sync with STACK in Home.tsx */
@@ -289,29 +333,22 @@ body:has(.works) .header {
   .works__strip {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-flow: dense;
+    grid-auto-flow: dense; /* portraits fill the gaps beside each other */
     width: auto;
     height: auto;
-    gap: 2px;
+    gap: 4px;
     will-change: auto;
   }
-  .work:nth-child(n) {
-    --w: 100%;
-    --h: auto;
-    aspect-ratio: 4 / 5;
-  }
-  .work:nth-child(3n + 1) { /* one wide panel, then a pair */
-    grid-column: 1 / -1;
-    aspect-ratio: 3 / 2;
-  }
-  .works__mark { display: none; }
+  .work:nth-child(n) { --w: 100%; --h: auto; }
+  .work .work__media { flex: none; aspect-ratio: 3 / 4; }
 }
 
 /* phones: one column */
 @media (max-width: 700px) {
-  .works { --t: min(28px, 7.6vw); }
   .works__strip { grid-template-columns: 1fr; }
-  .work:nth-child(n) { aspect-ratio: 4 / 5; }
-  .work:nth-child(3n + 1) { grid-column: auto; }
-  .work:nth-child(3n + 2) { aspect-ratio: 3 / 2; }
+}
+
+/* same breakpoint as the header menu, where the nav tabs disappear */
+@media (max-width: 767px) {
+  .works__ui { right: env(safe-area-inset-right, 0px); }
 }

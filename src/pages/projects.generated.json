@@ -1,0 +1,834 @@
+[
+  {
+    "blurb": "blurb",
+    "client": "dEX Ghana",
+    "collaborators": [
+      {
+        "_key": "67cc5efec64f",
+        "name": "Oxegene",
+        "role": "Agency"
+      },
+      {
+        "_key": "ddcc442f47b5",
+        "name": "Hamdiya Alhassan",
+        "role": "Website Designer"
+      },
+      {
+        "_key": "9c82dd47c73a",
+        "name": "Stephen Okyere",
+        "role": "Developer"
+      }
+    ],
+    "deliverables": "Website Design",
+    "description": "A platform for building, connecting, and championing Africa's design community.\", description: \"A website design done for dEX Ghana. It is essentially a platform for building, connecting, educating, and championing Africa's design community.",
+    "detailMedia": [
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/418bb2ae814ae4e5726d0298cc5ba7903185acd9-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": 4320,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/7cc426383aac8ce855ecfd96eb527e708e2a58b4-5760x4320.png",
+        "w": 5760
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/5185e2e9536148942bfb7422e27e4ed4e782a723.webm",
+        "w": null
+      },
+      {
+        "h": 4320,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/f27d216641f19e38aae9dfbdce832a78a29a5ce6-3240x4320.png",
+        "w": 3240
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/0297aa906e47414a76df0081955d72c421f8d1a0.webm",
+        "w": null
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/3b25368934653d4c3b6406c1383f0de66b796185.webm",
+        "w": null
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/20ae4b79ccdf007570c8a1da8951fa0128e9cb22.webm",
+        "w": null
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/2fc4c21391c2c044e3c37a5b9dbbfb5b8dc4062c.webm",
+        "w": null
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/173cb8a1c319e2f2438a23795a048cb012eff057.webm",
+        "w": null
+      },
+      {
+        "h": 4320,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/eb82d0a71164293e1554fb1f7d8d42ff04a91d37-7680x4320.png",
+        "w": 7680
+      },
+      {
+        "h": 2160,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/773f4c5cca93df68cf58c447f1c189b34fdd94ac-2880x2160.webp",
+        "w": 2880
+      },
+      {
+        "h": 5760,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/744ff07755d2304bd8b89a30462c62bea79df7aa-4320x5760.png",
+        "w": 4320
+      }
+    ],
+    "id": "dex-ghana",
+    "industry": "Community",
+    "link": "https://dexghana.org/",
+    "name": "dEX Ghana",
+    "role": "Website Designer",
+    "thumbnail": "https://cdn.sanity.io/images/24o55ynn/production/418bb2ae814ae4e5726d0298cc5ba7903185acd9-2160x2880.webp",
+    "video": "https://cdn.sanity.io/files/24o55ynn/production/2e2704f1d8c5fa18de2006a77163a5190784724a.webm",
+    "year": "2026",
+    "images": [
+      "https://cdn.sanity.io/images/24o55ynn/production/418bb2ae814ae4e5726d0298cc5ba7903185acd9-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/7cc426383aac8ce855ecfd96eb527e708e2a58b4-5760x4320.png",
+      "https://cdn.sanity.io/images/24o55ynn/production/f27d216641f19e38aae9dfbdce832a78a29a5ce6-3240x4320.png",
+      "https://cdn.sanity.io/images/24o55ynn/production/eb82d0a71164293e1554fb1f7d8d42ff04a91d37-7680x4320.png",
+      "https://cdn.sanity.io/images/24o55ynn/production/773f4c5cca93df68cf58c447f1c189b34fdd94ac-2880x2160.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/744ff07755d2304bd8b89a30462c62bea79df7aa-4320x5760.png"
+    ]
+  },
+  {
+    "blurb": "A platform for building Africa's design community.",
+    "collaborators": [
+      {
+        "_key": "c0",
+        "name": "Oxegene",
+        "role": "Agency"
+      },
+      {
+        "_key": "c1",
+        "name": "Stephen",
+        "role": "Developer"
+      }
+    ],
+    "deliverables": "Website Design",
+    "description": "A website design done for MANNTION. Replace this with the project brief.",
+    "detailMedia": [
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/d87e1609a681269e4a0c5fa80b33986cdc015558.webm",
+        "w": null
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/04cd8eea8d32e581d594fcbc16e83f7c6c5125f0-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/58aa9e5954570bcbc47e774dfccacb3d24bc67b9.webm",
+        "w": null
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/3f6e893e084b9abf47a0ba50d66eec1a545a9d50-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": 5760,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/2f7d0bd3aad90c8fa4552961310e469d14e3886d-4320x5760.webp",
+        "w": 4320
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/8b89cce00db1c675c25f00cea8d1f2c948f3e9f9.webm",
+        "w": null
+      },
+      {
+        "h": 2160,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/e718d69137645071f019640c056a883a328154fa-3840x2160.webp",
+        "w": 3840
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/69fb5ba4e4a0650c7f8feb10ba5128af559307d2.webm",
+        "w": null
+      },
+      {
+        "h": 4320,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/83499b914b39d8bc9fa12caf338226b34fd782fd-5760x4320.webp",
+        "w": 5760
+      }
+    ],
+    "id": "manntion",
+    "industry": "Portfolio",
+    "link": "https://manntion.com",
+    "name": "MANNTION",
+    "thumbnail": "https://cdn.sanity.io/images/24o55ynn/production/5d393a9003f6c0052fac93fe90c82750b2a32f1e-2160x2880.webp",
+    "video": "https://cdn.sanity.io/files/24o55ynn/production/f309dcf7b1300c9317a5802b32a5a0078300e82f.webm",
+    "year": "2025",
+    "images": [
+      "https://cdn.sanity.io/images/24o55ynn/production/04cd8eea8d32e581d594fcbc16e83f7c6c5125f0-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/3f6e893e084b9abf47a0ba50d66eec1a545a9d50-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/2f7d0bd3aad90c8fa4552961310e469d14e3886d-4320x5760.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/e718d69137645071f019640c056a883a328154fa-3840x2160.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/83499b914b39d8bc9fa12caf338226b34fd782fd-5760x4320.webp"
+    ]
+  },
+  {
+    "blurb": "A platform for building Africa's design community.",
+    "collaborators": [
+      {
+        "_key": "c0",
+        "name": "Oxegene",
+        "role": "Agency"
+      },
+      {
+        "_key": "c1",
+        "name": "Stephen",
+        "role": "Developer"
+      }
+    ],
+    "deliverables": "Website Design",
+    "description": "A website design done for Khaya AI. Replace this with the project brief.",
+    "detailMedia": [
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/e15c0bd31d80ba82dcb18fa917d48cdbddcf1718.webm",
+        "w": null
+      },
+      {
+        "h": 5760,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/352cf35175152cb671f81001e6e77eccf2eefcef-4320x5760.webp",
+        "w": 4320
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/1ffc87f81a5cd4be7cae979bedb0f86b6b79e455.webm",
+        "w": null
+      },
+      {
+        "h": 2160,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/0a3d9c74a1bad50dcb4ff91dac06613d40d01346-3840x2160.webp",
+        "w": 3840
+      },
+      {
+        "h": 5760,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/12ebc2bc16e58c718df613288e6c0dc1bc15bcba-4320x5760.webp",
+        "w": 4320
+      },
+      {
+        "h": 5760,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/16d1a142899e1295d35199b2d5875d6d0009edb7-4320x5760.webp",
+        "w": 4320
+      },
+      {
+        "h": 5760,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/9e1012e1260522ed727acb951b946d183b0352a2-4320x5760.webp",
+        "w": 4320
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/d976687ab0447cb0397b31bbf0e7f3c428dd0d4d.webm",
+        "w": null
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/2b68e0626b4b39013d1d61502aca8625486eff62.webm",
+        "w": null
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/09d2bbaae4bd8d5337f69e0fa3ace8a684192363.webm",
+        "w": null
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/8a6f610969938cbbc6aa085432542764dde340d5.webm",
+        "w": null
+      },
+      {
+        "h": 4320,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/bc05c7746663970fdec79ff83ebe4f91c420b73c-5760x4320.webp",
+        "w": 5760
+      }
+    ],
+    "id": "khaya",
+    "industry": "AI",
+    "link": "https://khaya.ai",
+    "name": "Khaya AI",
+    "thumbnail": "https://cdn.sanity.io/images/24o55ynn/production/5fb7cfadb4b937aaf4804ba0b24a848461a0f491-2160x2880.webp",
+    "video": "https://cdn.sanity.io/files/24o55ynn/production/7d56992f9fec5b31cd851d3b81c5187921d3c5e3.webm",
+    "year": "2025",
+    "images": [
+      "https://cdn.sanity.io/images/24o55ynn/production/352cf35175152cb671f81001e6e77eccf2eefcef-4320x5760.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/0a3d9c74a1bad50dcb4ff91dac06613d40d01346-3840x2160.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/12ebc2bc16e58c718df613288e6c0dc1bc15bcba-4320x5760.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/16d1a142899e1295d35199b2d5875d6d0009edb7-4320x5760.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/9e1012e1260522ed727acb951b946d183b0352a2-4320x5760.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/bc05c7746663970fdec79ff83ebe4f91c420b73c-5760x4320.webp"
+    ]
+  },
+  {
+    "blurb": "A platform for building Africa's design community.",
+    "collaborators": [
+      {
+        "_key": "c0",
+        "name": "Oxegene",
+        "role": "Agency"
+      },
+      {
+        "_key": "c1",
+        "name": "Stephen",
+        "role": "Developer"
+      }
+    ],
+    "deliverables": "Website Design",
+    "description": "A website design done for Gecric Integrity. Replace this with the project brief.",
+    "detailMedia": [
+      {
+        "h": 4320,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/bce8b5a68e9a1a4af3b2a475b243d161168f5402-7680x4320.webp",
+        "w": 7680
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/7eaf3812545861b540d484200735d613ade78a4f.webm",
+        "w": null
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/c52e6fb512c4a0f98b876ba69485290eff5809fd.webm",
+        "w": null
+      },
+      {
+        "h": 5760,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/ee87786056a908e5a31d742ef69642db6535f9e8-4320x5760.webp",
+        "w": 4320
+      },
+      {
+        "h": 5760,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/3c89fbd98b9028916de75be4bbcf3a1251b99d2d-4320x5760.webp",
+        "w": 4320
+      },
+      {
+        "h": 5760,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/308b403729ec5b354b5db3c45913dadca179bf01-4320x5760.webp",
+        "w": 4320
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/83f0a6e37a85d6ef0832c6fc3278a6a4910b91bf.webm",
+        "w": null
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/6dca1dce43f3e0ecdcc170c636bd803f2de741f2.webm",
+        "w": null
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/3352eb46b1fa3b09887eefd5b63231facc4691ed.webm",
+        "w": null
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/cacd9dca5c19cde8b326b830184a90ff8c411dc7.webm",
+        "w": null
+      },
+      {
+        "h": 4320,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/1b6075193aa8b4249949f8496a8a17f2eab3fd37-5760x4320.webp",
+        "w": 5760
+      },
+      {
+        "h": 4320,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/f631f52ce1d031f7175b484c74b81f11d0e7fedb-7680x4320.webp",
+        "w": 7680
+      }
+    ],
+    "id": "gecric",
+    "industry": "Energy/Industrial",
+    "link": "https://gecricintegrity.com",
+    "name": "Gecric Integrity",
+    "thumbnail": "https://cdn.sanity.io/images/24o55ynn/production/22cecb42381c8857c8d300bfdbf4dd9d7953652d-2160x2880.webp",
+    "video": "https://cdn.sanity.io/files/24o55ynn/production/7889d218c23b5876277938fdf8bb253c0d1273ac.webm",
+    "year": "2025",
+    "images": [
+      "https://cdn.sanity.io/images/24o55ynn/production/bce8b5a68e9a1a4af3b2a475b243d161168f5402-7680x4320.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/ee87786056a908e5a31d742ef69642db6535f9e8-4320x5760.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/3c89fbd98b9028916de75be4bbcf3a1251b99d2d-4320x5760.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/308b403729ec5b354b5db3c45913dadca179bf01-4320x5760.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/1b6075193aa8b4249949f8496a8a17f2eab3fd37-5760x4320.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/f631f52ce1d031f7175b484c74b81f11d0e7fedb-7680x4320.webp"
+    ]
+  },
+  {
+    "blurb": "A platform for building Africa's design community.",
+    "collaborators": [
+      {
+        "_key": "c0",
+        "name": "Oxegene",
+        "role": "Agency"
+      },
+      {
+        "_key": "c1",
+        "name": "Stephen",
+        "role": "Developer"
+      }
+    ],
+    "deliverables": "Website Design",
+    "description": "A website design done for HIS SON JESUS. Replace this with the project brief.",
+    "detailMedia": [
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/6e87d99d919c4722ad883c06a2e0e3d5a7de7abd.webm",
+        "w": null
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/7fe202062befd5fd6961c872fd53f3a5ae72c84b-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/d83be2b6ea31d2a571f5048bfeb348478e287ab9-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/678555af5dc4b86b13854cb57dc4d2ed3cf56e61-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/6241013f34f61e5e8716cc01c626261415fd2f85-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/3baddb2d3d271e04e22a10996336eb4f051853e5.webm",
+        "w": null
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/ab4740d04afcb269d24acd7bc8253ba1b581ba82.webm",
+        "w": null
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/db743105abf3153923a4c3e8f7055aadf43341ff.webm",
+        "w": null
+      },
+      {
+        "h": 2160,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/9111bbfc7d0e60237cc635447fb6a0e1454f5354-3840x2160.webp",
+        "w": 3840
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/661885d3582dd51dc7761e915e3ab4a8b92554cf.webm",
+        "w": null
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/c729f467450e93a6757552b715a7232afcb11693.webm",
+        "w": null
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/19da35455b82b45a1adcf34148023c252dc9161c-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": 1440,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/3ab455b40eab7055058575ecbf95aa54ae6ace64-1080x1440.png",
+        "w": 1080
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/cba7d4087f4c894e054f59ee91863825eeb194c2-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/468e88afdc7015136ead40ae9f5b68af600d920f.webm",
+        "w": null
+      },
+      {
+        "h": 2160,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/3c7a58e545dbffff3858be14f33f1a2bce17273e-2880x2160.webp",
+        "w": 2880
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/bf90cfe6139972ec056b3f8ec986afee30b4fe84-2160x2880.webp",
+        "w": 2160
+      }
+    ],
+    "id": "his-son-jesus",
+    "industry": "E-commerce",
+    "link": "https://hissonjesus.com",
+    "name": "HIS SON JESUS",
+    "thumbnail": "https://cdn.sanity.io/images/24o55ynn/production/137391375f3b1ca00b742aeecaeea9c321843a44-2160x2880.webp",
+    "video": "https://cdn.sanity.io/files/24o55ynn/production/9cd9df83f9b2f7ba1baf917d4bd4dc174bbc2a56.webm",
+    "year": "2025",
+    "images": [
+      "https://cdn.sanity.io/images/24o55ynn/production/7fe202062befd5fd6961c872fd53f3a5ae72c84b-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/d83be2b6ea31d2a571f5048bfeb348478e287ab9-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/678555af5dc4b86b13854cb57dc4d2ed3cf56e61-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/6241013f34f61e5e8716cc01c626261415fd2f85-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/9111bbfc7d0e60237cc635447fb6a0e1454f5354-3840x2160.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/19da35455b82b45a1adcf34148023c252dc9161c-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/3ab455b40eab7055058575ecbf95aa54ae6ace64-1080x1440.png",
+      "https://cdn.sanity.io/images/24o55ynn/production/cba7d4087f4c894e054f59ee91863825eeb194c2-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/3c7a58e545dbffff3858be14f33f1a2bce17273e-2880x2160.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/bf90cfe6139972ec056b3f8ec986afee30b4fe84-2160x2880.webp"
+    ]
+  },
+  {
+    "blurb": "A platform for building Africa's design community.",
+    "collaborators": [
+      {
+        "_key": "c0",
+        "name": "Oxegene",
+        "role": "Agency"
+      },
+      {
+        "_key": "c1",
+        "name": "Stephen",
+        "role": "Developer"
+      }
+    ],
+    "deliverables": "Website Design",
+    "description": "A website design done for Digiits Agency. Replace this with the project brief.",
+    "detailMedia": [
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/b36b88fc6150ab8e15db11b1a3e96fba1f7b1f5a.webm",
+        "w": null
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/d238fb76d87aba65a07c11b559244f4e38c8f861-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/a9207ca80107881d30edc782b65358f058314f57-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/838f5c52de2875a9c80fa56b380174781956d2bb-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/5c24e836a24e50a297a00a1a14601f00a67177e7-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": 2160,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/555eaa6e8d0bbbe12437cbf4ed1326468016a9b6-2880x2160.webp",
+        "w": 2880
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/ed4f1890e40d8ef7b93fdf78fdcf498bfe148d9c.webm",
+        "w": null
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/0f65975a682e467735c862a9c313752b9beaaad8.webm",
+        "w": null
+      },
+      {
+        "h": 2160,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/37487237b69c9e041d13755e08070261b1cee759-2880x2160.webp",
+        "w": 2880
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/e9799f0fc7bc31cb4567cbf0ca5baff32ecee932.webm",
+        "w": null
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/469e60e69ee3fa1b1616625e595bd44797886307.webm",
+        "w": null
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/241e4f207e23ba67e9f30eb3898a3e12e6c4046b-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/9b75a8904facd69d6715a65793cf078124c48d62-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/56eb37d352a3c847de5b1dd48029811ef007dac1-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/ddebfa2f2a071c88be8d1344f9b93774e92ec941.webm",
+        "w": null
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/62731eeb2d7b59b24dea039fbd69726507c47169.webm",
+        "w": null
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/90d5f3f28d6e38ae4942f87e5b97246c835e04a3.webm",
+        "w": null
+      },
+      {
+        "h": 2160,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/635cd65b705b8c41fd8a7c035066ef60e17a29be-2880x2160.webp",
+        "w": 2880
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/5f711a0d09dcf41f50c02881a004b92d34cdce33-2160x2880.webp",
+        "w": 2160
+      }
+    ],
+    "id": "digiits",
+    "industry": "Consulting",
+    "link": "https://digiits.com",
+    "name": "Digiits Agency",
+    "thumbnail": "https://cdn.sanity.io/images/24o55ynn/production/49c99862f7af5a6602c483850d252310c95cf9cc-2160x2880.webp",
+    "video": "https://cdn.sanity.io/files/24o55ynn/production/f4199d68d0a7ee099979f2a5420e0552fcee7578.webm",
+    "year": "2025",
+    "images": [
+      "https://cdn.sanity.io/images/24o55ynn/production/d238fb76d87aba65a07c11b559244f4e38c8f861-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/a9207ca80107881d30edc782b65358f058314f57-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/838f5c52de2875a9c80fa56b380174781956d2bb-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/5c24e836a24e50a297a00a1a14601f00a67177e7-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/555eaa6e8d0bbbe12437cbf4ed1326468016a9b6-2880x2160.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/37487237b69c9e041d13755e08070261b1cee759-2880x2160.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/241e4f207e23ba67e9f30eb3898a3e12e6c4046b-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/9b75a8904facd69d6715a65793cf078124c48d62-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/56eb37d352a3c847de5b1dd48029811ef007dac1-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/635cd65b705b8c41fd8a7c035066ef60e17a29be-2880x2160.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/5f711a0d09dcf41f50c02881a004b92d34cdce33-2160x2880.webp"
+    ]
+  },
+  {
+    "blurb": "A platform for building Africa's design community.",
+    "collaborators": [
+      {
+        "_key": "c0",
+        "name": "Oxegene",
+        "role": "Agency"
+      },
+      {
+        "_key": "c1",
+        "name": "Stephen",
+        "role": "Developer"
+      }
+    ],
+    "deliverables": "Website Design",
+    "description": "A website design done for Bittern Consulting. Replace this with the project brief.",
+    "detailMedia": [
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/a0dc00174f2da9134a45374ad58098ea2da60190.webm",
+        "w": null
+      },
+      {
+        "h": 2160,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/ad1c50cf92e03f465a564024d7b4588768dc4a93-2880x2160.webp",
+        "w": 2880
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/f32297135294f8320092bafcc10bd1914cb3a63c-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/ab91a7b7e55b4a6528e5b3940de878eb715dfa3f-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/edc6336ee45d227e899bf1397aa026b0202a2b12-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/fdb841d092c84e5c7944157dc3f041b5375e3f29-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/a714974701e12b4c0669b8dd35d46fbca6a3f63d.webm",
+        "w": null
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/2c4e57468625582a171a294af95ef834077b7aa4-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/481095131521ce034ee9565898608afbaa61bfbf-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": 2880,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/b0f75f7939ec7e503cdd7ae3eae69c8df565ddfc-2160x2880.webp",
+        "w": 2160
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/51fe138d3ec0d2f3fd9ea666ca05d4a0e7337408.webm",
+        "w": null
+      },
+      {
+        "h": 2160,
+        "type": "image",
+        "url": "https://cdn.sanity.io/images/24o55ynn/production/a16d89ff2715e57140195348c2e5d07a0262be25-2880x2160.webp",
+        "w": 2880
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/81b1f11c1035af9af088fded44bd1a411cf79e8e.webm",
+        "w": null
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/dcd41f87f6a0358920110e355400f84226c7c272.webm",
+        "w": null
+      },
+      {
+        "h": null,
+        "type": "video",
+        "url": "https://cdn.sanity.io/files/24o55ynn/production/59c7873e53efa5848cc8928d1544da317956a78c.webm",
+        "w": null
+      }
+    ],
+    "id": "bittern",
+    "industry": "Consulting",
+    "link": "https://bitternconsulting.com",
+    "name": "Bittern Consulting",
+    "thumbnail": "https://cdn.sanity.io/images/24o55ynn/production/22b4936f40c29ec1ba71621120155c9648b773f8-2160x2880.webp",
+    "video": "https://cdn.sanity.io/files/24o55ynn/production/b58b66d79792c8d6e68dc6aeb8a23ce1932863e8.webm",
+    "year": "2024",
+    "images": [
+      "https://cdn.sanity.io/images/24o55ynn/production/ad1c50cf92e03f465a564024d7b4588768dc4a93-2880x2160.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/f32297135294f8320092bafcc10bd1914cb3a63c-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/ab91a7b7e55b4a6528e5b3940de878eb715dfa3f-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/edc6336ee45d227e899bf1397aa026b0202a2b12-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/fdb841d092c84e5c7944157dc3f041b5375e3f29-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/2c4e57468625582a171a294af95ef834077b7aa4-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/481095131521ce034ee9565898608afbaa61bfbf-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/b0f75f7939ec7e503cdd7ae3eae69c8df565ddfc-2160x2880.webp",
+      "https://cdn.sanity.io/images/24o55ynn/production/a16d89ff2715e57140195348c2e5d07a0262be25-2880x2160.webp"
+    ]
+  }
+]

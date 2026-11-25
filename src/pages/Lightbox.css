@@ -1,0 +1,281 @@
+/* the page behind is fixed while the slideshow is open: no scrolling, no scrollbar */
+html.lb-open,
+html.lb-open body {
+  overflow: hidden;
+}
+
+/* full-screen slideshow: the Contact page's frosted background (blurred picture + flat cream tint), sharp corners everywhere */
+.lb {
+  --strip: clamp(40px, 5.2vw, 72px); /* height and width of the filmstrip thumbnails */
+  --ease: cubic-bezier(0.65, 0, 0.2, 1);
+  position: fixed;
+  inset: 0;
+  z-index: 200; /* above the sticky header, same level as the mail popup */
+  overflow: hidden;
+  background: #FCF8F5;
+  color: #1F1313;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  contain: layout paint; /* the overlay's repaints stay inside it */
+  letter-spacing: var(--body-ls);
+  text-transform: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none; /* swipes belong to the slideshow, the page behind never scrolls */
+  overscroll-behavior: contain;
+  outline: none;
+  animation: lb-in 0.3s ease;
+}
+/* closing: the background clears and the controls fade, but the image stays put so it can shrink back into its thumbnail */
+.lb.is-out {
+  animation: lb-clear 0.52s ease forwards;
+  pointer-events: none;
+}
+@keyframes lb-clear { to { background-color: transparent; } }
+.lb.is-out > :not(.lb__stage) {
+  animation: lb-out 0.4s ease forwards;
+}
+/* no thumbnail to shrink into: everything fades together */
+.lb.is-out.is-fade {
+  animation: lb-out 0.24s ease forwards;
+}
+.lb.is-out.is-fade > :not(.lb__stage) {
+  animation: none;
+}
+@keyframes lb-in { from { opacity: 0; } }
+@keyframes lb-out { to { opacity: 0; } }
+
+/* the left and right halves of the screen: click or tap to go back or forward, with an arrow cursor */
+.lb__zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  width: 50%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.lb__zone--l {
+  left: 0;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='24' viewBox='0 0 40 24' fill='none' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M36 12H5M13 4 5 12l8 8' stroke='%23FCF8F5' stroke-width='6'/%3E%3Cpath d='M36 12H5M13 4 5 12l8 8' stroke='%231F1313' stroke-width='2'/%3E%3C/svg%3E") 20 12, w-resize;
+}
+.lb__zone--r {
+  right: 0;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='24' viewBox='0 0 40 24' fill='none' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M4 12h31M27 4l8 8-8 8' stroke='%23FCF8F5' stroke-width='6'/%3E%3Cpath d='M4 12h31M27 4l8 8-8 8' stroke='%231F1313' stroke-width='2'/%3E%3C/svg%3E") 20 12, e-resize;
+}
+
+/* top bar: name and category on the left, counter and Close on the right. 0 side margin like the rest of the site */
+.lb__top {
+  position: absolute;
+  z-index: 4;
+  top: env(safe-area-inset-top, 0px);
+  left: env(safe-area-inset-left, 0px);
+  right: env(safe-area-inset-right, 0px);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+/* the project's name + category and the Info button under it, same look as the Side Quests name strip */
+.lb__left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 0;
+  max-width: 100%;
+}
+.lb__id {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.25em;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  background: #908DFF;
+  text-transform: none;
+  white-space: nowrap;
+}
+.lb__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-bottom: 0.2em; /* room for descenders inside the clip... */
+  margin-bottom: -0.2em; /* ...without changing the strip's height */
+  font: 500 var(--title-size)/var(--title-lh) var(--font-sans);
+  letter-spacing: var(--title-ls);
+}
+.lb__cat {
+  flex: none;
+  font: 500 var(--title-size)/var(--title-lh) var(--font-sans);
+  letter-spacing: var(--title-ls);
+  color: rgba(31, 19, 19, 0.5);
+}
+.lb__right {
+  display: flex;
+  flex: none;
+  align-items: flex-start;
+}
+.lb__count {
+  position: absolute; /* sits against .lb__top, so it centers on the screen, not inside the right group */
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font: 500 var(--label-size)/var(--label-lh) var(--font-sans);
+  letter-spacing: var(--label-ls);
+  font-variant-numeric: tabular-nums;
+}
+
+/* the Info button's own look from InfoButton.css, only the size is set here (17px text, 16px icon) */
+.lb .ibtn {
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
+}
+.lb .ibtn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* the project's description, centre left. Same flat strip as the Info panel, clicks pass through to the left half */
+.lb__desc {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  left: env(safe-area-inset-left, 0px);
+  transform: translateY(-50%);
+  width: fit-content;
+  max-width: clamp(160px, 20vw, 360px);
+  margin: 0;
+  padding: 0;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
+  text-transform: none;
+  pointer-events: none;
+  animation: lb-in 0.3s ease; /* fades in again when you change project */
+}
+
+/* the current image, as large as fits above the filmstrip. The old one slides out while the new one slides in */
+.lb__stage {
+  position: absolute;
+  z-index: 3;
+  inset: calc(56px + env(safe-area-inset-top, 0px)) 16px calc(var(--strip) + 56px + env(safe-area-inset-bottom, 0px));
+  display: grid;
+  place-items: center;
+  pointer-events: none; /* clicks fall through to the left and right halves */
+}
+/* the frame is sized in JS to the image's aspect ratio (as large as fits) and glides between sizes */
+.lb__frame {
+  position: relative;
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
+  transition: width 0.56s var(--ease), height 0.56s var(--ease);
+}
+.lb__frame.is-still { transition: none; } /* the opening image doesn't resize */
+.lb__img {
+  position: absolute; /* the old and the new image share the frame */
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: transform, opacity;
+  animation: lb-img-in 0.56s var(--ease) both;
+}
+.lb__img.is-gone {
+  animation: lb-img-out 0.56s var(--ease) both;
+}
+.lb__img.is-fly { animation: none; } /* the opening image flies in instead */
+@keyframes lb-img-in {
+  from { opacity: 0; transform: translateX(calc(var(--d, 1) * 32px)); }
+}
+@keyframes lb-img-out {
+  to { opacity: 0; transform: translateX(calc(var(--d, 1) * -32px)); }
+}
+
+/* Previous project and Next project, just above the filmstrip */
+.lb__bottom {
+  position: absolute;
+  z-index: 4;
+  bottom: calc(var(--strip) + env(safe-area-inset-bottom, 0px));
+  left: env(safe-area-inset-left, 0px);
+  right: env(safe-area-inset-right, 0px);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+/* the filmstrip: every image of the project along the bottom edge, flush with the screen */
+.lb__strip {
+  position: absolute;
+  z-index: 5;
+  bottom: env(safe-area-inset-bottom, 0px);
+  left: env(safe-area-inset-left, 0px);
+  right: env(safe-area-inset-right, 0px);
+  height: var(--strip);
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  touch-action: pan-x; /* the strip scrolls sideways with a finger */
+}
+.lb__strip::-webkit-scrollbar { display: none; }
+.lb__strip > :first-child { margin-left: auto; } /* a short strip sits in the middle, a long one still scrolls from its start */
+.lb__strip > :last-child { margin-right: auto; }
+.lb__th {
+  flex: none;
+  width: var(--strip);
+  height: var(--strip);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: #DDD3CC;
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+.lb__th.is-on { opacity: 1; }
+@media (hover: hover) {
+  .lb__th:hover { opacity: 0.85; }
+}
+.lb__th img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.lb button:focus-visible {
+  outline: 2px solid var(--blue, #BEFF00);
+  outline-offset: -2px;
+}
+
+/* tablets and phones: the image fills the width, so there is no room beside it */
+@media (max-width: 1024px) {
+  .lb__desc { display: none; }
+  .lb__stage { inset: calc(48px + env(safe-area-inset-top, 0px)) 12px calc(var(--strip) + 48px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* phones: the image runs edge to edge */
+@media (max-width: 700px) {
+  .lb { --strip: 56px; } /* bigger thumbnails to tap */
+  .lb__stage { left: 0; right: 0; }
+  .lb__left { max-width: calc(50% - 44px); } /* never runs into the centered counter */
+  .lb__bg { filter: blur(12px); } /* cheaper on phone GPUs */
+}
+
+/* small phones: the category drops out, the name keeps the room */
+@media (max-width: 420px) {
+  .lb__cat { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lb, .lb__img, .lb__desc { animation: none; }
+  .lb__frame { transition: none; }
+  .lb__th { transition: none; }
+}

@@ -1,62 +1,17 @@
-/* list page: intro text, then the rows. Keeps clear of the labels at the bottom */
+/* list page: the rows start 110px down in the 1728 design. Keeps clear of the labels at the bottom */
 .sqv {
   min-height: 100svh;
-  padding: calc(var(--top) + var(--u) * 53) 0 calc(140px + env(safe-area-inset-bottom, 0px)); /* intro sits at 143px in the 1728 design */
+  padding: max(var(--top), calc(var(--u) * 110)) 0 calc(140px + env(safe-area-inset-bottom, 0px));
   overflow-x: clip;
   animation: sq-in 0.4s ease;
 }
-.sqv__intro {
-  max-width: max(calc(var(--u) * 506), 320px);
-  margin: 0 0 clamp(16px, calc(var(--u) * 26), 40px);
-}
 
-/* ---- carousel ---- */
-.sqv-c {
-  position: relative;
-  height: calc(100svh - 40px);
-  overflow: hidden;
-  perspective: 1300px;
-  cursor: grab;
-  touch-action: pan-y; /* vertical swipes still scroll on touch screens */
-  user-select: none;
-  -webkit-user-select: none;
-  outline: none;
-  animation: sq-in 0.4s ease;
-}
-.sqv-c:active { cursor: grabbing; }
-.sqv-c:focus-visible { outline: 2px solid var(--blue, #908DFF); outline-offset: -2px; }
-.sqv-c__ring {
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-  will-change: transform;
-}
-.sqv-c__item {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: var(--cw, 160px);
-  aspect-ratio: var(--ar, 0.8);
-  margin: 0;
-  translate: -50% -50%;
-  transform: rotateY(calc(var(--i) * var(--step))) translateZ(var(--r, 600px));
-  backface-visibility: hidden;
-  background: #DDD3CC;
-}
-.sqv-c__item img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  pointer-events: none;
-}
-
-/* ---- zoom: a tall scroll track with a pinned stage ---- */
-.sqv-z {
+/* ---- snap: dot grid with images snapped to it. A tall scroll track with a pinned stage ---- */
+.sqv-g {
   position: relative; /* its height is set in the script */
   animation: sq-in 0.4s ease;
 }
-.sqv-z__stage {
+.sqv-g__stage {
   position: sticky;
   top: 0;
   height: 100svh;
@@ -65,48 +20,32 @@
   user-select: none;
   -webkit-user-select: none;
 }
-.sqv-z__title {
+/* square dots at every cell corner, the same recipe and spacing as the Grid view */
+.sqv-g__stage::before {
+  content: "";
   position: absolute;
   inset: 0;
-  z-index: 0; /* behind the cards */
-  display: grid;
-  place-items: center;
   pointer-events: none;
-  animation: sq-in 0.35s ease; /* replays when the project changes */
+  background: linear-gradient(90deg, transparent calc(50% - 1.5px), #1F1313 calc(50% - 1.5px) calc(50% + 1.5px), transparent calc(50% + 1.5px))
+    50% 50% / var(--cx, 64px) 100%;
+  -webkit-mask: linear-gradient(transparent calc(50% - 1.5px), #000 calc(50% - 1.5px) calc(50% + 1.5px), transparent calc(50% + 1.5px))
+    50% 50% / 100% var(--cy, 80px);
+  mask: linear-gradient(transparent calc(50% - 1.5px), #000 calc(50% - 1.5px) calc(50% + 1.5px), transparent calc(50% + 1.5px))
+    50% 50% / 100% var(--cy, 80px);
 }
-.sqv-z__name {
-  margin: 0;
-  max-width: 92vw;
-  font-size: clamp(26px, calc(var(--tile) * 0.4), 76px);
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: -0.04em;
-  text-align: center;
-}
-.sqv-z__cat {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(50% + var(--tile) / 2 + clamp(12px, 2.2vh, 24px)); /* just under the card in focus */
-  margin: 0;
-  text-align: center;
-}
-.sqv-z__tile {
+.sqv-g__item {
   position: absolute;
   left: 0;
   top: 0;
-  z-index: 1;
-  width: var(--tile);
-  height: var(--tile);
   margin: 0;
-  border-radius: 22%;
+  border-radius: 0;
   overflow: hidden;
   background: #DDD3CC;
-  pointer-events: none;
-  will-change: transform; /* drawn once at focus size, then only scaled down, so it stays sharp */
+  cursor: pointer; /* click to open the slideshow */
+  will-change: transform;
   backface-visibility: hidden;
 }
-.sqv-z__tile img {
+.sqv-g__item img {
   display: block;
   width: 100%;
   height: 100%;
@@ -114,96 +53,147 @@
   user-select: none;
   -webkit-user-drag: none;
 }
-.sq--zoom .sq__name { display: none; } /* the title now sits in the middle */
-.sq--archive .sqv-z__title { display: none; } /* Archive has no project names */
+.sqv-g__count {
+  position: fixed; /* pinned to the screen corner, like the name block on the left */
+  right: env(safe-area-inset-right, 0px); /* no side margin, same as the other corner labels */
+  bottom: env(safe-area-inset-bottom, 0px);
+  z-index: 8;
+  background: #fff; /* stays readable when an image runs under the corner, same as the name strip */
+  font: 500 var(--label-size)/var(--label-lh) var(--font-sans);
+  letter-spacing: var(--label-ls);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
 
-/* ---- list ---- */
+/* ---- list: one row per project, info on the left, four thumbnails on the right ---- */
 .sqv-l { margin: 0; padding: 0; list-style: none; }
 .sqv-l__row {
-  position: relative;
-  padding: 2px 0; /* 2px + 2px = the 4px gap between rows, and it still counts as hover so the thumbnails don't flicker */
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.sqv-l__info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* the description lines up under the category */
+  flex: none;
+  width: 47.68%; /* 824 / 1728 */
+  text-transform: none;
 }
 .sqv-l__head {
   display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  width: 100%;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--ink);
+  align-items: center;
+  align-self: stretch;
+  min-height: 21px;
+  background: #F1ECEA;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
+}
+.sqv-l__name {
+  flex: 0 0 38.47%; /* 317 / 824 */
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font: inherit;
-  font-size: clamp(22px, calc(var(--u) * 32), 44px);
-  font-weight: 600;
-  line-height: 0.94;
-  letter-spacing: -0.04em;
-  text-align: left;
-  text-transform: inherit;
-  cursor: pointer;
+  color: #1F1313;
 }
-.sqv-l__row.is-open .sqv-l__head { background: #FF83BE; } /* the open row turns pink, full width */
-.sqv-l__head:focus-visible { outline: 2px solid var(--blue, #908DFF); outline-offset: -2px; }
-.sqv-l__no {
-  color: #000;
-  font-size: clamp(15px, calc(var(--u) * 20), 24px);
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: -0.06em;
+.sqv-l__cat {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(31, 19, 19, 0.5);
 }
-.sqv-l__cat { color: rgba(31, 19, 19, 0.5); }
-
-/* the 5 thumbnails sit on the right, centred on the row. The pink shows through the 4px gaps */
-.sqv-l__peek {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  z-index: 3;
+/* the reused Info chip: its own look from InfoButton.css, only the size is set here (Figma: 17px text, 16px icon) */
+.sqv-l__head .ibtn {
+  flex: none;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
+}
+.sqv-l__head .ibtn svg {
+  width: 16px;
+  height: 16px;
+}
+.sqv-l__tags {
   display: flex;
-  justify-content: flex-end;
-  gap: 4px;
-  width: 64.64%; /* 1117 / 1728 */
-  height: clamp(72px, calc(var(--u) * 158), 240px);
-  transform: translateY(-50%);
-  pointer-events: none;
+  flex-direction: column;
+  align-items: flex-end; /* lines up with the Info chip */
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  animation: sq-in 0.3s ease;
 }
-.sqv-l__peek img {
+.sqv-l__tags li {
+  background: #F1ECEA;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
+}
+.sqv-l__desc {
+  width: 61.53%; /* 507 / 824 */
+  margin: 0;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
+  color: #1F1313;
+}
+.sqv-l__strip {
+  display: flex;
+  align-items: flex-start;
+  flex: none;
+  width: 52.32%; /* 904 / 1728 */
+}
+.sqv-l__img {
+  margin: 0;
+  overflow: hidden;
+  background: #D9D9D9;
+  cursor: pointer; /* click to open the slideshow */
+}
+.sqv-l__img.is-l {
+  flex: 1 1 0;
+  min-width: 0;
+  aspect-ratio: 253.67 / 164.27;
+}
+.sqv-l__img.is-p {
+  flex: 0 0 15.82%; /* 143 / 904 */
+  aspect-ratio: 143 / 240;
+}
+.sqv-l__img img {
   display: block;
-  flex: 0 0 calc((100% - 16px) / 5);
+  width: 100%;
   height: 100%;
   object-fit: cover;
-  background: #DDD3CC;
-  animation: sq-in 0.25s ease backwards;
-  animation-delay: calc(var(--j, 0) * 40ms);
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
-/* touch screens and narrow windows: the thumbnails open under the row, in a swipeable strip */
-@media (hover: none), (max-width: 900px) {
-  .sqv-l__peek {
-    position: static;
-    width: auto;
-    height: auto;
-    transform: none;
-    justify-content: flex-start;
-    padding: 4px 0 6px;
+/* tablets: the info sits above the thumbnails, same proportions */
+@media (max-width: 900px) {
+  .sqv-l__row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-bottom: clamp(24px, 5vw, 40px);
+  }
+  .sqv-l__info,
+  .sqv-l__strip { width: 100%; }
+}
+
+/* phones: full-width text, thumbnails in a swipeable strip */
+@media (max-width: 700px) {
+  .sqv-l__desc { width: 100%; align-self: flex-start; }
+  .sqv-l__strip {
     overflow-x: auto;
     overscroll-behavior-x: contain;
-    pointer-events: auto;
     scrollbar-width: none;
   }
-  .sqv-l__peek::-webkit-scrollbar { display: none; }
-  .sqv-l__peek img {
-    flex: none;
-    width: clamp(120px, 30vw, 260px);
-    height: auto;
-    aspect-ratio: 220 / 158;
-  }
-}
-
-@media (max-width: 700px) {
-  .sqv { padding-bottom: calc(170px + env(safe-area-inset-bottom, 0px)); } /* the label strip is taller on phones */
-  .sqv__intro { max-width: 92%; }
+  .sqv-l__strip::-webkit-scrollbar { display: none; }
+  .sqv-l__img.is-l { flex: none; width: 58vw; }
+  .sqv-l__img.is-p { flex: none; width: 34vw; }
+  .sqv { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sqv, .sqv-c, .sqv-z, .sqv-z__title, .sqv-l__peek img { animation: none; }
+  .sqv, .sqv-g, .sqv-l__tags { animation: none; }
 }

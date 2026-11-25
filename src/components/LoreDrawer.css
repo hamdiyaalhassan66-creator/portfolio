@@ -38,8 +38,8 @@
   padding: 10px;
   background: rgba(227, 230, 247, 0.45);
   text-transform: uppercase;
-  font: 500 12px/14px var(--font-mono);
-  letter-spacing: -0.01em;
+  font: 500 var(--label-size)/var(--label-lh) var(--font-mono);
+  letter-spacing: var(--label-ls);
   color: #fff;
 }
 
@@ -97,8 +97,8 @@
 }
 
 .drawer__title {
-  font: 600 16px/19px var(--font-sans);
-  letter-spacing: -0.01em;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans); 
+  letter-spacing: var(--body-ls);
   color: var(--fg);
 }
 
@@ -109,8 +109,8 @@
 }
 
 .drawer__creator {
-  font: 550 14px/17px var(--font-sans);
-  letter-spacing: -0.01em;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans); 
+  letter-spacing: var(--body-ls);
   color: var(--fg-60);
 }
 
@@ -123,8 +123,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font: 550 12px/15px var(--font-sans);
-  letter-spacing: -0.01em;
+  font: 500 var(--label-size)/var(--label-lh) var(--font-sans);
+  letter-spacing: var(--label-ls);
   color: var(--fg-60);
 }
 
@@ -145,8 +145,8 @@
 .drawer__label {
   margin: 40px 0 16px;
   text-transform: uppercase;
-  font: 500 12px/14px var(--font-mono);
-  letter-spacing: -0.01em;
+  font: 500 var(--label-size)/var(--label-lh) var(--font-mono);
+  letter-spacing: var(--label-ls);
   color: var(--fg);
 }
 
@@ -166,8 +166,8 @@
   border: 0;
   cursor: pointer;
   text-align: left;
-  font: 550 13px/17px var(--font-sans);
-  letter-spacing: -0.01em;
+  font: 500 var(--label-size)/var(--label-lh) var(--font-sans);
+  letter-spacing: var(--label-ls);
   color: var(--fg);
 }
 
@@ -196,7 +196,6 @@
   width: 20px;
   flex: none;
   margin-right: 40px;
-  font-size: 12px;
   color: rgba(255, 255, 255, 0.6);
 }
 
@@ -211,7 +210,6 @@
 .drawer__time {
   margin-left: auto;
   text-align: right;
-  font-size: 12px;
   color: rgba(255, 255, 255, 0.6);
 }
 
@@ -267,8 +265,8 @@
   display: flex;
   justify-content: space-between;
   padding: 12px 0;
-  font: 550 14px/17px var(--font-sans);
-  letter-spacing: -0.01em;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans); 
+  letter-spacing: var(--body-ls);
   color: var(--blue);
 }
 
@@ -364,7 +362,7 @@
     display: flex;
     align-items: center;
     padding: 0 12px;
-    font: 600 14px/1 var(--font-sans);
+    font: 500 var(--label-size)/var(--label-lh) var(--font-sans);
   }
   .drawer__close {
     width: 48px;
@@ -410,8 +408,8 @@
 
 .recs__label {
   text-transform: uppercase;
-  font: 500 12px/14px var(--font-mono);
-  letter-spacing: -0.01em;
+  font: 500 var(--label-size)/var(--label-lh) var(--font-mono);
+  letter-spacing: var(--label-ls);
   color: var(--fg);
 }
 
@@ -427,8 +425,8 @@
   border: 0;
   cursor: pointer;
   text-transform: uppercase;
-  font: 500 13px/15px var(--font-mono);
-  letter-spacing: -0.01em;
+  font: 500 var(--label-size)/var(--label-lh) var(--font-mono);
+  letter-spacing: var(--label-ls);
   color: var(--fg-30);
 }
 
@@ -442,8 +440,8 @@
   background: rgba(255, 255, 255, 0.2);
   border: 0;
   border-radius: 0;
-  font: 550 14px/17px var(--font-sans);
-  letter-spacing: -0.01em;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans); 
+  letter-spacing: var(--body-ls);
   color: var(--fg);
 }
 
@@ -469,8 +467,8 @@
   background: #fff;
   color: #2e1d11;
   text-transform: uppercase;
-  font: 500 13px/15px var(--font-mono);
-  letter-spacing: -0.01em;
+  font: 500 var(--label-size)/var(--label-lh) var(--font-mono);
+  letter-spacing: var(--label-ls);
 }
 
 .recs__submit:disabled {
@@ -479,8 +477,8 @@
 }
 
 .recs__thanks {
-  font: 600 15px/20px var(--font-sans);
-  letter-spacing: -0.01em;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans); 
+  letter-spacing: var(--body-ls);
   color: var(--fg);
 }
 
@@ -490,8 +488,8 @@
 }
 
 .recs__error {
-  font: 550 13px/17px var(--font-sans);
-  letter-spacing: -0.01em;
+  font: 500 var(--label-size)/var(--label-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
   color: #FFD0CC;
 }
 
@@ -528,14 +526,14 @@
 
 .recs__item-kind {
   text-transform: uppercase;
-  font: 500 12px/14px var(--font-mono);
-  letter-spacing: -0.01em;
+  font: 500 var(--label-size)/var(--label-lh) var(--font-mono);
+  letter-spacing: var(--label-ls);
   color: var(--blue);
 }
 
 .recs__item-title {
-  font: 600 15px/19px var(--font-sans);
-  letter-spacing: -0.01em;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans); 
+  letter-spacing: var(--body-ls);
   color: var(--fg);
 }
 
@@ -547,20 +545,20 @@
 
 .recs__item-artist,
 .recs__item-note {
-  font: 550 13px/17px var(--font-sans);
-  letter-spacing: -0.01em;
+  font: 500 var(--label-size)/var(--label-lh) var(--font-sans);
+  letter-spacing: var(--label-ls);
   color: var(--fg-60);
 }
 
 .recs__item-by {
-  font: 550 12px/15px var(--font-sans);
-  letter-spacing: -0.01em;
+  font: 500 var(--label-size)/var(--label-lh) var(--font-sans);
+  letter-spacing: var(--label-ls);
   color: var(--fg-30);
 }
 
 .recs__empty {
-  font: 550 14px/17px var(--font-sans);
-  letter-spacing: -0.01em;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans); 
+  letter-spacing: var(--body-ls);
   color: var(--fg-60);
 }
 

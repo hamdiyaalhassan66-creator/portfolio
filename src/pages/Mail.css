@@ -1,0 +1,95 @@
+/* mail popup */
+.mail {
+  position: fixed;
+  inset: 0;
+  z-index: 200; /* above the sticky header */
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+.mail__backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: rgba(31, 19, 19, 0.25);
+  cursor: pointer;
+}
+.mail__box {
+  position: relative;
+  width: fit-content; /* the popup fits its content */
+  min-width: min(420px, 100%);
+  max-width: min(520px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 20px;
+  background: #FCF8F5;
+  color: var(--ink);
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
+}
+.mail__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+.mail__x {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.mail__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.mail__form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mail__form input:not([type="hidden"]),
+.mail__form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 0;
+  background: rgba(31, 19, 19, 0.06);
+  color: inherit;
+  font: inherit;
+  font-size: 16px; /* 16px stops iOS zooming into the field */
+  letter-spacing: inherit;
+  resize: vertical;
+}
+.mail__form input:focus-visible,
+.mail__form textarea:focus-visible {
+  outline: 2px solid var(--blue, #BEFF00);
+  outline-offset: 0;
+}
+.mail__trap {
+  position: absolute;
+  left: -9999px;
+  opacity: 0;
+}
+.mail__send {
+  align-self: flex-start;
+  padding: 0 4px;
+}
+.mail__send:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.mail__done,
+.mail__error {
+  margin: 0;
+}

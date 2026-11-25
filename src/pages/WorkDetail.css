@@ -1,463 +1,287 @@
-.detail {
+/* Info button look (same as InfoButton.css) */
+.ibtn {
   position: relative;
-  background: #F9F7F6;
-  color: var(--fg);
-  padding: 40px 0 2px; /* 40px under the nav */
-  overflow-x: clip;
-}
-
-/* header: back link, logo, title and description on the left, the two accordions on the right */
-.detail__head {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr)); /* site grid */
-  column-gap: var(--grid-gutter);
-  padding-inline: var(--grid-margin);
-  align-items: end; /* the accordions sit on the same bottom line as the thumbnail stack */
-  margin-bottom: 8px;
-}
-.detail__headmain {
-  grid-column: 1 / span 2;
-  margin-left: calc(var(--grid-margin) * -1); /* the back link's hover still reaches the left edge */
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 0;
-}
-.detail__back {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  align-self: flex-start;
-  padding: 8px 24px; /* keeps the text lined up with the logo and the tap target size */
-  background: none;
-  border: 0;
-  cursor: pointer;
-  text-transform: uppercase;
-  text-decoration: underline;
-  font: 500 13px/15px var(--font-mono);
-  letter-spacing: -0.01em;
-  color: #1046F9;
-  transition: color 0.2s ease;
-}
-@media (hover: hover) {
-  .detail__back:hover { color: #0A2FB8; }
-}
-.detail__back:focus-visible {
-  outline: 2px solid #1046F9;
-  outline-offset: 4px;
-}
-.detail__intro {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 0 24px;
-}
-.detail__mark {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 93px;
-  height: 93px;
-  overflow: hidden;
-}
-.detail__mark img {
-  display: block;
-  height: auto;
-  max-height: 85%;
-  object-fit: contain;
-}
-.detail__mark span {
-  padding: 0 6px;
-  font: 800 11px/1 var(--font-sans);
-  letter-spacing: -0.02em;
-  color: #1F1313;
-  text-align: center;
-  overflow-wrap: anywhere;
-}
-.detail__text {
-  display: flex;
-  flex-direction: column;
   justify-content: center;
-  gap: 8px;
-  max-width: 517px;
-  min-width: 0;
-}
-.detail__name {
-  margin: 0;
-  font: 600 20px/25px var(--font-sans);
-  letter-spacing: -0.04em;
-  color: #2E1D11;
-  overflow-wrap: anywhere;
-}
-.detail__desc {
-  margin: 0;
-  font: 500 13px/15px var(--font-sans);
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
-  color: #2E1D11;
-}
-
-/* accordions: two bars; the open panel hangs below them, on top of the images */
-.detail__panels {
-  --bar: 40px;
-  position: relative;
-  z-index: 30; /* above the overlay */
-  grid-column: 5 / span 2; /* the last two columns */
-  margin-right: calc(var(--grid-margin) * -1); /* run to the right edge of the page */
-  height: calc(var(--bar) * 2 + 2px); /* two closed bars + the 2px gap; an open panel grows past this */
-}
-.acc__stack {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  flex-direction: column;
   gap: 2px;
-}
-.acc {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.acc__bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  width: 100%;
-  height: var(--bar);
-  padding: 0 0 0 16px;
-  border: 0;
-  background: #EFE9E7;
-  text-align: left;
-  cursor: pointer;
-}
-.acc__title {
-  font: 500 13px/15px var(--font-mono);
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
-  color: #1046F9;
-}
-.acc__toggle {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: var(--bar);
-  height: var(--bar);
-  background: #E5DEDC;
-  color: #1046F9;
-  transition: background 0.2s ease;
-}
-.acc__bar:hover .acc__toggle {
-  background: #DDD4D1;
-}
-.acc__bar:focus-visible {
-  outline: 2px solid #1046F9;
-  outline-offset: -2px;
-}
-.acc__body {
-  overflow: hidden; /* the spring animates this box's height */
-  background: #E5DEDC;
-  color: #2E1D11;
-}
-.acc__body[hidden] {
-  display: none;
-}
-.acc__inner {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 16px;
-}
-
-/* blur layer behind an open panel (same look as the Lore info drawer) */
-.detail__overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 20;
   padding: 0;
   border: 0;
-  background: rgba(46, 29, 17, 0.2);
-  -webkit-backdrop-filter: blur(14.85px);
-  backdrop-filter: blur(14.85px);
-  opacity: 0;
-  visibility: hidden; /* closed: the blur isn't painted at all */
-  pointer-events: none;
-  transition: opacity 0.25s ease, visibility 0s linear 0.25s;
+  background: #E6E2DF;
+  color: #1F1313;
+  font: inherit; /* the size comes from the page it sits in */
+  letter-spacing: inherit;
+  line-height: 1.06;
+  text-transform: none;
   cursor: pointer;
+  transition: background 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
 }
-.detail__overlay[data-open] {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transition: opacity 0.25s ease, visibility 0s;
+@media (hover: hover) {
+  .ibtn:hover { background: #DAD5D1; }
 }
-
-/* details: label ---- value */
-.row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font: 500 13px/15px var(--font-sans);
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
+@media (pointer: coarse) {
+  .ibtn::after { content: ""; position: absolute; inset: -8px -12px; } /* 44px tap target, same look */
+  .ibtn:active { background: #DAD5D1; }
 }
-.row__line {
-  flex: 1;
-  min-width: 12px;
-  height: 0;
-  border-top: 1px solid rgba(46, 29, 17, 0.3); /* Figma: solid 1px line */
+.ibtn span { text-decoration: underline; }
+.ibtn svg {
+  width: 0.8em;
+  height: 0.8em;
+  flex: none;
 }
-.row__value {
-  text-align: right;
-}
-.row__value a {
-  color: inherit;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.row__value a:hover {
-  color: #1046F9;
-}
-.row__value a:focus-visible {
+.ibtn:focus-visible {
   outline: 2px solid #1046F9;
   outline-offset: 2px;
 }
 
-/* images: two columns, 2px gaps (Figma: 856 + 870 wide, 820 tall) */
-.detail__gallery {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 2px;
-}
-.detail__gallery picture {
-  display: block;
-}
-.detail__gallery img {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 864 / 820;
-  object-fit: cover;
-  background: #E3E3E3;
-}
-
-/* previous / all projects / next: 3 blocks of 2 columns on the site grid */
-.pager {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  column-gap: var(--grid-gutter);
-  row-gap: 2px;
-  padding-inline: var(--grid-margin);
-  margin: 8px 0 0;
-}
-.pager__row {
-  display: contents; /* the items become direct grid children */
-}
-.pager__item {
-  grid-column: 1 / span 2; /* previous: columns 1-2 */
-  grid-row: 1;
-  margin-left: calc(var(--grid-margin) * -1); /* run to the left edge, like Next does on the right */
+.detail {
+  --nav-h: 40px; /* the sticky header's space in the page flow */
+  --nav-bottom: 60px; /* the active tab is a fixed 60px tall at every width */
   display: flex;
   flex-direction: column;
-  min-width: 0;
-  gap: 2px;
-  color: inherit;
-  text-decoration: none;
+  box-sizing: border-box;
+  min-height: calc(100dvh - var(--nav-h)); /* the page grows with the media and scrolls */
+  padding-top: calc(var(--nav-bottom) - var(--nav-h) + 24px); /* 24px below the nav links: 84px from the top on desktop */
+  background: #FCF8F5;
+  color: var(--ink);
 }
-.pager__item:nth-child(2) {
-  grid-column: 5 / span 2; /* next: columns 5-6, lines up with the accordions above */
-  margin-right: calc(var(--grid-margin) * -1); /* run to the right edge, like the accordions */
-}
-.pager__item:focus-visible {
-  outline: 2px solid #1046F9;
-  outline-offset: -2px;
-}
-.pager__label {
+
+/* Figma: back link, title + Info in one column, the description steps down to its right */
+.detail__head {
   display: flex;
-  align-items: center;
-  height: 40px;
-  padding-left: 24px;
-  background: #EFE9E7;
-  color: #1046F9;
-  font: 500 13px/15px var(--font-mono);
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
+  flex-direction: row;
+  justify-content: space-between; /* left block and description pushed to opposite edges */
+  align-items: flex-end;          /* description bottom lines up with the Info button */
+  gap: 24px;
+  flex: none;
 }
-.pager__card {
-  position: relative; /* the tag pins to the bottom right */
+.detail__main {
   display: flex;
-  align-items: stretch;
-  height: 64px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px; /* space between the back button and the title */
+  flex: none;
   min-width: 0;
-  padding-left: 24px; /* the row colour fills the gutter, like the works page rows */
-  background: #EDEAE9;
-  transition: background 0.2s ease;
 }
-.pager__item:hover .pager__card {
-  background: #E2DDDA; /* the whole card, gutter included */
+.detail__titleline {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start; /* title strip and Info button top-aligned */
+  max-width: 100%;
 }
-.pager__logo {
+.detail .detail__back {
+  align-self: flex-start;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
+}
+.detail__titlerow {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.detail__name {
+  margin: 0;
+  font: 500 var(--title-size)/var(--title-lh) var(--font-sans);
+  letter-spacing: var(--title-ls);
+}
+.detail__kind {
+  font: 500 var(--title-size)/var(--title-lh) var(--font-sans);
+  letter-spacing: var(--title-ls);
+  color: rgba(31, 19, 19, 0.5);
+}
+.detail .detail__info {
+  flex: none;
+  align-self: flex-start; /* top-aligned with the title strip */
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
+}
+.detail__side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px; /* description, then the Info button under it */
+  flex: 0 1 531px; /* Figma: 492px wide, shrinks if the screen gets tight */
+  max-width: 531px;
+}
+.detail__desc {
+  max-width: 100%;
+  margin: 0;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
+}
+
+/* info overlay (Figma: full-screen scrim, 668px column centred, Close pinned to the bottom centre) */
+.info {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
   display: grid;
   place-items: center;
-  flex: 0 0 64px;
-  width: 64px;
-  height: 64px;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
+  padding: 24px 16px 56px; /* bottom room for the Close button */
+  background: rgba(31, 19, 19, 0.6);
+  -webkit-backdrop-filter: blur(14.85px);
+  backdrop-filter: blur(14.85px);
+  color: #FCF8F5;
 }
-.pager__logo span {
-  padding: 0 6px;
-  font: 800 11px/1 var(--font-sans);
-  letter-spacing: -0.02em;
-  color: #1F1313;
-  text-align: center;
-  overflow-wrap: anywhere;
-}
-.pager__logo img {
-  display: block;
-  height: auto; /* width comes from logoSize */
-  max-height: 85%;
-  object-fit: contain;
-}
-.pager__name {
-  flex: 1;
-  min-width: 0;
-  padding: 13px 12px;
-  font: 550 14px/16px var(--font-sans);
-  letter-spacing: -0.01em;
-  color: var(--fg);
-}
-.pager__tag {
+.info__backdrop {
   position: absolute;
-  right: 0;
-  bottom: 0;
-  padding: 4px 8px;
-  background: var(--bg);
-  font: 500 12px/14px var(--font-mono);
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
-  color: var(--fg);
-  white-space: nowrap;
-  pointer-events: none;
+  inset: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
 }
-.pager__all {
-  grid-column: 3 / span 2; /* middle: columns 3-4 */
-  grid-row: 1;
+.info__panel {
+  position: relative;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 24px;
-  background: none;
+  flex-direction: column;
+  gap: 24px;
+  width: min(668px, 100%);
+  max-height: 100%;
+  overflow-y: auto; /* short screens: the panel scrolls, Close stays put */
+  overscroll-behavior: contain;
+}
+.info__title {
+  margin: 0;
+  font: 500 var(--title-size)/var(--title-lh) var(--font-sans);
+  letter-spacing: var(--title-ls);
+}
+
+/* each section: heading column on the left, content column on the right, equal widths */
+.info__section {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  align-self: stretch;
+}
+.info__sub {
+  box-sizing: border-box;
+  flex: 1 1 0; /* the rest of the row, about 216px in the 668px panel */
+  min-width: 0;
+  margin: 0;
+  padding-bottom: 8px;
+  background: rgba(252, 248, 245, 0.2);
+  font: 500 var(--label-size)/var(--label-lh) var(--font-sans);
+  letter-spacing: var(--label-ls);
   text-transform: uppercase;
-  text-decoration: underline;
-  font: 500 13px/15px var(--font-mono);
-  letter-spacing: -0.01em;
-  color: #1046F9;
-  touch-action: manipulation;
-  transition: color 0.2s ease;
 }
-@media (hover: hover) {
-  .pager__all:hover { color: #0A2FB8; }
+.info__body {
+  flex: none;
+  width: 67.57%; /* 450 / 666, same split as the Information page */
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
-.pager__all:focus-visible {
-  outline: 2px solid #1046F9;
-  outline-offset: 4px;
+.info__text {
+  margin: 0;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
+}
+.info__field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
+}
+.info__label {
+  font: 500 var(--label-size)/var(--label-lh) var(--font-sans);
+  letter-spacing: var(--label-ls);
+  color: rgba(252, 248, 245, 0.6);
+}
+.info__chip { max-width: 100%; }
+.info__chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.info__close {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 1;
+  font: 500 var(--body-size)/var(--body-lh) var(--font-sans);
+  letter-spacing: var(--body-ls);
 }
 
-/* skip layout and paint for the pager until it's near the viewport */
-.pager {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 106px; /* 40 label + 2 gap + 64 card */
-}
-.detail__gallery picture {
-  content-visibility: auto; /* offscreen images skip layout and paint until scrolled near */
-  contain-intrinsic-size: auto 820px;
-}
-.acc__bar,
-.pager__all {
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation; /* removes the 300ms tap delay on touch */
+@media (max-width: 600px) {
+  .info__section { flex-direction: column; gap: 12px; } /* heading above its content */
+  .info__sub { align-self: flex-start; flex: none; width: min(216px, 100%); } /* same label width as the Information page */
+  .info__body { align-self: stretch; flex: none; width: 100%; }
 }
 
-/* touch: bigger tap targets on the accordion bars */
-@media (pointer: coarse) {
-  .detail__panels { --bar: 48px; }
-  .pager__all { min-height: 48px; }
+/* media: vertical scroll, 3 columns, landscape media fills 2 */
+.detail__gallery {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: 4px;
+}
+.detail__item {
+  position: relative;
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  aspect-ratio: 3 / 4; /* portrait */
+  background: #D9D9D9;
+}
+.detail__item.is-wide {
+  grid-column: span 2;
+  aspect-ratio: 3 / 2; /* landscape, about the same height as a portrait beside it */
+}
+.detail__item.is-full {
+  grid-column: 1 / -1;
+  aspect-ratio: 16 / 9; /* all 3 columns */
+}
+.detail__item img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.detail__item video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: transform; /* composites the video with the page, no separate overlay layer */
+  transform: translateZ(0);
+  transform: scale(1.01); /* hides a thin black edge baked into the file */
+  transform-origin: top left;
 }
 
-/* tablet: the header stacks and the accordions go full width */
+/* tablet and phone: the description drops under the title block */
 @media (max-width: 1100px) {
-  .detail { padding: 24px 0 calc(24px + env(safe-area-inset-bottom)); }
   .detail__head {
-    display: flex;
     flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
-    padding: 0;
+    align-items: flex-start;
+    gap: 8px;
   }
-  .detail__headmain { margin-left: 0; }
-  .detail__back { padding: 8px 16px; }
-  .detail__intro { padding: 0 16px; }
-  .detail__text { max-width: none; }
-  .detail__panels { flex: none; width: 100%; margin-right: 0; }
-  .pager {
-    column-gap: 2px; /* the 80px gutter is too wide here, so the three blocks sit tight */
-    padding-inline: 0;
-    margin: 8px 0 0;
-  }
-  .pager__item { margin-left: 0; } /* no side padding here, so nothing to cancel */
-  .pager__item:nth-child(2) { margin-right: 0; }
-  .pager__label,
-  .pager__card { padding-left: 16px; }
+  .detail__side { flex: none; max-width: 100%; }
 }
-
-/* phone: one column of images, tighter type, lighter blur */
+/* the nav tabs are hidden here (Header.css switches at 767px), so only the 40px bar is left */
+@media (max-width: 767px) {
+  .detail { --nav-bottom: 40px; }
+}
+/* phone: the images stack vertically and the page scrolls instead of the strip */
 @media (max-width: 700px) {
-  .detail { padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
-  .detail__gallery { grid-template-columns: minmax(0, 1fr); }
-  .detail__mark { width: 72px; height: 72px; }
-  .detail__intro { align-items: flex-start; gap: 12px; }
-  .detail__name { font-size: 18px; line-height: 22px; }
-  .detail__desc { font-size: 14px; line-height: 19px; }
-  .pager__name {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .detail {
+    height: auto; /* no longer locked to one screen */
+    min-height: calc(100dvh - var(--nav-h));
   }
-  .pager__tag {
-    max-width: 60%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-    /* previous | next side by side, all projects below */
-  .pager { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .pager__item { grid-column: 1; }
-  .pager__item:nth-child(2) { grid-column: 2; }
-  .pager__all {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    min-height: 48px;
-  }
-  .detail__overlay {
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
-  }
-}
-
-/* small phones: Previous and Next stack so each card gets the full width */
-@media (max-width: 480px) {
-  .pager { grid-template-columns: minmax(0, 1fr); } /* previous, next, all projects: one column */
-  .pager__item,
-  .pager__item:nth-child(2) { grid-column: 1; }
-  .pager__item:nth-child(2) { grid-row: 2; }
-  .pager__all { grid-row: 3; }
-  .row { flex-wrap: wrap; } /* long values drop below their label instead of squeezing */
-  .row__line { min-width: 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .detail__overlay { transition: none; }
+  .detail__head { padding-bottom: 12px; }
+  .detail__gallery { grid-template-columns: 1fr; }
+  .detail__item.is-wide,
+  .detail__item.is-full { grid-column: auto; }
 }
